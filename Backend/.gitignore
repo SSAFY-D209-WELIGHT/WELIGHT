@@ -4,7 +4,11 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-application.yml
+
+# 모든 application-*.yml 파일을 무시
+application-*.yml
+# application.yml은 예외적으로 포함
+!application.yml
 
 ### STS ###
 .apt_generated
