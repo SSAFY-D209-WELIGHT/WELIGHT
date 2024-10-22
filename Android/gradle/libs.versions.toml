@@ -111,3 +111,9 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+
+# custom plugins
+module-android-application = { id = "rokhee.android.application", version = "unspecified" }
+module-android-library = { id = "rokhee.android.library", version = "unspecified" }
+module-hilt = { id = "rokhee.android.hilt", version = "unspecified" }
+module-compose = { id = "rokhee.android.compose", version = "unspecified" }

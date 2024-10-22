@@ -21,3 +21,24 @@ dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
 }
+
+gradlePlugin{
+    plugins{
+        register("androidApplicationConventionPlugin"){
+            id = "rokhee.android.application"
+            implementationClass = "AndroidApplicationConventionPlugin"
+        }
+        register("androidLibraryConventionPlugin"){
+            id = "rokhee.android.library"
+            implementationClass = "AndroidLibraryConventionPlugin"
+        }
+        register("androidComposeConventionPlugin"){
+            id = "rokhee.android.compose"
+            implementationClass = "ComposeConventionPlugin"
+        }
+        register("androidHiltConventionPlugin"){
+            id = "rokhee.android.hilt"
+            implementationClass = "HiltConventionPlugin"
+        }
+    }
+}
