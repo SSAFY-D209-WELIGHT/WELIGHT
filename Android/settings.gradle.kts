@@ -22,3 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "WeLight"
 include(":app")
+
+gradle.startParameter.excludedTaskNames.addAll(listOf(":build-logic:convention:testClasses"))
