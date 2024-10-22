@@ -14,7 +14,7 @@ internal class AndroidApplicationConventionPlugin : Plugin<Project> {
             configureKotlinAndroid()
 
             dependencies {
-                add("implementation", libs.findBundle("androidx.core").get())
+                add("implementation", libs.findBundle("android.core").get())
 
                 // timber logger
                 add("implementation", libs.findLibrary("timber").get())
