@@ -10,6 +10,8 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,11 +20,16 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +48,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.workbench.ui.theme.WorkbenchTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.mutableStateOf
 import java.net.InetAddress
 
 val pretendard = FontFamily(
@@ -54,6 +65,7 @@ class MainActivity : ComponentActivity() {
     private val peers = mutableStateListOf<WifiP2pDevice>()
     var isWifiP2pEnabled = false
     private val PERMISSIONS_REQUEST_CODE = 123
+    private var isDiscovering = mutableStateOf(false)  // 상태 추가
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +84,7 @@ class MainActivity : ComponentActivity() {
                         stopDiscovery = { stopWifiP2p() },
                         peers = peers,
                         onPeerClick = { device -> connectToPeer(device) },
+                        isDiscovering = isDiscovering.value,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -116,13 +129,15 @@ class MainActivity : ComponentActivity() {
         if (checkPermission()) {
             wifiP2pManager.discoverPeers(channel, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
+                    isDiscovering.value = true  // Discovery 시작 시 상태 변경
                     Log.d("WiFiDirect", "Discovery Started")
-                    Toast.makeText(applicationContext, "Discovery Started", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "주변 탐색을 시작합니다.", Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onFailure(reason: Int) {
+                    isDiscovering.value = false  // 실패 시 상태 변경
                     Log.d("WiFiDirect", "Discovery Failed: $reason")
-                    Toast.makeText(applicationContext, "Discovery Failed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "탐색에 실패했습니다.: $reason", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -132,13 +147,14 @@ class MainActivity : ComponentActivity() {
         if (checkPermission()) {
             wifiP2pManager.stopPeerDiscovery(channel, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
+                    isDiscovering.value = false  // Discovery 중지 시 상태 변경
                     Log.d("WiFiDirect", "Discovery Stopped")
-                    Toast.makeText(applicationContext, "Discovery Stopped", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "주변 탐색을 종료합니다.", Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onFailure(reason: Int) {
                     Log.d("WiFiDirect", "Failed to stop discovery: $reason")
-                    Toast.makeText(applicationContext, "Failed to stop discovery", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "탐색에 실패했습니다.", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -166,15 +182,23 @@ class MainActivity : ComponentActivity() {
         if (checkPermission()) {
             wifiP2pManager.connect(channel, config, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                    Toast.makeText(applicationContext,
+                    val toast = Toast.makeText(
+                        applicationContext,
                         "연결 시도 중...",
-                        Toast.LENGTH_SHORT).show()
+                        Toast.LENGTH_SHORT
+                    )
+                    toast.setGravity(Gravity.CENTER, 0, 0)  // 화면 중앙에 표시
+                    toast.show()
                 }
 
                 override fun onFailure(reason: Int) {
-                    Toast.makeText(applicationContext,
+                    val toast = Toast.makeText(
+                        applicationContext,
                         "연결 실패: $reason",
-                        Toast.LENGTH_SHORT).show()
+                        Toast.LENGTH_SHORT
+                    )
+                    toast.setGravity(Gravity.CENTER, 0, 0)  // 화면 중앙에 표시
+                    toast.show()
                 }
             })
         }
@@ -195,9 +219,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello, $name!",
+        text = name,
         modifier = modifier,
-        fontSize = 24.sp,
+        fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
         fontFamily = pretendard,
         style = TextStyle(
@@ -232,10 +256,10 @@ fun ButtonText(text: String, modifier: Modifier = Modifier) {
 fun DeviceInfo(name: String, address: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .background(
-                color = Color.DarkGray,
-                shape = RoundedCornerShape(8.dp)
-            )
+//            .background(
+//                color = Color.DarkGray,
+//                shape = RoundedCornerShape(8.dp)
+//            )
             .padding(8.dp)  // 외부 여백
     ) {
         Text(
@@ -260,56 +284,102 @@ fun DeviceInfo(name: String, address: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun DiscoveryIndicator(isDiscovering: Boolean, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(12.dp)
+            .background(
+                color = if (isDiscovering) Color.Green else Color.Gray,
+                shape = CircleShape
+            )
+    )
+}
+
+@Composable
 fun CustomizedUI(
     startDiscovery: () -> Unit,
     stopDiscovery: () -> Unit,
     peers: List<WifiP2pDevice>,
     onPeerClick: (WifiP2pDevice) -> Unit,
+    isDiscovering: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Greeting("ROHKEE")
-
-        Button(onClick = { startDiscovery() },
-            modifier = Modifier.padding(top = 16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Green
-            )
-        ) {
-            WorkbenchTheme {
-                ButtonText("Start Discovery")
-            }
-        }
-
-        Button(
-            onClick = { stopDiscovery() },
-            modifier = Modifier.padding(top = 4.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.LightGray
-            ),
-            shape = RoundedCornerShape(5.dp)  // 모서리 반경 설정
-        ) {
-            WorkbenchTheme {
-                ButtonText("Stop Discovery")
-            }
-        }
-
         LazyColumn(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+//                .background(Color.DarkGray)  // 배경색 지정
+                .padding(horizontal = 16.dp)
         ) {
-            items(peers) { device ->
-                WorkbenchTheme {
-                    DeviceInfo(
-                        device.deviceName,
-                        device.deviceAddress,
-                        modifier = Modifier
-                            .clickable { onPeerClick(device) }
-                            .padding(4.dp)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Start,  // 왼쪽 정렬로 변경
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DiscoveryIndicator(
+                        isDiscovering = isDiscovering,
+                        modifier = Modifier.padding(all = 8.dp)
                     )
+                    Text(
+                        text = if (isDiscovering) "연결 가능한 장치" else "버튼을 눌러 주변 장치를 탐색하세요.",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = pretendard,
+                        style = TextStyle(
+                            color = Color.White
+                        )
+                    )
+                }
+            }
+
+            items(peers) { device ->
+                DeviceInfo(
+                    device.deviceName,
+                    device.deviceAddress,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onPeerClick(device) }
+                        .padding(vertical = 4.dp)
+                )
+            }
+        }
+
+        // 하단 고정 영역
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(vertical = 16.dp)
+        ) {
+            Greeting("ROHKEE")
+
+            Button(
+                onClick = { startDiscovery() },
+                modifier = Modifier.padding(top = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Green
+                )
+            ) {
+                WorkbenchTheme {
+                    ButtonText("탐색 시작")
+                }
+            }
+
+            Button(
+                onClick = { stopDiscovery() },
+                modifier = Modifier.padding(top = 4.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.LightGray
+                ),
+                shape = RoundedCornerShape(5.dp)
+            ) {
+                WorkbenchTheme {
+                    ButtonText("탐색 종료")
                 }
             }
         }
