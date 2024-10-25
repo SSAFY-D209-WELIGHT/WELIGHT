@@ -40,6 +40,11 @@
 ### [API 명세서](https://www.notion.so/API-11fbac06e4158105be83c18f00e40f1e)
 - 진행중
 
+### [와이어 프레임](https://www.figma.com/design/oY83O7wlWBWJLawbvyFPMz/%EC%9C%84%EB%9D%BC%EC%9D%B4%ED%8A%B8?node-id=0-1&t=GfaJvnybQklZj8xy-1)
+- 메인
+
+    <img src="images/wireframe_main.png" width="30%" height="30%">
+
 ### [ERD](https://www.erdcloud.com/d/4EnaWu3u29DjWuNTc)
 - [문서](https://www.notion.so/ERD-11fbac06e41581eeb357e3e4574e5228)
 ![alt text](images/erdcloud.png)
