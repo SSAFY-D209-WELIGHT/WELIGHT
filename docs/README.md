@@ -45,6 +45,24 @@
 
     <img src="images/wireframe_main.png" width="30%" height="30%">
 
+- 핵심 기능(응원 디스플레이 생성)
+
+    <img src="images/wireframe_func_lightstick_create.png" width="30%" height="30%">
+    <img src="images/wireframe_func_lightstick_create2.png" width="30%" height="30%">
+
+    <img src="images/wireframe_func_lightstick_create_text.png" width="30%" height="30%">
+    <img src="images/wireframe_func_lightstick_create_image.png" width="30%" height="30%">
+    <img src="images/wireframe_func_lightstick_create_background.png" width="30%" height="30%">
+
+- 핵심 기능(게시판)
+
+    <img src="images/wireframe_func_content_board.png" width="30%" height="30%">
+
+- 핵심 기능(단체 응원)
+
+    <img src="images/wireframe_func_group_create.png" width="30%" height="30%">
+    <img src="images/wireframe_func_group_search.png" width="30%" height="30%">
+
 ### [ERD](https://www.erdcloud.com/d/4EnaWu3u29DjWuNTc)
 - [문서](https://www.notion.so/ERD-11fbac06e41581eeb357e3e4574e5228)
 ![alt text](images/erdcloud.png)
