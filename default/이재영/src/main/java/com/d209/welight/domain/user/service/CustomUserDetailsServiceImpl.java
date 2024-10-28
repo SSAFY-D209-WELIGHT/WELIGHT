@@ -72,7 +72,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     public void createUser
             (FormSignUpRequestDTO request, MultipartFile image) throws IOException {
 
-        String imgUrl = "https://myd211s3bucket.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
+        String imgUrl = "https://ljycloud.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
 
         if(image != null && !image.isEmpty())
             imgUrl = s3Service.uploadS3(image, "profileImg");
@@ -82,7 +82,6 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
                 .userPassword(passwordEncoder.encode(request.getUserPassword()))
                 .userNickname(request.getUserNickname())
                 .userProfileImg(imgUrl)
-                .userRefreshToken("")
                 .userLogin("Form")
                 .userIsAdmin(request.isUserIsAdmin())
                 .userSignupDate(LocalDateTime.now())
@@ -98,7 +97,6 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
                 .userPassword(passwordEncoder.encode(""))
                 .userNickname(request.getUserNickname())
                 .userProfileImg(image)
-                .userRefreshToken("")
                 .userLogin(request.getUserLogin())
                 .userIsAdmin(false)
                 .userSignupDate(LocalDateTime.now())

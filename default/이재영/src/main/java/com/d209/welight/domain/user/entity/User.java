@@ -50,9 +50,9 @@ public class User implements UserDetails {
     @Schema(description = "회원 관리자 유무", example = "false")
     private boolean userIsAdmin;
 
-    @Column(name = "user_refreshtoken", nullable = false)
-    @Schema(description = "회원 refreshToken", example = "ex7534487435468~~")
-    private String userRefreshToken;
+//    @Column(name = "user_refreshtoken", nullable = false)
+//    @Schema(description = "회원 refreshToken", example = "ex7534487435468~~")
+//    private String userRefreshToken;
 
     @Column(name = "user_signup_date")
     @Schema(description = "회원 가입 일자", example = "2024.09.12 14:00:00")
