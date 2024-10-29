@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rohkee.core.ui.theme.Pretendard
 
 /**
  * 보관함 화면
@@ -78,6 +79,7 @@ fun CreateDisplayButton(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 text = "추가",
                 textAlign = TextAlign.Center,
+                style = Pretendard.Medium20
             )
         }
     }
