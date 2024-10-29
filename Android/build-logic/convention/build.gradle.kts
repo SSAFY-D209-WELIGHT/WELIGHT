@@ -2,8 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `kotlin-dsl`
-    id("java-library")
-    alias(libs.plugins.jetbrains.kotlin.jvm)
 }
 
 java {
@@ -32,9 +30,13 @@ gradlePlugin{
             id = "rokhee.android.library"
             implementationClass = "AndroidLibraryConventionPlugin"
         }
-        register("androidComposeConventionPlugin"){
-            id = "rokhee.android.compose"
-            implementationClass = "ComposeConventionPlugin"
+        register("androidApplicationComposeConventionPlugin"){
+            id = "rokhee.android.application.compose"
+            implementationClass = "AndroidApplicationComposeConventionPlugin"
+        }
+        register("androidLibraryComposeConventionPlugin"){
+            id = "rokhee.android.library.compose"
+            implementationClass = "AndroidLibraryComposeConventionPlugin"
         }
         register("androidHiltConventionPlugin"){
             id = "rokhee.android.hilt"

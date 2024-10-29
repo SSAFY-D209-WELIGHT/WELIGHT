@@ -121,5 +121,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 # custom plugins
 module-android-application = { id = "rokhee.android.application", version = "unspecified" }
 module-android-library = { id = "rokhee.android.library", version = "unspecified" }
+module-android-application-compose = { id = "rokhee.android.application.compose", version = "unspecified" }
+module-android-library-compose = { id = "rokhee.android.library.compose", version = "unspecified" }
 module-hilt = { id = "rokhee.android.hilt", version = "unspecified" }
-module-compose = { id = "rokhee.android.compose", version = "unspecified" }
+android-library = { id = "com.android.library", version.ref = "agp" }
