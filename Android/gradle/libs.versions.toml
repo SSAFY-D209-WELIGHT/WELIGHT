@@ -48,6 +48,8 @@ coil = "2.7.0"
 
 # timber
 timber = "5.0.1"
+appcompatVersion = "1.7.0"
+materialVersion = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -105,6 +107,8 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 
 # timber
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompatVersion" }
+material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 
 [bundles]
 android-core = [ "androidx-core-ktx", "junit", "androidx-junit", "androidx-espresso-core" ]
@@ -123,3 +127,4 @@ module-android-application = { id = "rokhee.android.application", version = "uns
 module-android-library = { id = "rokhee.android.library", version = "unspecified" }
 module-hilt = { id = "rokhee.android.hilt", version = "unspecified" }
 module-compose = { id = "rokhee.android.compose", version = "unspecified" }
+android-library = { id = "com.android.library", version.ref = "agp" }
