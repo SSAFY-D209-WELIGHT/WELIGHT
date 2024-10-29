@@ -1,31 +1,25 @@
 package com.d209.welight.domain.display.entity;
-
+import com.d209.welight.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
-@Setter
-@Getter
-@Builder
+@Table(name = "DISPLAY_LIKE")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "DISPLAY_LIKE")
 public class DisplayLike {
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "DISPLAY_UID")
+    private Display display;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Add a primary key column if needed
+    @ManyToOne
+    @JoinColumn(name = "USER_UID")
+    private User user;
 
-    @Column(name = "DISPLAY_UID", nullable = false)
-    private Long displayUid;
-
-    @Column(name = "USER_UID", nullable = false)
-    private Long userUid;
-
-    @Column(name = "LIKE_CREATED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date likeCreatedAt;
-
+    @Column(nullable = false)
+    private LocalDateTime likeCreatedAt = LocalDateTime.now();
 }

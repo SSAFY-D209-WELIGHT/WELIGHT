@@ -2,29 +2,37 @@ package com.d209.welight.domain.display.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
-@Setter
-@Getter
-@Builder
+@Table(name = "DISPLAY_TEXT")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "DISPLAY_TEXT")
 public class DisplayText {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "DISPLAY_TEXT_UID")
     private Long displayTextUid;
 
-    @Column(name = "DISPLAY_UID", nullable = false)
-    private Long displayUid;
+    @ManyToOne
+    @JoinColumn(name = "DISPLAY_UID", nullable = false)
+    private Display display;
 
-    @Column(name = "DISPLAY_TEXT", nullable = false)
-    private String displayText;
+    @Column(nullable = false)
+    private String displayTextDetail;
 
-    @Column(name = "DISPLAY_TEXT_CREATED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date displayTextCreatedAt;
+    @Column(nullable = false)
+    private String displayTextColor;
+
+    @Column(nullable = false)
+    private String displayTextFont;
+
+    @Column(nullable = false)
+    private Float displayTextRotation;
+
+    @Column(nullable = false)
+    private String displayTextPosition;
+
+    @Column(nullable = false)
+    private LocalDateTime displayTextCreatedAt = LocalDateTime.now();
 }

@@ -2,29 +2,25 @@ package com.d209.welight.domain.display.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
-@Setter
-@Getter
-@Builder
+@Table(name = "DISPLAY_BACKGROUND")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "DISPLAY_BACKGROUND")
 public class DisplayBackground {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "DISPLAY_BACKGROUND_UID")
     private Long displayBackgroundUid;
 
-    @Column(name = "DISPLAY_UID", nullable = false)
-    private Long displayUid;
+    @OneToOne
+    @JoinColumn(name = "DISPLAY_UID", nullable = false)
+    private Display display;
 
-    @Column(name = "DISPLAY_BACKGROUND_INFO", nullable = false)
-    private String displayBackgroundInfo;
+    @Column(nullable = false)
+    private Float displayBackgroundBrightness;
 
-    @Column(name = "DISPLAY_BACKGROUND_CREATED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date displayBackgroundCreatedAt;
+    @Column(nullable = false)
+    private LocalDateTime displayBackgroundCreatedAt = LocalDateTime.now();
 }

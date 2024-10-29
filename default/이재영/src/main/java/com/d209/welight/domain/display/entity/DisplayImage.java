@@ -5,26 +5,25 @@ import lombok.*;
 
 import java.util.Date;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Getter
-@Setter
-@Builder
 @Table(name = "DISPLAY_IMAGE")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "DISPLAY_IMG_UID")
     private Long displayImgUid;
 
-    @Column(name = "DISPLAY_UID", nullable = false)
-    private Long displayUid;
+    @ManyToOne
+    @JoinColumn(name = "DISPLAY_UID", nullable = false)
+    private Display display;
 
-    @Column(name = "DISPLAY_IMG_URL", nullable = false)
+    @Column(nullable = false)
     private String displayImgUrl;
 
-    @Column(name = "DISPLAY_IMG_CREATED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date displayImgCreatedAt;
+    @Column(nullable = false)
+    private LocalDateTime displayImgCreatedAt = LocalDateTime.now();
 }

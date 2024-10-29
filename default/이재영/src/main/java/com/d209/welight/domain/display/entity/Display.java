@@ -1,47 +1,42 @@
 package com.d209.welight.domain.display.entity;
 
+import com.d209.welight.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
-@Setter
-@Getter
-@Builder
 @Table(name = "DISPLAY")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Display {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "DISPLAY_UID")
     private Long displayUid;
 
-    @Column(name = "CREATOR_UID", nullable = false)
-    private Long creatorUid;
+    @ManyToOne
+    @JoinColumn(name = "CREATOR_UID", nullable = false)
+    private User creator;
 
-    @Column(name = "DISPLAY_NAME", nullable = false)
+    @Column(nullable = false)
     private String displayName;
 
-    @Column(name = "DISPLAY_THUMBNAIL_URL", nullable = false)
+    @Column(nullable = false)
     private String displayThumbnailUrl;
 
-    @Column(name = "DISPLAY_IS_POSTED", nullable = false)
+    @Column(nullable = false)
     private Boolean displayIsPosted;
 
-    @Column(name = "DISPLAY_CREATED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date displayCreatedAt;
+    @Column(nullable = false)
+    private LocalDateTime displayUpdatedAt;
 
-    @Column(name = "DISPLAY_UPDATED_AT", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date displayUpdatedAt;
+    @Column(nullable = false)
+    private LocalDateTime displayCreatedAt;
 
-    @Column(name = "DISPLAY_DOWNLOAD_COUNT", nullable = false)
-    private Long displayDownloadCount;
+    @Column(nullable = false)
+    private Long displayDownloadCount = 0L;
 
-    @Column(name = "DISPLAY_LIKE_COUNT", nullable = false)
-    private Long displayLikeCount;
-
+    @Column(nullable = false)
+    private Long displayLikeCount = 0L;
 }
