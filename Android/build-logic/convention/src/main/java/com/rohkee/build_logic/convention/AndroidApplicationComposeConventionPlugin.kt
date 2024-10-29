@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
+import com.rohkee.build_logic.convention.extension.configureAndroidCompose
 import com.rohkee.build_logic.convention.extension.configureKotlinAndroid
 import com.rohkee.build_logic.convention.extension.libs
 import org.gradle.api.Plugin
@@ -7,7 +8,7 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
-class AndroidApplicationConventionPlugin : Plugin<Project> {
+class AndroidApplicationComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             apply(plugin = "com.android.application")
@@ -16,6 +17,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             configure<ApplicationExtension>{
                 configureKotlinAndroid(this)
                 defaultConfig.targetSdk = 34
+                configureAndroidCompose(this)
             }
 
             dependencies {
