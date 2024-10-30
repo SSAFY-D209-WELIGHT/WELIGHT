@@ -1,0 +1,49 @@
+spring:
+  main:
+    web-application-type: servlet
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+
+  profiles:
+    include: s3, db
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # 스키마 자동 생성 전략 (update, create, create-drop 등)
+    show-sql: true  # SQL 쿼리 로깅 여부
+    properties:
+      hibernate:
+        format_sql: true  # SQL 쿼리 포맷팅 여부
+
+cors:
+#  allowed-origins: 'https://j11d211.p.ssafy.io'
+  allowed-origins: 'https://localhost:8080'
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: '*'
+  max-age: 3600
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    root: INFO    # 전체 애플리케이션의 기본 로그 레벨 설정
+    com.d209.welight: DEBUG   # 특정 패키지에 대한 로그 레벨 설정
+    org.springframework.web: INFO   # 스프링 웹 관련 로그 레벨 설정
+
+# JWT
+jwt:
+  secret-key: ssafy+gumi02+D209+welight+jwt+ssafy+gumi02+D209+welight+jwt+secretkey
+  access-token:
+     expiretime: 3600000 # 1시간
+#    expiretime: 2592000000 # 30일
+  refresh-token:
+    expiretime: 2592000000 # 30일
+
