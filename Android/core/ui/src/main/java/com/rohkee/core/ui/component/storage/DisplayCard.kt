@@ -22,6 +22,9 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import com.rohkee.core.ui.theme.AppColor
 
+/**
+ * UI 상태를 저정하는 클래스
+ */
 @Immutable
 data class DisplayCardState(
     val cardId: Long,
