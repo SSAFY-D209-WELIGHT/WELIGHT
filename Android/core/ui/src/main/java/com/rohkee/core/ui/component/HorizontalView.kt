@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.storage.component
+package com.rohkee.core.ui.component
 
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize

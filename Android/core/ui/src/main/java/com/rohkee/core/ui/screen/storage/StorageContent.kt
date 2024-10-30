@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.storage
+package com.rohkee.core.ui.screen.storage
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

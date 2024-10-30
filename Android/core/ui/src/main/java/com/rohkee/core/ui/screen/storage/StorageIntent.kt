@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.storage
+package com.rohkee.core.ui.screen.storage
 
 /**
  * 보관함 액션
