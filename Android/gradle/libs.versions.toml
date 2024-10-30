@@ -111,6 +111,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 
 [bundles]
+network = ["retrofit", "okhttp-logging-interceptor", "gson", "kotlinx-serialization-json", "kotlinx-serialization-converter", "kotlinx-serialization-core"]
+serialization = ["kotlinx-serialization-json", "kotlinx-serialization-converter", "kotlinx-serialization-core"]
 android-core = [ "androidx-core-ktx", "junit", "androidx-junit", "androidx-espresso-core" ]
 
 [plugins]
