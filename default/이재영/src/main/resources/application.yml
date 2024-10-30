@@ -40,10 +40,10 @@ logging:
 
 # JWT
 jwt:
-  secret-key: ssafy+gumi02+D209+welight+ssafy+gumi02+D209+welight+jwt+secretkey
+  secret-key: ssafy+gumi02+D209+welight+jwt+ssafy+gumi02+D209+welight+jwt+secretkey
   access-token:
-    # expiretime: 3600000 # 1시간
-    expiretime: 2592000000 # 30일
+     expiretime: 3600000 # 1시간
+#    expiretime: 2592000000 # 30일
   refresh-token:
     expiretime: 2592000000 # 30일
 

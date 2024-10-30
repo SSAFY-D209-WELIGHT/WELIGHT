@@ -63,5 +63,13 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi displayApi() {
+        return GroupedOpenApi.builder()
+                .group("Display")
+                .pathsToMatch("/display/**")
+                .build();
+    }
+
 }
 

@@ -77,10 +77,13 @@ public class JwtTokenTokenServiceImpl implements JwtTokenService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 userName으로 사용자를 찾을 수 없습니다."));
 
         // 기존 객체의 리프레시 토큰만 업데이트
-        user.setUserRefreshToken(newRefreshToken);
+//        user.setUserRefreshToken(newRefreshToken);
 
         // 업데이트한 회원 저장
-        userRepository.save(user);
+//        userRepository.save(user);
+
+        // redis에 저장
+        redisService.saveRefreshToken(userName, newRefreshToken);
     }
 
     @Override
