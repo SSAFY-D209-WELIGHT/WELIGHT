@@ -3,6 +3,7 @@ package com.d209.welight.domain.user.service;
 import com.d209.welight.domain.user.dto.request.FormLoginRequestDTO;
 import com.d209.welight.domain.user.dto.request.SocialLoginRequestDTO;
 import com.d209.welight.domain.user.dto.response.UserInfoResponseDTO;
+import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.global.util.jwt.JwtToken;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,5 +35,7 @@ public interface UserService {
 
     // userNickname을 닉네임 중복 체크
     boolean chkuserId(String userId);
+
+    User findByUserId(String userId) throws Exception;
 
 }

@@ -3,15 +3,11 @@ package com.d209.welight.domain.display.service;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
-import com.d209.welight.domain.display.entity.Display;
-import com.d209.welight.domain.display.entity.DisplayBackground;
-import com.d209.welight.domain.display.entity.DisplayColor;
-import com.d209.welight.domain.display.entity.DisplayImage;
-import com.d209.welight.domain.display.entity.DisplayTag;
-import com.d209.welight.domain.display.entity.DisplayText;
+import com.d209.welight.domain.display.entity.*;
 import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +29,7 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayTextRepository displayTextRepository;
     private final DisplayBackgroundRepository displayBackgroundRepository;
     private final DisplayColorRepository displayColorRepository;
+    private final DisplayStorageRepository displayStorageRepository;
     private final UserRepository userRepository;
 
     /**
@@ -176,6 +173,31 @@ public class DisplayServiceImpl implements DisplayService {
         } catch (Exception e) {
             throw new RuntimeException("디스플레이 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void downloadDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // 2. 이미 이 회원이 이 display를 저장했는지 확인
+        if (displayStorageRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityExistsException("이미 저장한 디스플레이입니다.");
+        }
+
+        // displayStorage 생성
+        // 3. displayStorage 생성 및 저장
+        DisplayStorage displayStorage = DisplayStorage.builder()
+                .user(user)
+                .display(display)
+                .downloadAt(LocalDateTime.now())
+                .isFavorites(false)
+                .favoritesAt(null)
+                .build();
+
+        displayStorageRepository.save(displayStorage);
+
     }
 
 }

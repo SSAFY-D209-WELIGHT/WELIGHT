@@ -4,6 +4,7 @@ import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
+import com.d209.welight.domain.user.entity.User;
 
 public interface DisplayService {
 
@@ -12,4 +13,7 @@ public interface DisplayService {
 
     // 디스플레이 상세 보기
     DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request);
+
+    // 디스플레이 다운로드 (저장소)
+    void downloadDisplay(User user, long displayUid);
 }

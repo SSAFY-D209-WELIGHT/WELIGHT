@@ -1,12 +1,16 @@
 package com.d209.welight.domain.display.controller;
 
+import com.d209.welight.domain.user.entity.User;
+import com.d209.welight.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityExistsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import com.d209.welight.domain.display.service.DisplayService;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
@@ -24,6 +28,7 @@ import jakarta.validation.Valid;
 @Tag(name = "디스플레이 컨트롤러", description = "디스플레이 관련 기능 수행")
 public class DisplayController {
 
+    private final UserService userService;
     private final DisplayService displayService;
 
     @PostMapping
@@ -67,4 +72,24 @@ public class DisplayController {
         }
     }
 
+    @PostMapping("/{displayUid}/download")
+    @Operation(summary = "디스플레이 다운로드", description = "디스플레이를 저장소에 저장합니다.")
+    public ResponseEntity<?> downloadDisplay(Authentication authentication,
+                                              @PathVariable("displayUid") long displayUid) throws Exception{
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            displayService.downloadDisplay(user, displayUid);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
+            return ResponseEntity.notFound().build();
+        } catch(EntityExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
