@@ -1,8 +1,16 @@
 package com.rohkee.core.ui.screen.storage
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.rohkee.core.ui.component.storage.CreateDisplayButton
+import com.rohkee.core.ui.component.storage.DisplayCard
+import com.rohkee.core.ui.component.storage.DisplayCardState
+import com.rohkee.core.ui.component.storage.InfiniteHorizontalPager
+import com.rohkee.core.ui.component.storage.NoContentCard
 
 /**
  * 보관함 화면
@@ -16,17 +24,63 @@ fun StorageContent(
     Column(modifier = modifier) {
         when (state) {
             is StorageState.Loading -> {
+                LoadingContent(modifier = Modifier.weight(1f))
             }
 
             is StorageState.Loaded -> {
+                LoadedContent(
+                    modifier = Modifier.weight(1f),
+                    state = state,
+                    onIntent = onIntent,
+                )
             }
 
             is StorageState.NoData -> {
+                NoContent(modifier = Modifier.weight(1f))
             }
 
             is StorageState.Error -> {
+                LoadingContent(modifier = Modifier.weight(1f))
             }
         }
+        CreateDisplayButton(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+        )
     }
 }
 
+@Composable
+private fun LoadingContent(modifier: Modifier = Modifier) {
+    InfiniteHorizontalPager(
+        modifier = modifier,
+        pageCount = 3,
+    ) {
+        DisplayCard(state = DisplayCardState(cardId = 0))
+    }
+}
+
+@Composable
+private fun LoadedContent(
+    modifier: Modifier = Modifier,
+    state: StorageState.Loaded,
+    onIntent: (StorageIntent) -> Unit = {},
+) {
+    InfiniteHorizontalPager(
+        modifier = modifier,
+        pageCount = 3,
+    ) { index ->
+        DisplayCard(
+            state = state.displayList[index],
+            onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = state.displayList[index].cardId)) },
+        )
+    }
+}
+
+@Composable
+private fun NoContent(modifier: Modifier = Modifier) {
+    NoContentCard(modifier = modifier)
+}
