@@ -1,6 +1,8 @@
 package com.d209.welight.domain.display.service;
 
+import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
+import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.entity.Display;
 import com.d209.welight.domain.display.entity.DisplayBackground;
 import com.d209.welight.domain.display.entity.DisplayColor;
@@ -8,16 +10,21 @@ import com.d209.welight.domain.display.entity.DisplayImage;
 import com.d209.welight.domain.display.entity.DisplayTag;
 import com.d209.welight.domain.display.entity.DisplayText;
 import com.d209.welight.domain.display.repository.*;
+import com.d209.welight.domain.user.entity.User;
+import com.d209.welight.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DisplayServiceImpl implements DisplayService {
 
     private final DisplayRepository displayRepository;
@@ -26,6 +33,7 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayTextRepository displayTextRepository;
     private final DisplayBackgroundRepository displayBackgroundRepository;
     private final DisplayColorRepository displayColorRepository;
+    private final UserRepository userRepository;
 
     /**
      * 새로운 디스플레이를 생성합니다.
@@ -33,7 +41,6 @@ public class DisplayServiceImpl implements DisplayService {
      * @return DispalayCreateReponse
      */
     @Override
-    @Transactional
     public DisplayCreateResponse createDisplay(DisplayCreateRequest request) {
         try {
             // 1. Display 엔티티 생성
@@ -135,4 +142,40 @@ public class DisplayServiceImpl implements DisplayService {
             throw new RuntimeException("디스플레이 생성 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
+
+    @Override
+    public DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request) {
+        try {
+            //Display 존재 여부 확인
+            Display display = displayRepository.findById(request.getDisplayUid())
+                    .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+            // 태그 정보 조회
+            List<DisplayTag> tags = displayTagRepository.findByDisplay(display);
+
+            // 제작자 정보 조회 (User 테이블에서)
+            String creatorId = userRepository.findById(display.getCreatorUid())
+                    .map(User::getUserId) // User가 존재하면 UserId 반환
+                    .orElse("존재하지 않는 아이디"); // User가 없으면 기본 메시지 반환
+
+            // 현재 인증된 사용자의 ID와 디스플레이 소유자 ID 비교
+            boolean isOwner = display.getCreatorUid().equals(request.getUserId());
+
+            // 4. Response 객체 생성 및 반환
+            return DisplayDetailResponse.builder()
+                    .creatorId(Long.valueOf(creatorId))
+                    .displayName(display.getDisplayName())
+                    .displayThumbnailUrl(display.getDisplayThumbnailUrl())
+                    .displayIsPosted(display.getDisplayIsPosted())
+                    .tags(tags.stream()
+                            .map(DisplayTag::getDisplayTagText)
+                            .collect(Collectors.toList()))
+                    .isOwner(isOwner)
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("디스플레이 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
 }
