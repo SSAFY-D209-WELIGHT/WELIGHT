@@ -1,5 +1,7 @@
 package com.rohkee.core.ui.screen.storage
 
+import com.rohkee.core.ui.component.storage.DisplayCardState
+
 /**
  * 보관함 화면 상태
  */
@@ -14,7 +16,7 @@ sealed interface StorageState {
      * 저장된 응원도구가 존재
      */
     data class Loaded(
-        val imgUrls: List<String>,
+        val displayList: List<DisplayCardState>,
     ) : StorageState
 
     /**
