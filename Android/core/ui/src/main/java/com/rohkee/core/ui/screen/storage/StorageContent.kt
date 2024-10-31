@@ -1,10 +1,13 @@
 package com.rohkee.core.ui.screen.storage
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.component.storage.CreateDisplayButton
 import com.rohkee.core.ui.component.storage.DisplayCard
@@ -21,7 +24,11 @@ fun StorageContent(
     state: StorageState,
     onIntent: (StorageIntent) -> Unit = {},
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         when (state) {
             is StorageState.Loading -> {
                 LoadingContent(modifier = Modifier.weight(1f))
@@ -82,5 +89,22 @@ private fun LoadedContent(
 
 @Composable
 private fun NoContent(modifier: Modifier = Modifier) {
-    NoContentCard(modifier = modifier)
+    InfiniteHorizontalPager(
+        modifier = modifier,
+        pageCount = 3,
+    ) {
+        NoContentCard(modifier = modifier)
+    }
+}
+
+@Preview
+@Composable
+private fun StorageContentPreview() {
+    StorageContent(state = StorageState.Loading)
+}
+
+@Preview
+@Composable
+private fun StorageNoContentPreview() {
+    StorageContent(state = StorageState.NoData)
 }
