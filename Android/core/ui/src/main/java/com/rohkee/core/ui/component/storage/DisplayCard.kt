@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -16,11 +15,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import com.rohkee.core.ui.theme.AppColor
+import com.rohkee.core.ui.util.animateGradientBackground
 
 /**
  * UI 상태를 저정하는 클래스
@@ -37,29 +38,36 @@ fun DisplayCard(
     modifier: Modifier = Modifier,
     state: DisplayCardState,
     onCardSelected: () -> Unit = {},
-    onFavoriteSelected: (selected: Boolean) -> Unit = {},
 ) {
     var imageState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
 
-    Box(modifier = modifier
-        .clip(RoundedCornerShape(16.dp))
-        .clickable { onCardSelected() }
-        .background(color = AppColor.Surface)
+    Box(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { onCardSelected() }
+                .background(color = AppColor.Surface),
     ) {
         AsyncImage(
+            modifier =
+            Modifier,
             model = state.imageSource,
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
             onLoading = { imageState = it },
             onSuccess = { imageState = it },
             onError = { imageState = it },
         )
         when (imageState) {
             is AsyncImagePainter.State.Loading, AsyncImagePainter.State.Empty -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppColor.Inactive,
-                )
+                Box(
+                    modifier =
+                        Modifier.fillMaxSize().animateGradientBackground(
+                            startColor = Color.Gray,
+                            endColor = Color.DarkGray,
+                        ),
+                ) {
+                }
             }
 
             is AsyncImagePainter.State.Error -> {
@@ -68,6 +76,21 @@ fun DisplayCard(
 
             else -> {}
         }
+    }
+}
+
+@Composable
+fun DisplayCardWithFavorite(
+    modifier: Modifier = Modifier,
+    state: DisplayCardState,
+    onCardSelected: () -> Unit = {},
+    onFavoriteSelected: (selected: Boolean) -> Unit = {},
+) {
+    Box(modifier = modifier) {
+        DisplayCard(
+            state = state,
+            onCardSelected = onCardSelected,
+        )
         FavoriteToggleButton(
             modifier =
                 Modifier
@@ -83,4 +106,10 @@ fun DisplayCard(
 @Composable
 private fun DisplayCardPreview() {
     DisplayCard(state = DisplayCardState(cardId = 0))
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DisplayCardWithFavoritePreview() {
+    DisplayCardWithFavorite(state = DisplayCardState(cardId = 0))
 }
