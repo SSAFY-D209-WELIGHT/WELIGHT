@@ -6,6 +6,7 @@ import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.LoginRequest
 import com.rohkee.core.network.model.TokenHolder
 import com.rohkee.core.network.repository.UserRepository
+import com.rohkee.core.network.util.simplify
 import javax.inject.Inject
 
 
