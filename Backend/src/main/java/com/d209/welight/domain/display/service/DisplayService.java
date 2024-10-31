@@ -1,9 +1,11 @@
 package com.d209.welight.domain.display.service;
 
+import org.springframework.data.domain.Pageable;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
+import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 
 public interface DisplayService {
 
@@ -12,4 +14,7 @@ public interface DisplayService {
 
     // 디스플레이 상세 보기
     DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request);
+
+    // 디스플레이 목록 조회
+    DisplayListResponse getDisplayList(Pageable pageable);
 }

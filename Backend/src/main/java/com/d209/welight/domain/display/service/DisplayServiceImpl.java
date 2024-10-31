@@ -18,9 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +50,7 @@ public class DisplayServiceImpl implements DisplayService {
                 .creatorUid(request.getCreatorUid())
                 .displayName(request.getDisplayName())
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
-                .displayIsPosted(false)  // 초기 생성시 게시되지 않은 상태
+                .displayIsPosted(request.getDisplayIsPosted())  // 초기 생성시 게시되지 않은 상태
                 .displayCreatedAt(LocalDateTime.now())
                 .displayUpdatedAt(LocalDateTime.now())
                 .displayDownloadCount(0L)
@@ -175,6 +177,27 @@ public class DisplayServiceImpl implements DisplayService {
 
         } catch (Exception e) {
             throw new RuntimeException("디스플레이 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public DisplayListResponse getDisplayList(Pageable pageable) {
+        try {
+            Page<Display> displays = displayRepository.findAllByDisplayIsPostedTrue(pageable);
+            
+            List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()
+                .map(display -> DisplayListResponse.DisplayInfo.builder()
+                    .displayId(display.getDisplayUid())
+                    .displayThumbnail(display.getDisplayThumbnailUrl())
+                    .build())
+                .collect(Collectors.toList());
+
+            return DisplayListResponse.builder()
+                .currentPage(pageable.getPageNumber())
+                .displays(displayInfos)
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException("디스플레이 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 

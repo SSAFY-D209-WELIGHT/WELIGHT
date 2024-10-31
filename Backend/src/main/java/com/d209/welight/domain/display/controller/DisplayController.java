@@ -1,7 +1,11 @@
 package com.d209.welight.domain.display.controller;
 
+import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +17,7 @@ import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
+import com.d209.welight.domain.display.type.SortType;
 
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.EntityNotFoundException;
@@ -44,16 +49,16 @@ public class DisplayController {
         }
     }
 
-    @GetMapping("/{displayUid}")
+    @GetMapping("/{displayId}")
     @Operation(summary = "디스플레이 상세 조회", description = "디스플레이 상세 정보를 조회합니다.")
     public ResponseEntity<DisplayDetailResponse> getDisplayDetail(
-            @PathVariable Long displayUid,
+            @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String userId = userDetails.getUsername(); // userId로 변경
 
             DisplayDetailRequest request = DisplayDetailRequest.builder()
-                    .displayUid(displayUid)
+                    .displayUid(displayId)
                     .userId(Long.parseLong(userId)) // userUid 대신 userId로 변경
                     .build();
 
@@ -65,6 +70,28 @@ public class DisplayController {
         } catch (Exception e) { // 예외 발생 시
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping
+    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회 가능 (최신순, 좋아요순, 다운로드순)")
+    public ResponseEntity<DisplayListResponse> getDisplayList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "LATEST") SortType sortType) {
+
+        Sort sort = switch (sortType) {
+            case LATEST -> Sort.by("displayCreatedAt").descending()
+                             .and(Sort.by("displayLikeCount").descending());
+            case LIKES -> Sort.by("displayLikeCount").descending()
+                             .and(Sort.by("displayCreatedAt").descending());
+            case DOWNLOADS -> Sort.by("displayDownloadCount").descending()
+                                 .and(Sort.by("displayCreatedAt").descending());
+        };
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        DisplayListResponse response = displayService.getDisplayList(pageable);
+
+        return ResponseEntity.ok(response);
     }
 
 }
