@@ -1,6 +1,7 @@
 package com.d209.welight.domain.display.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/display")
 @RequiredArgsConstructor
+@Tag(name = "디스플레이 컨트롤러", description = "디스플레이관련 기능 수행")
 public class DisplayController {
 
     private final DisplayService displayService;

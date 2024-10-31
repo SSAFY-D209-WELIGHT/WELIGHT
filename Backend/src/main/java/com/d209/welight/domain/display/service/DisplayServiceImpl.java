@@ -8,7 +8,6 @@ import com.d209.welight.domain.display.entity.DisplayImage;
 import com.d209.welight.domain.display.entity.DisplayTag;
 import com.d209.welight.domain.display.entity.DisplayText;
 import com.d209.welight.domain.display.repository.*;
-import com.d209.welight.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

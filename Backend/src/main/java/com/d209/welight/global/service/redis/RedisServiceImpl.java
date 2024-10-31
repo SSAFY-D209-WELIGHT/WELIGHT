@@ -3,10 +3,7 @@ package com.d209.welight.global.service.redis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

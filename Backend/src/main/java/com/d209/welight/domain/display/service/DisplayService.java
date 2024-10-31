@@ -2,7 +2,6 @@ package com.d209.welight.domain.display.service;
 
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
-import com.d209.welight.domain.display.entity.Display;
 
 public interface DisplayService {
 
