@@ -1,6 +1,7 @@
 package com.rohkee.core.ui.component.storage
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,15 +24,18 @@ import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 
 @Composable
-fun CreateDisplayButton(modifier: Modifier = Modifier) {
+fun CreateDisplayButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
     Box(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .background(
-                color = AppColor.Surface,
-                shape = RoundedCornerShape(16.dp),
-            ),
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = AppColor.Surface,
+                    shape = RoundedCornerShape(16.dp),
+                ).clickable { onClick() },
     ) {
         Row(
             modifier = Modifier.padding(8.dp),
@@ -40,13 +44,13 @@ fun CreateDisplayButton(modifier: Modifier = Modifier) {
             Surface(
                 modifier = Modifier.size(36.dp),
                 shape = CircleShape,
-                color = AppColor.Contrast
+                color = AppColor.Contrast,
             ) {
                 Icon(
                     modifier = Modifier.size(24.dp),
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    tint = AppColor.OnContrast
+                    tint = AppColor.OnContrast,
                 )
             }
 
@@ -55,7 +59,7 @@ fun CreateDisplayButton(modifier: Modifier = Modifier) {
                 text = "새로운 응원도구 만들기",
                 textAlign = TextAlign.Center,
                 color = AppColor.OnSurface,
-                style = Pretendard.Medium20
+                style = Pretendard.Medium20,
             )
         }
     }
