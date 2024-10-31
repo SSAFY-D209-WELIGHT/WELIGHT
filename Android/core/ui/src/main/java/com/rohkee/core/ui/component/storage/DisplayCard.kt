@@ -59,7 +59,8 @@ fun DisplayCard(
             onError = { imageState = it },
         )
         when (imageState) {
-            is AsyncImagePainter.State.Loading, AsyncImagePainter.State.Empty -> {
+            is AsyncImagePainter.State.Success -> {}
+            else -> {
                 Box(
                     modifier =
                         Modifier.fillMaxSize().animateGradientBackground(
@@ -69,12 +70,6 @@ fun DisplayCard(
                 ) {
                 }
             }
-
-            is AsyncImagePainter.State.Error -> {
-                // TODO: Error
-            }
-
-            else -> {}
         }
     }
 }
