@@ -1,4 +1,4 @@
-package com.rohkee.feat.storage.util
+package com.rohkee.core.ui.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

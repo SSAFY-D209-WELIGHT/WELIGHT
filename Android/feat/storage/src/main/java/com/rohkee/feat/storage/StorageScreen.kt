@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rohkee.core.ui.screen.storage.StorageContent
-import com.rohkee.feat.storage.util.collectWithLifecycle
+import com.rohkee.core.ui.util.collectWithLifecycle
 
 @Composable
 fun StorageScreen(
