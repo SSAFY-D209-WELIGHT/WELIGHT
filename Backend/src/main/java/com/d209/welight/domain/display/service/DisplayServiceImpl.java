@@ -3,22 +3,19 @@ package com.d209.welight.domain.display.service;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
-import com.d209.welight.domain.display.entity.Display;
-import com.d209.welight.domain.display.entity.DisplayBackground;
-import com.d209.welight.domain.display.entity.DisplayColor;
-import com.d209.welight.domain.display.entity.DisplayImage;
-import com.d209.welight.domain.display.entity.DisplayTag;
-import com.d209.welight.domain.display.entity.DisplayText;
+import com.d209.welight.domain.display.entity.*;
+import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
+import com.d209.welight.domain.display.entity.displaystorage.DisplayStorage;
 import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 
@@ -33,6 +30,8 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayTextRepository displayTextRepository;
     private final DisplayBackgroundRepository displayBackgroundRepository;
     private final DisplayColorRepository displayColorRepository;
+    private final DisplayStorageRepository displayStorageRepository;
+    private final DisplayLikeRepository displayLikeRepository;
     private final UserRepository userRepository;
 
     /**
@@ -176,6 +175,111 @@ public class DisplayServiceImpl implements DisplayService {
         } catch (Exception e) {
             throw new RuntimeException("디스플레이 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
+    }
+
+    /*
+    * 디스플레이 저장소 (다운로드, 삭제)
+    * */
+    @Override
+    public void downloadDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // 2. 이미 이 회원이 이 display를 저장했는지 확인
+        if (displayStorageRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityExistsException("이미 저장한 디스플레이입니다.");
+        }
+
+        // displayStorage 생성
+        // 3. displayStorage 생성 및 저장
+        DisplayStorage displayStorage = DisplayStorage.builder()
+                .user(user)
+                .display(display)
+                .downloadAt(LocalDateTime.now())
+                .isFavorites(false)
+                .favoritesAt(null)
+                .build();
+
+        displayStorageRepository.save(displayStorage);
+
+    }
+
+    @Override
+    public void deleteStoredDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        // 2. 저장된 디스플레이가 존재하는지 확인
+        if (!displayStorageRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.");
+        }
+
+        // 3. 저장소에서 삭제
+        displayStorageRepository.deleteByUserAndDisplay(user, display);
+    }
+
+    @Override
+    public void updateDisplayFavorite(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        // 2. 저장된 디스플레이가 존재하는지 확인
+        DisplayStorage storagedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
+                .orElseThrow(() -> new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다."));
+
+        // 3. 현재 상태의 반대로 변경
+        boolean newFavoriteStatus = !storagedDisplay.getIsFavorites();
+        storagedDisplay.setIsFavorites(newFavoriteStatus);
+
+        // 3-1. false -> true로 변경될 때만 시간 업데이트
+        if (newFavoriteStatus) {
+            storagedDisplay.setFavoritesAt(LocalDateTime.now());
+        }
+
+        displayStorageRepository.save(storagedDisplay);
+    }
+
+    @Override
+    public void doLikeDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // 2. 이미 이 회원이 이 display를 좋아요 했는지
+        if (displayLikeRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityExistsException("이미 좋아요를 누른 디스플레이입니다.");
+        }
+
+        // DisplayLike 생성
+        // 3. DisplayLike 생성 및 저장
+        DisplayLike displayLike = DisplayLike.builder()
+                .user(user)
+                .display(display)
+                .likeCreatedAt(LocalDateTime.now())
+                .build();
+        displayLikeRepository.save(displayLike);
+
+        // 4. Display의 Display_like_count 횟수 +1
+        display.setDisplayLikeCount(display.getDisplayLikeCount() + 1);
+        displayRepository.save(display);
+    }
+
+    public void cancelLikeDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        // 2. 저장된 디스플레이가 존재하는지 확인
+        if (!displayLikeRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityNotFoundException("좋아요한 디스플레이가 아닙니다.");
+        }
+
+        // 3. displayLike 삭제
+        displayLikeRepository.deleteByUserAndDisplay(user, display);
+
+        // 4. Display의 Display_like_count 횟수 -1
+        display.setDisplayLikeCount(display.getDisplayLikeCount() - 1);
+        displayRepository.save(display);
     }
 
 }

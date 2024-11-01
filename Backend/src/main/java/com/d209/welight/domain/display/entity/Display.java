@@ -14,6 +14,7 @@ import java.util.List;
 public class Display {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "DISPLAY_UID", columnDefinition = "BIGINT")
     private Long displayUid;
 
     @Column(name = "CREATOR_UID", nullable = false)

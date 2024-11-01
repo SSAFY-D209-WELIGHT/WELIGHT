@@ -196,5 +196,10 @@ public class UserServiceImpl implements UserService{
     public boolean chkuserId(String userId) {
         return userRepository.existsByUserId(userId);
     }
+
+    @Override
+    public User findByUserId(String userId) throws Exception {
+        return userRepository.findByUserId(userId).get();
+    }
 }
 
