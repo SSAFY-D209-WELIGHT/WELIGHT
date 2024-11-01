@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.controller;
 
+import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -169,5 +170,52 @@ public class DisplayController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    /*
+    * 댓글 (조회, 생성, 수정, 삭제)
+    * */
+    @GetMapping("/{displayId}/comment")
+    @Operation(summary = "댓글 목록 조회", description = "디스플레이의 모든 댓글을 조회합니다.")
+    public ResponseEntity<?> getComments(Authentication authentication,
+                                         @PathVariable("displayId") long displayUid) throws Exception {
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            return ResponseEntity.ok(displayService.getComments(user, displayUid));
+
+        } catch (EntityNotFoundException e) { // 디스플레이 없음
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+
+    @PostMapping("/{displayId}/comment")
+    @Operation(summary = "댓글 작성", description = "디스플레이에 새 댓글을 작성합니다.")
+    public ResponseEntity<?> createComment(
+            Authentication authentication,
+            @PathVariable("displayId") Long displayId,
+            @RequestBody @Valid DisplayCommentRequest requestDTO) {
+
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            requestDTO.setDisplayUid(displayId);
+            displayService.createComment(user, requestDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body("댓글 생성 완료");
+        } catch (EntityNotFoundException e) { // 디스플레이 없음
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
     }
 }

@@ -1,10 +1,15 @@
 package com.d209.welight.domain.display.service;
 
+import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
+import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
+import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.user.entity.User;
+
+import java.util.List;
 
 public interface DisplayService {
 
@@ -25,4 +30,9 @@ public interface DisplayService {
     void doLikeDisplay(User user, long displayUid);
     void cancelLikeDisplay(User user, long displayUid);
 
+    // 디스플레이 댓글
+    List<DisplayCommentResponse> getComments(User user, long displayUid);
+    void createComment(User user, DisplayCommentRequest request);
+    DisplayCommentResponse updateComment(User user, DisplayCommentUpdateRequest request);
+    void deleteComment(User user, Long commentUid);
 }
