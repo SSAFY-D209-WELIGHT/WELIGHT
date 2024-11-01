@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.rohkee.demo.ui.theme.WeLightTheme
+import com.rohkee.feat.login.screen.loginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,10 +22,7 @@ class MainActivity : ComponentActivity() {
             WeLightTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     // 여기다 추가
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    loginScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
