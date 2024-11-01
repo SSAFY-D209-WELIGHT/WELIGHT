@@ -175,6 +175,9 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    /*
+    * 디스플레이 저장소 (다운로드, 삭제)
+    * */
     @Override
     public void downloadDisplay(User user, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
@@ -198,6 +201,20 @@ public class DisplayServiceImpl implements DisplayService {
 
         displayStorageRepository.save(displayStorage);
 
+    }
+
+    @Override
+    public void deleteStoredDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        // 2. 저장된 디스플레이가 존재하는지 확인
+        if (!displayStorageRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.");
+        }
+
+        // 3. 저장소에서 삭제
+        displayStorageRepository.deleteByUserAndDisplay(user, display);
     }
 
 }

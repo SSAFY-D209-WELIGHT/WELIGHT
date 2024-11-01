@@ -14,6 +14,7 @@ public interface DisplayService {
     // 디스플레이 상세 보기
     DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request);
 
-    // 디스플레이 다운로드 (저장소)
+    // 디스플레이 저장소 - 다운로드, 삭제
     void downloadDisplay(User user, long displayUid);
+    void deleteStoredDisplay(User user, long displayUid);
 }

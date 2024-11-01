@@ -12,4 +12,5 @@ public interface DisplayStorageRepository extends JpaRepository<DisplayStorage, 
 
     // userUid와 displayUid로 DisplayStorage가 이미 존재하는지 확인
     boolean existsByUserAndDisplay(User user, Display display);
+    void deleteByUserAndDisplay(User user, Display display);
 }
