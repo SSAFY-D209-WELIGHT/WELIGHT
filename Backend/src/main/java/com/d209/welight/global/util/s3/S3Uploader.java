@@ -1,7 +1,11 @@
 package com.d209.welight.global.util.s3;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.d209.welight.global.exception.s3.S3FileNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -103,6 +107,43 @@ public class S3Uploader {
 
         // 새파일이 성공적으로 생성되지 않았다면, 비어있는 Optional 객체를 반환
         return Optional.empty();
+    }
+
+    public String copyAndRename(String sourceKey, String destKey, String userId) {
+        try {
+            // 1. S3에서 원본 이미지 가져오기
+            S3Object s3Object = amazonS3Client.getObject(bucket, sourceKey);
+
+            // 2. 메타데이터 설정
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("image/png");
+            metadata.setContentLength(s3Object.getObjectMetadata().getContentLength());
+
+            // 3. 새로운 키로 S3에 복사
+            amazonS3Client.putObject(new PutObjectRequest(
+                    bucket,
+                    destKey, // DisplayServiceImpl에서 생성한 경로를 그대로 사용
+                    s3Object.getObjectContent(),
+                    metadata
+            ));
+            // 4. 원본 S3Object 리소스 정리
+            s3Object.close();
+
+            // 5. 새로 저장된 이미지의 URL 반환
+            return amazonS3Client.getUrl(bucket, destKey).toString();
+
+        } catch (AmazonServiceException e) {
+            log.error("Amazon S3 복사 실패: {}", e.getMessage());
+            throw new RuntimeException("이미지 복사 중 S3 오류가 발생했습니다.");
+        } catch (IOException e) {
+            log.error("이미지 처리 실패: {}", e.getMessage());
+            throw new RuntimeException("이미지 스트림 처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    // URL에서 S3 키 추출하는 유틸리티 메서드
+    public String extractKeyFromUrl(String url) {
+        return url.substring(url.indexOf(".com/") + 5);
     }
 
     // 로컬에 저장된 파일 삭제

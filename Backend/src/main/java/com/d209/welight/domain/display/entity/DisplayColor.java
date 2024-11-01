@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "DISPLAY_COLOR")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayColor {

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "DISPLAY_TEXT")
 @Data
-
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayText {
@@ -34,6 +34,7 @@ public class DisplayText {
     @Column(nullable = false)
     private String displayTextPosition;
 
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime displayTextCreatedAt = LocalDateTime.now();
 }

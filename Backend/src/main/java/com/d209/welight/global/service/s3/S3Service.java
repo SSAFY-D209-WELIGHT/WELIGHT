@@ -13,4 +13,6 @@ public interface S3Service {
     // S3 파일 삭제
     void deleteS3(String fileUrl) throws Exception;
 
+    // 복사 및 이름 변경 업로드
+    String copyS3(String srcFileUrl, String destFileUrl, String userId) throws Exception;
 }

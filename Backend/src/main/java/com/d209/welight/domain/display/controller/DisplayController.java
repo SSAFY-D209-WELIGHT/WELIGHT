@@ -2,9 +2,13 @@ package com.d209.welight.domain.display.controller;
 
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
+import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityExistsException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,15 +21,18 @@ import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
+import com.d209.welight.domain.display.type.SortType;
 
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/display")
 @RequiredArgsConstructor
 @Tag(name = "디스플레이 컨트롤러", description = "디스플레이 관련 기능 수행")
+@Slf4j
 public class DisplayController {
 
     private final UserService userService;
@@ -49,17 +56,17 @@ public class DisplayController {
         }
     }
 
-    @GetMapping("/{displayUid}")
+    @GetMapping("/{displayId}")
     @Operation(summary = "디스플레이 상세 조회", description = "디스플레이 상세 정보를 조회합니다.")
     public ResponseEntity<DisplayDetailResponse> getDisplayDetail(
-            @PathVariable Long displayUid,
+            @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            String userId = userDetails.getUsername(); // userId로 변경
+            String userId = userDetails.getUsername(); // userId
 
             DisplayDetailRequest request = DisplayDetailRequest.builder()
-                    .displayUid(displayUid)
-                    .userId(Long.parseLong(userId)) // userUid 대신 userId로 변경
+                    .displayUid(displayId)
+                    .userId(userId) // userUid 대신 userId로 변경
                     .build();
 
             DisplayDetailResponse response = displayService.getDisplayDetail(request);
@@ -68,6 +75,71 @@ public class DisplayController {
         } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
             return ResponseEntity.notFound().build();
         } catch (Exception e) { // 예외 발생 시
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping
+    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회 (최신순, 좋아요순, 다운로드순)")
+    public ResponseEntity<DisplayListResponse> getDisplayList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "LATEST") SortType sortType) {
+
+        Sort sort = switch (sortType) {
+            case LATEST -> Sort.by("displayCreatedAt").descending()
+                             .and(Sort.by("displayLikeCount").descending());
+            case LIKES -> Sort.by("displayLikeCount").descending()
+                             .and(Sort.by("displayCreatedAt").descending());
+            case DOWNLOADS -> Sort.by("displayDownloadCount").descending()
+                                 .and(Sort.by("displayCreatedAt").descending());
+        };
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        DisplayListResponse response = displayService.getDisplayList(pageable);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/mylist")
+    @Operation(summary = "내 디스플레이 목록 조회", description = "현재 사용자가 제작한 디스플레이 목록 조회")
+    // 내가 다운로드한 리스트까지 함께 조회해야함!!!!
+    public ResponseEntity<DisplayListResponse> getMyDisplayList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "LATEST") SortType sortType,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Sort sort = switch (sortType) {
+            case LATEST -> Sort.by("displayCreatedAt").descending()
+                             .and(Sort.by("displayLikeCount").descending());
+            case LIKES -> Sort.by("displayLikeCount").descending()
+                             .and(Sort.by("displayCreatedAt").descending());
+            case DOWNLOADS -> Sort.by("displayDownloadCount").descending()
+                                 .and(Sort.by("displayCreatedAt").descending());
+        };
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        String userId = userDetails.getUsername();
+        DisplayListResponse response = displayService.getMyDisplayList(userId, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{displayId}/duplicate")
+    @Operation(summary = "디스플레이 복제", description = "선택한 디스플레이를 복제합니다.")
+    public ResponseEntity<String> duplicateDisplay(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            String userId = userDetails.getUsername();
+            Long newDisplayId = displayService.duplicateDisplay(displayId, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body("디스플레이 복제에 성공했습니다!, 복제된 디스플레이 Uid:"+ newDisplayId);
+        } catch (EntityNotFoundException e) {
+            log.error("디스플레이 복제 중 엔티티를 찾을 수 없음: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("디스플레이 복제 중 예상치 못한 오류 발생: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -171,3 +243,4 @@ public class DisplayController {
         }
     }
 }
+
