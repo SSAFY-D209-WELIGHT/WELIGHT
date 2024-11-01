@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.service;
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
@@ -12,11 +13,14 @@ import com.d209.welight.domain.display.entity.DisplayText;
 import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
+import com.d209.welight.global.service.s3.S3Service;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,7 +31,6 @@ import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DisplayServiceImpl implements DisplayService {
 
     private final DisplayRepository displayRepository;
@@ -37,6 +40,7 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayBackgroundRepository displayBackgroundRepository;
     private final DisplayColorRepository displayColorRepository;
     private final UserRepository userRepository;
+    private final S3Service s3Service;
 
     /**
      * 새로운 디스플레이를 생성합니다.
@@ -44,6 +48,7 @@ public class DisplayServiceImpl implements DisplayService {
      * @return DispalayCreateReponse
      */
     @Override
+    @Transactional
     public DisplayCreateResponse createDisplay(DisplayCreateRequest request) {
         try {
             // 1. Display 엔티티 생성
@@ -228,4 +233,174 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Override
+    @Transactional
+    public Long duplicateDisplay(Long displayId, String userId) {
+        // 원본 디스플레이 조회
+        Display originalDisplay = displayRepository.findById(displayId)
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // userUid로 userId 조회
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+        Long userUid = user.getUserUid();
+
+        // 새로운 디스플레이 생성
+        Display newDisplay = Display.builder()
+                .creatorUid(userUid)
+                .displayName(originalDisplay.getDisplayName() + "_복제")
+                .displayIsPosted(false)
+                .build();
+
+        // 썸네일 복제
+        try {
+            String originalThumbnailUrl = originalDisplay.getDisplayThumbnailUrl();
+            if (originalThumbnailUrl != null && !originalThumbnailUrl.isEmpty()) {
+                // 새로운 썸네일 파일명 생성
+                String newThumbnailName = generateFileName(userId, "thumbnails", originalThumbnailUrl);
+
+                // S3에 썸네일 복사
+                String newThumbnailUrl = s3Service.copyS3(
+                        originalThumbnailUrl,
+                        newThumbnailName,
+                        userId
+                );
+
+                // 새로운 디스플레이에 썸네일 URL 설정
+                newDisplay.setDisplayThumbnailUrl(newThumbnailUrl);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("썸네일 복제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+        
+        // 디스플레이 정보 저장
+        Display savedDisplay = displayRepository.save(newDisplay);
+        Long newDisplayId = savedDisplay.getDisplayUid();
+
+        // 배경 복제
+        duplicateBackground(originalDisplay.getBackground(), savedDisplay);
+
+        // 텍스트 복제
+        duplicateTexts(originalDisplay.getTexts(), savedDisplay);
+
+        // 이미지 복제
+        duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
+
+        return newDisplayId;
+    }
+
+    @Override
+    @Transactional
+    public void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay) {
+        //  디스플레이 정보 수정 후 나머지 텍스트 정보 복제
+        if (originalTexts != null) {
+            originalTexts.forEach(text -> {
+                DisplayText newText = DisplayText.builder()
+                        .display(newDisplay)
+                        .displayTextDetail(text.getDisplayTextDetail())
+                        .displayTextFont(text.getDisplayTextFont())
+                        .displayTextColor(text.getDisplayTextColor())
+                        .displayTextPosition(text.getDisplayTextPosition())
+                        .displayTextRotation(text.getDisplayTextRotation())
+                        .build();
+
+                // 디스플레이 텍스트 저장
+                displayTextRepository.save(newText);
+            });
+        }
+    }
+
+    @Override
+    @Transactional
+    public void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId) {
+        if (originalImages != null) {
+            for (DisplayImage image : originalImages) {
+                try {
+                    String originalImgUrl = image.getDisplayImgUrl();
+                    if (originalImgUrl != null && !originalImgUrl.isEmpty()) {
+                        // 새로운 파일명 생성
+                        String newFileName = generateFileName(userId, "images", originalImgUrl);
+                        
+                        // S3에 이미지 복사
+                        String newImgUrl = s3Service.copyS3(originalImgUrl, newFileName, userId);
+                        
+                        // 새로운 이미지 엔티티 생성 및 저장
+                        DisplayImage newImage = DisplayImage.builder()
+                            .display(newDisplay)
+                            .displayImgUrl(newImgUrl)
+                            .displayImgPosition(image.getDisplayImgPosition())
+                            .displayImgCreatedAt(LocalDateTime.now())
+                            .build();
+                        
+                        displayImageRepository.save(newImage);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("이미지 복제 중 오류가 발생했습니다: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void duplicateBackground(DisplayBackground originalBackground, Display newDisplay) {
+        if (originalBackground != null) {
+
+            // 새로운 배경 엔티티 생성
+            DisplayBackground newBackground = DisplayBackground.builder()
+                    .display(newDisplay)
+                    .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                    .build();
+
+            // 디스플레이 배경 저장
+            DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
+
+            // 원본 배경의 색상 정보 조회
+            DisplayColor originalColor =  displayColorRepository.findByDisplayBackground(originalBackground)
+                    .orElse(null);
+
+            // 배경 색상 복제
+            if (originalColor != null) {
+                DisplayColor newColor = DisplayColor.builder()
+                        .displayBackground(savedBackground)
+                        .displayColorSolid(originalColor.getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(originalColor.getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(originalColor.getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(originalColor.getDisplayBackgroundGradationType())
+                        .build();
+
+
+                // 배경 색상 저장
+                displayColorRepository.save(newColor);
+            }
+        }
+    }
+
+
+
+    private String generateFileName(String userId, String type, String originalFileUrl) {
+        // 현재 timestamp를 이용해 고유성 보장
+        LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        // 원본 파일명 추출 (URL의 마지막 '/' 이후 부분)
+        String originalFileName = originalFileUrl.substring(originalFileUrl.lastIndexOf('/') + 1);
+
+        // 확장자를 제외한 파일명 추출
+        String fileNameWithoutExtension = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
+
+        // 확장자 추출
+        String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+
+        // 경로 구조: {userId}/{type}/{원본파일명}_{timestamp}{확장자}
+        return String.format("%s/%s/%s_%s%s",
+                userId,
+                type,
+                fileNameWithoutExtension,
+                timestamp,
+                extension);
+    }
 }
+
+
+

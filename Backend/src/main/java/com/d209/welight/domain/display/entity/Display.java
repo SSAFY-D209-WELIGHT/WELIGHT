@@ -29,10 +29,12 @@ public class Display {
     private Boolean displayIsPosted;
 
     @Column(nullable = false)
-    private LocalDateTime displayUpdatedAt;
+    @Builder.Default
+    private LocalDateTime displayUpdatedAt = LocalDateTime.now();
 
     @Column(nullable = false)
-    private LocalDateTime displayCreatedAt;
+    @Builder.Default
+    private LocalDateTime displayCreatedAt = LocalDateTime.now();
 
     @Column(nullable = false)
     @Builder.Default

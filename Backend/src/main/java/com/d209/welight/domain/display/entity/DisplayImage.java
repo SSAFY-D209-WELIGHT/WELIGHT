@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "DISPLAY_IMAGE")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayImage {
@@ -25,6 +26,7 @@ public class DisplayImage {
     @Column(nullable = false)
     private String displayImgPosition;
 
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime displayImgCreatedAt = LocalDateTime.now();
 }
