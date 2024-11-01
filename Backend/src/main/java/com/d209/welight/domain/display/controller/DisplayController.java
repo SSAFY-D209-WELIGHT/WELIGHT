@@ -108,7 +108,7 @@ public class DisplayController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -125,6 +125,46 @@ public class DisplayController {
             displayService.updateDisplayFavorite(user, displayUid);
             return ResponseEntity.ok().body("디스플레이 즐겨찾기 상태 변경 완료");
         } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/{displayId}/like")
+    @Operation(summary = "디스플레이 좋아요", description = "디스플레이 좋아요 기능")
+    public ResponseEntity<?> doLikeDisplay(Authentication authentication,
+                                             @PathVariable("displayId") long displayUid) throws Exception{
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            displayService.doLikeDisplay(user, displayUid);
+            return ResponseEntity.ok().body("디스플레이 좋아요 완료");
+        } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch(EntityExistsException e) { // 이미 좋아요 누른 경우
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/{displayId}/like")
+    @Operation(summary = "디스플레이 좋아요 취소", description = "디스플레이 좋아요 취소 기능")
+    public ResponseEntity<?> cancelLikeDisplay(Authentication authentication,
+                                                 @PathVariable("displayId") long displayUid) throws Exception {
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            displayService.cancelLikeDisplay(user, displayUid);
+            return ResponseEntity.ok().body("디스플레이 좋아요 취소");
+        } catch (EntityNotFoundException e) { // 디스플레이 없음 , 좋아요 누른 적 없음
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

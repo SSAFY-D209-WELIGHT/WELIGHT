@@ -4,6 +4,7 @@ import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.entity.*;
+import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
 import com.d209.welight.domain.display.entity.displaystorage.DisplayStorage;
 import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
@@ -30,6 +31,7 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayBackgroundRepository displayBackgroundRepository;
     private final DisplayColorRepository displayColorRepository;
     private final DisplayStorageRepository displayStorageRepository;
+    private final DisplayLikeRepository displayLikeRepository;
     private final UserRepository userRepository;
 
     /**
@@ -236,6 +238,48 @@ public class DisplayServiceImpl implements DisplayService {
         }
 
         displayStorageRepository.save(storagedDisplay);
+    }
+
+    @Override
+    public void doLikeDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // 2. 이미 이 회원이 이 display를 좋아요 했는지
+        if (displayLikeRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityExistsException("이미 좋아요를 누른 디스플레이입니다.");
+        }
+
+        // DisplayLike 생성
+        // 3. DisplayLike 생성 및 저장
+        DisplayLike displayLike = DisplayLike.builder()
+                .user(user)
+                .display(display)
+                .likeCreatedAt(LocalDateTime.now())
+                .build();
+        displayLikeRepository.save(displayLike);
+
+        // 4. Display의 Display_like_count 횟수 +1
+        display.setDisplayLikeCount(display.getDisplayLikeCount() + 1);
+        displayRepository.save(display);
+    }
+
+    public void cancelLikeDisplay(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        // 2. 저장된 디스플레이가 존재하는지 확인
+        if (!displayLikeRepository.existsByUserAndDisplay(user, display)) {
+            throw new EntityNotFoundException("좋아요한 디스플레이가 아닙니다.");
+        }
+
+        // 3. displayLike 삭제
+        displayLikeRepository.deleteByUserAndDisplay(user, display);
+
+        // 4. Display의 Display_like_count 횟수 -1
+        display.setDisplayLikeCount(display.getDisplayLikeCount() - 1);
+        displayRepository.save(display);
     }
 
 }
