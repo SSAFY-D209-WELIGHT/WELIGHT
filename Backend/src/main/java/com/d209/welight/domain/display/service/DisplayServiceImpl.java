@@ -203,6 +203,10 @@ public class DisplayServiceImpl implements DisplayService {
 
         displayStorageRepository.save(displayStorage);
 
+        // 4. Display의 Display_download_count 횟수 +1
+        display.setDisplayDownloadCount(display.getDisplayDownloadCount() + 1);
+        displayRepository.save(display);
+
     }
 
     @Override
@@ -217,6 +221,10 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 3. 저장소에서 삭제
         displayStorageRepository.deleteByUserAndDisplay(user, display);
+
+        // 4. Display의 Display_download_count 횟수 -1
+        display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
+        displayRepository.save(display);
     }
 
     @Override
