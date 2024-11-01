@@ -79,13 +79,13 @@ public class DisplayController {
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
             }
 
             displayService.downloadDisplay(user, displayUid);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok().body("디스플레이 저장 완료");
         } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch(EntityExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
