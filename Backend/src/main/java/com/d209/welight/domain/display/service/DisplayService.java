@@ -17,4 +17,7 @@ public interface DisplayService {
 
     // 디스플레이 목록 조회
     DisplayListResponse getDisplayList(Pageable pageable);
+
+    // 사용자의 디스플레이 목록 조회
+    DisplayListResponse getMyDisplayList(String userId, Pageable pageable);
 }

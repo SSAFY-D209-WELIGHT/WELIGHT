@@ -20,7 +20,7 @@ public class DisplayListResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DisplayInfo {
-        private Long displayId;
+        private Long displayUid;
         private String displayThumbnail;
     }
 }

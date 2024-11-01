@@ -2,6 +2,7 @@ package com.d209.welight.domain.display.controller;
 
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.web.PageableDefault;
 
 import com.d209.welight.domain.display.service.DisplayService;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
@@ -55,11 +57,11 @@ public class DisplayController {
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            String userId = userDetails.getUsername(); // userId로 변경
+            String userId = userDetails.getUsername(); // userId
 
             DisplayDetailRequest request = DisplayDetailRequest.builder()
                     .displayUid(displayId)
-                    .userId(Long.parseLong(userId)) // userUid 대신 userId로 변경
+                    .userId(userId) // userUid 대신 userId로 변경
                     .build();
 
             DisplayDetailResponse response = displayService.getDisplayDetail(request);
@@ -73,7 +75,7 @@ public class DisplayController {
     }
 
     @GetMapping
-    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회 가능 (최신순, 좋아요순, 다운로드순)")
+    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회 (최신순, 좋아요순, 다운로드순)")
     public ResponseEntity<DisplayListResponse> getDisplayList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -91,6 +93,29 @@ public class DisplayController {
         Pageable pageable = PageRequest.of(page, size, sort);
         DisplayListResponse response = displayService.getDisplayList(pageable);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/mylist")
+    @Operation(summary = "내 디스플레이 목록 조회", description = "현재 사용자가 제작한 디스플레이 목록 조회")
+    public ResponseEntity<DisplayListResponse> getMyDisplayList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "LATEST") SortType sortType,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Sort sort = switch (sortType) {
+            case LATEST -> Sort.by("displayCreatedAt").descending()
+                             .and(Sort.by("displayLikeCount").descending());
+            case LIKES -> Sort.by("displayLikeCount").descending()
+                             .and(Sort.by("displayCreatedAt").descending());
+            case DOWNLOADS -> Sort.by("displayDownloadCount").descending()
+                                 .and(Sort.by("displayCreatedAt").descending());
+        };
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        String userId = userDetails.getUsername();
+        DisplayListResponse response = displayService.getMyDisplayList(userId, pageable);
         return ResponseEntity.ok(response);
     }
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import org.springframework.data.domain.Page;
@@ -148,24 +149,25 @@ public class DisplayServiceImpl implements DisplayService {
     @Override
     public DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request) {
         try {
-            //Display 존재 여부 확인
+            // Display 존재 여부 확인
             Display display = displayRepository.findById(request.getDisplayUid())
                     .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
 
             // 태그 정보 조회
             List<DisplayTag> tags = displayTagRepository.findByDisplay(display);
 
-            // 제작자 정보 조회 (User 테이블에서)
-            String creatorId = userRepository.findById(display.getCreatorUid())
-                    .map(User::getUserId) // User가 존재하면 UserId 반환
-                    .orElse("존재하지 않는 아이디"); // User가 없으면 기본 메시지 반환
+            // 현재 사용자의 userId를 userUid로 변환하여 비교
+            boolean isOwner = false;
+            if (request.getUserId() != null) {
+                Optional<User> currentUser = userRepository.findByUserId(request.getUserId());
+                if (currentUser.isPresent()) {
+                    isOwner = display.getCreatorUid().equals(currentUser.get().getUserUid());
+                }
+            }
 
-            // 현재 인증된 사용자의 ID와 디스플레이 소유자 ID 비교
-            boolean isOwner = display.getCreatorUid().equals(request.getUserId());
-
-            // 4. Response 객체 생성 및 반환
+            // Response 객체 생성 및 반환
             return DisplayDetailResponse.builder()
-                    .creatorId(Long.valueOf(creatorId))
+                    .creatorUid(display.getCreatorUid())
                     .displayName(display.getDisplayName())
                     .displayThumbnailUrl(display.getDisplayThumbnailUrl())
                     .displayIsPosted(display.getDisplayIsPosted())
@@ -187,7 +189,7 @@ public class DisplayServiceImpl implements DisplayService {
             
             List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()
                 .map(display -> DisplayListResponse.DisplayInfo.builder()
-                    .displayId(display.getDisplayUid())
+                    .displayUid(display.getDisplayUid())
                     .displayThumbnail(display.getDisplayThumbnailUrl())
                     .build())
                 .collect(Collectors.toList());
@@ -198,6 +200,31 @@ public class DisplayServiceImpl implements DisplayService {
                 .build();
         } catch (Exception e) {
             throw new RuntimeException("디스플레이 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public DisplayListResponse getMyDisplayList(String userId, Pageable pageable) {
+        try {
+            // 사용자 id를 통해 userUid 조회
+            Optional<User> user = userRepository.findByUserId(userId);
+            Long userUid = user.get().getUserUid();
+            Page<Display> displays = displayRepository.findAllByCreatorUid(userUid, pageable);
+            
+            // 사용자의 디스플레이 목록 조회
+            List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()
+                .map(display -> DisplayListResponse.DisplayInfo.builder()
+                    .displayUid(display.getDisplayUid())
+                    .displayThumbnail(display.getDisplayThumbnailUrl())
+                    .build())
+                .collect(Collectors.toList());
+
+            return DisplayListResponse.builder()
+                .currentPage(pageable.getPageNumber())
+                .displays(displayInfos)
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException("내 디스플레이 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 

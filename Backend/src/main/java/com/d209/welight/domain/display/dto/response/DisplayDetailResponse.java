@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayDetailResponse {
-    private Long creatorId;  // 제작자 아이디
+    private Long creatorUid;  // 제작자 고유번호
     private String displayName;  // 디스플레이 이름
     private String displayThumbnailUrl;  // 썸네일 URL
     private Boolean displayIsPosted;  // 게시 여부
