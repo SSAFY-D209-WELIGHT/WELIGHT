@@ -17,4 +17,8 @@ public interface DisplayService {
     // 디스플레이 저장소 - 다운로드, 삭제
     void downloadDisplay(User user, long displayUid);
     void deleteStoredDisplay(User user, long displayUid);
+
+    // 디스플레이 즐겨찾기 (저장소에서)
+    void updateDisplayFavorite(User user, long displayUid);
+
 }

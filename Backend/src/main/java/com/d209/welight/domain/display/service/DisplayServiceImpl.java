@@ -217,4 +217,25 @@ public class DisplayServiceImpl implements DisplayService {
         displayStorageRepository.deleteByUserAndDisplay(user, display);
     }
 
+    @Override
+    public void updateDisplayFavorite(User user, long displayUid) {
+        // 1. Display정보 불러오기 (Display 존재 여부 확인)
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        // 2. 저장된 디스플레이가 존재하는지 확인
+        DisplayStorage storagedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
+                .orElseThrow(() -> new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다."));
+
+        // 3. 현재 상태의 반대로 변경
+        boolean newFavoriteStatus = !storagedDisplay.getIsFavorites();
+        storagedDisplay.setIsFavorites(newFavoriteStatus);
+
+        // 3-1. false -> true로 변경될 때만 시간 업데이트
+        if (newFavoriteStatus) {
+            storagedDisplay.setFavoritesAt(LocalDateTime.now());
+        }
+
+        displayStorageRepository.save(storagedDisplay);
+    }
+
 }

@@ -112,4 +112,22 @@ public class DisplayController {
         }
     }
 
+    @PatchMapping("/{displayId}/favorite")
+    @Operation(summary = "디스플레이 즐겨찾기 토글", description = "디스플레이의 즐겨찾기 상태를 변경합니다.")
+    public ResponseEntity<?> updateDisplayFavorite(Authentication authentication,
+                                             @PathVariable("displayId") long displayUid) throws Exception{
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            displayService.updateDisplayFavorite(user, displayUid);
+            return ResponseEntity.ok().body("디스플레이 즐겨찾기 상태 변경 완료");
+        } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
