@@ -21,24 +21,25 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rohkee.core.ui.component.common.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 
 @Composable
 fun ColorRow(
     modifier: Modifier = Modifier,
-    selectedColor: Color? = null,
-    onColorSelected: (Color) -> Unit = {},
+    selectedColor: CustomColor? = null,
+    onColorSelected: (CustomColor) -> Unit = {},
     onSelectCustomColor: () -> Unit = {},
 ) {
     val options =
         remember {
             listOf(
-                Color.Red,
-                Color.Yellow,
-                Color.Green,
-                Color.Blue,
-                Color.Cyan,
-                Color.Magenta,
+                CustomColor(Color.Red),
+                CustomColor(Color.Yellow),
+                CustomColor(Color.Green),
+                CustomColor(Color.Blue),
+                CustomColor(Color.Cyan),
+                CustomColor(Color.Magenta),
             )
         }
 
@@ -65,9 +66,9 @@ fun ColorRow(
 @Composable
 fun ColorChip(
     modifier: Modifier = Modifier,
-    color: Color?,
+    color: CustomColor?,
     isSelected: Boolean,
-    onClick: (color: Color?) -> Unit = {},
+    onClick: (color: CustomColor?) -> Unit = {},
 ) {
     Box(
         modifier =
@@ -89,7 +90,7 @@ fun ColorChip(
                             shape = CircleShape,
                         )
                     } else {
-                        Modifier.background(color = color, shape = CircleShape)
+                        Modifier.background(color = color.primary, shape = CircleShape)
                     },
                 ).clickable { onClick(color) }
                 .then(
@@ -120,7 +121,7 @@ private fun ColorRowPreview() {
 @Preview
 @Composable
 private fun ColorChipPreview() {
-    ColorChip(color = Color.Red, isSelected = true)
+    ColorChip(color = CustomColor(Color.Red), isSelected = true)
 }
 
 @Preview

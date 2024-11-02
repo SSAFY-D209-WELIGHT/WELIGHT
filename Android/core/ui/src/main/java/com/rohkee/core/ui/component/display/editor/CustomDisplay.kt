@@ -16,37 +16,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
-import kotlinx.collections.immutable.PersistentList
+import com.rohkee.core.ui.component.common.CustomColor
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
 data class DisplayImageState(
     val imageSource: Any?,
+    val color: CustomColor?,
     val rotation: Float,
 )
 
 @Immutable
 data class DisplayTextState(
     val textInfo: String,
-    val color: Color?,
+    val color: CustomColor?,
     val rotation: Float,
     val font: FontFamily,
 )
 
 @Immutable
 data class DisplayBackgroundState(
-    val colors: PersistentList<Color>,
+    val color: CustomColor,
     val brightness: Float,
 )
 
 @Composable
 fun CustomDisplay(
     modifier: Modifier = Modifier,
+    backgroundState: DisplayBackgroundState,
     imageState: DisplayImageState,
     textState: DisplayTextState,
-    backgroundState: DisplayBackgroundState,
 ) {
-    val backgroundBrush by remember { mutableStateOf(Brush.verticalGradient(colors = backgroundState.colors)) }
+    val backgroundBrush by remember { mutableStateOf(Brush.verticalGradient(colors = backgroundState.color.colors)) }
 
     Box(
         modifier = modifier.background(brush = backgroundBrush),
@@ -94,6 +95,7 @@ private fun DisplayPreview() {
             DisplayImageState(
                 imageSource = null,
                 rotation = 0f,
+                color = null,
             ),
         textState =
             DisplayTextState(
@@ -104,7 +106,7 @@ private fun DisplayPreview() {
             ),
         backgroundState =
             DisplayBackgroundState(
-                colors = persistentListOf(Color.White, Color.Black),
+                color = CustomColor(persistentListOf(Color.White, Color.Black)),
                 brightness = 0f,
             ),
     )

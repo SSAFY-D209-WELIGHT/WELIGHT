@@ -6,8 +6,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.rohkee.core.ui.component.appbar.SavableAppBar
-import com.rohkee.core.ui.component.display.editor.CustomDisplay
 import com.rohkee.core.ui.component.display.editor.BottomToolBar
+import com.rohkee.core.ui.component.display.editor.CustomDisplay
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
 
@@ -15,14 +15,11 @@ import com.rohkee.core.ui.util.animateGradientBackground
 fun DisplayEditorContent(
     modifier: Modifier = Modifier,
     state: DisplayEditorState,
-    onIntent: (DisplayEditorIntent) -> Unit = {},
 ) {
     when (state) {
-        is DisplayEditorState.Loading -> {
-        }
+        is DisplayEditorState.Loading -> LoadingContent()
 
-        is DisplayEditorState.Edit -> {
-        }
+        is DisplayEditorState.Edit -> EditContent(state = state)
 
         is DisplayEditorState.Error -> {
         }
@@ -45,7 +42,6 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
 private fun EditContent(
     modifier: Modifier = Modifier,
     state: DisplayEditorState.Edit,
-    onIntent: (DisplayEditorIntent) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
@@ -58,14 +54,18 @@ private fun EditContent(
         bottomBar = {
             BottomToolBar(
                 state = state.bottomBarState,
+                infoState = state.editorInfoState,
+                textState = state.editorTextState,
+                imageState = state.editorImageState,
+                backgroundState = state.editorBackgroundState,
             )
         },
     ) { innerPadding ->
         CustomDisplay(
             modifier = Modifier.padding(innerPadding),
-            imageState = state.displayImageState,
-            textState = state.displayTextState,
-            backgroundState = state.displayBackgroundState,
+            imageState = state.editorImageState.imageState,
+            textState = state.editorTextState.textState,
+            backgroundState = state.editorBackgroundState.backgroundState,
         )
     }
 }

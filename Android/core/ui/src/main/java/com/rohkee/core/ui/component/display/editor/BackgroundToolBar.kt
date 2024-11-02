@@ -19,7 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.component.common.ButtonType
@@ -30,29 +30,31 @@ import com.rohkee.core.ui.theme.AppColor
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
-data class EditorTextState(
-    val textState: DisplayTextState,
+data class EditorBackgroundState(
+    val backgroundState: DisplayBackgroundState,
     val onClose: () -> Unit = {},
     val onDelete: () -> Unit = {},
     val onSelectColor: (CustomColor) -> Unit = {},
     val onSelectCustomColor: () -> Unit = {},
-    val onSelectFont: (FontFamily) -> Unit = {},
-    val onRotate: (Float) -> Unit = {},
+    val onChangeBrightness: (Float) -> Unit = {},
 )
 
 @Composable
-fun TextToolBar(
+fun BackgroundToolBar(
     modifier: Modifier = Modifier,
-    state: EditorTextState,
+    state: EditorBackgroundState,
 ) {
-    val options = remember { persistentListOf("색상", "폰트", "회전") }
+    val options = remember { persistentListOf("색상", "밝기") }
     val (selected, setSelected) = remember { mutableStateOf(options[0]) }
 
     Column(
         modifier = modifier,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
@@ -89,23 +91,16 @@ fun TextToolBar(
                 "색상" ->
                     ColorRow(
                         modifier = Modifier.align(Alignment.Center),
-                        selectedColor = state.textState.color,
+                        selectedColor = state.backgroundState.color,
                         onColorSelected = state.onSelectColor,
                         onSelectCustomColor = state.onSelectCustomColor,
-                    )
-
-                "폰트" ->
-                    FontRow(
-                        modifier = Modifier.align(Alignment.Center),
-                        selectedFont = state.textState.font,
-                        onFontSelected = state.onSelectFont,
                     )
 
                 "회전" ->
                     SliderRow(
                         modifier = Modifier.align(Alignment.Center),
-                        value = state.textState.rotation,
-                        onValueChange = state.onRotate,
+                        value = state.backgroundState.brightness,
+                        onValueChange = state.onChangeBrightness,
                     )
             }
         }
@@ -114,15 +109,13 @@ fun TextToolBar(
 
 @Preview(showBackground = true)
 @Composable
-private fun TextToolBarPreview() {
-    TextToolBar(
+private fun BackgroundToolBarPreview() {
+    BackgroundToolBar(
         state =
-            EditorTextState(
-                DisplayTextState(
-                    textInfo = "text",
-                    rotation = 0f,
-                    color = null,
-                    font = FontFamily.Default,
+            EditorBackgroundState(
+                DisplayBackgroundState(
+                    color = CustomColor(persistentListOf(Color.White, Color.Black)),
+                    brightness = 0f,
                 ),
             ),
     )

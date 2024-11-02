@@ -6,24 +6,51 @@ import androidx.compose.ui.Modifier
 
 @Immutable
 sealed interface BottomToolBarState {
-    data class Info(
-        val infoState: DisplayInfoState,
-    ) : BottomToolBarState
+    data object Info : BottomToolBarState
+
+    data object Text : BottomToolBarState
+
+    data object Image : BottomToolBarState
+
+    data object Background : BottomToolBarState
 }
 
 @Composable
 fun BottomToolBar(
     modifier: Modifier = Modifier,
     state: BottomToolBarState,
+    infoState: EditorInfoState,
+    textState: EditorTextState,
+    imageState: EditorImageState,
+    backgroundState: EditorBackgroundState,
 ) {
     when (state) {
         is BottomToolBarState.Info -> {
             InfoToolBar(
                 modifier = modifier,
-                state = state.infoState,
+                state = infoState,
             )
         }
-        else -> {}
+
+        is BottomToolBarState.Text -> {
+            TextToolBar(
+                modifier = modifier,
+                state = textState,
+            )
+        }
+
+        is BottomToolBarState.Image -> {
+            ImageToolBar(
+                modifier = modifier,
+                state = imageState,
+            )
+        }
+
+        is BottomToolBarState.Background -> {
+            BackgroundToolBar(
+                modifier = modifier,
+                state = backgroundState,
+            )
+        }
     }
 }
-

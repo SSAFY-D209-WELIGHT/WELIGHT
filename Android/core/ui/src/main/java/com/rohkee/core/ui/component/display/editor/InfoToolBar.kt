@@ -37,30 +37,35 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
-data class DisplayInfoState(
+data class EditorInfoState(
     val title: String,
     val tags: PersistentList<String>,
     val editInfo: () -> Unit = {},
-) : BottomToolBarState
+    val onTextEditClick: () -> Unit = {},
+    val onImageEditClick: () -> Unit = {},
+    val onBackgroundEditClick: () -> Unit = {},
+)
 
 @Composable
 fun InfoToolBar(
     modifier: Modifier = Modifier,
-    state: DisplayInfoState,
+    state: EditorInfoState,
 ) {
     Column(
         modifier =
-            modifier.fillMaxWidth().background(
-                brush =
-                    Brush.verticalGradient(
-                        colors =
-                            listOf(
-                                AppColor.SurfaceTransparent,
-                                AppColor.BackgroundTransparent,
-                            ),
-                    ),
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            ),
+            modifier
+                .fillMaxWidth()
+                .background(
+                    brush =
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    AppColor.SurfaceTransparent,
+                                    AppColor.BackgroundTransparent,
+                                ),
+                        ),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -77,7 +82,11 @@ fun InfoToolBar(
             modifier = Modifier.padding(vertical = 8.dp),
             color = AppColor.Convex,
         )
-        IconRow()
+        IconRow(
+            onTextEditClick = state.onTextEditClick,
+            onImageEditClick = state.onImageEditClick,
+            onBackgroundEditClick = state.onBackgroundEditClick,
+        )
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
@@ -91,7 +100,10 @@ private fun TitleRow(
     val isEmpty by remember { derivedStateOf { title.isEmpty() } }
 
     Row(
-        modifier = modifier.fillMaxWidth().wrapContentHeight(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -119,7 +131,10 @@ private fun TagRow(
 
     if (!isEmpty) {
         FlowRow(
-            modifier = modifier.fillMaxWidth().wrapContentHeight(),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             for (tag in tags) {
@@ -128,7 +143,10 @@ private fun TagRow(
         }
     } else {
         Text(
-            modifier = modifier.fillMaxWidth().wrapContentHeight(),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
             text = "#태그를_입력해주세요.",
             style = Pretendard.SemiBold16,
             color = AppColor.OnBackgroundTransparent,
@@ -145,25 +163,42 @@ private fun Tag(
 }
 
 @Composable
-private fun IconRow(modifier: Modifier = Modifier) {
+private fun IconRow(
+    modifier: Modifier = Modifier,
+    onTextEditClick: () -> Unit = {},
+    onImageEditClick: () -> Unit = {},
+    onBackgroundEditClick: () -> Unit = {},
+) {
     Row(
-        modifier = modifier.fillMaxWidth().wrapContentHeight(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         Icon(
-            modifier = Modifier.size(32.dp),
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .clickable { onTextEditClick() },
             painter = painterResource(R.drawable.text_edit),
             contentDescription = "Edit",
             tint = AppColor.OnSurface,
         )
         Icon(
-            modifier = Modifier.size(32.dp),
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .clickable { onImageEditClick() },
             painter = painterResource(R.drawable.image_edit),
             contentDescription = "Edit",
             tint = AppColor.OnSurface,
         )
         Icon(
-            modifier = Modifier.size(32.dp),
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .clickable { onBackgroundEditClick() },
             painter = painterResource(R.drawable.background_edit),
             contentDescription = "Edit",
             tint = AppColor.OnSurface,
@@ -176,7 +211,7 @@ private fun IconRow(modifier: Modifier = Modifier) {
 private fun BottomToolBarPreview() {
     InfoToolBar(
         state =
-            DisplayInfoState(
+            EditorInfoState(
                 title = "",
                 tags = persistentListOf(),
             ),
@@ -188,7 +223,7 @@ private fun BottomToolBarPreview() {
 private fun BottomToolBarPreviewWithData() {
     InfoToolBar(
         state =
-            DisplayInfoState(
+            EditorInfoState(
                 title = "제목",
                 tags = persistentListOf("태그1", "긴_태그2", "태그3", "태그4", "길고_긴_태그5", "태그6", "태그7"),
             ),
