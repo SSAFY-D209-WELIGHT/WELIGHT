@@ -214,7 +214,9 @@ public class DisplayServiceImpl implements DisplayService {
             // 사용자 id를 통해 userUid 조회
             Optional<User> user = userRepository.findByUserId(userId);
             Long userUid = user.get().getUserUid();
-            Page<Display> displays = displayRepository.findAllByCreatorUid(userUid, pageable);
+
+            // 내가 생성한 디스플레이와 저장한 디스플레이 모두 조회
+            Page<Display> displays = displayRepository.findAllByCreatorUidOrStoredByUser(userUid, user, pageable);
 
             // 사용자의 디스플레이 목록 조회
             List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()

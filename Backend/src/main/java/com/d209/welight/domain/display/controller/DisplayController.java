@@ -39,7 +39,7 @@ public class DisplayController {
     private final DisplayService displayService;
 
     @PostMapping
-    @Operation(summary = "디스플레이 생성", description = "디스플레이 생성")
+    @Operation(summary = "디스플레이 생성", description = "디스플레이를 생성합니다.")
     public ResponseEntity<DisplayCreateResponse> createDisplay(@Valid @RequestBody DisplayCreateRequest request) {
         try {
             DisplayCreateResponse response = displayService.createDisplay(request);
@@ -80,7 +80,7 @@ public class DisplayController {
     }
 
     @GetMapping
-    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회 (최신순, 좋아요순, 다운로드순)")
+    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회합니다. (최신순, 좋아요순, 다운로드순)")
     public ResponseEntity<DisplayListResponse> getDisplayList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -102,8 +102,8 @@ public class DisplayController {
     }
 
     @GetMapping("/mylist")
-    @Operation(summary = "내 디스플레이 목록 조회", description = "현재 사용자가 제작한 디스플레이 목록 조회")
-    // 내가 다운로드한 리스트까지 함께 조회해야함!!!!
+    @Operation(summary = "내 디스플레이 목록 조회", description = "사용자가 제작한 디스플레이와 저장한 디스플레이를 조회합니다.")
+
     public ResponseEntity<DisplayListResponse> getMyDisplayList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
