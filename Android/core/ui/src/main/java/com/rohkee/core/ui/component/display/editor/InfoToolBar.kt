@@ -20,6 +20,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,13 +33,20 @@ import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.R
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+
+@Immutable
+data class DisplayInfoState(
+    val title: String,
+    val tags: PersistentList<String>,
+    val editInfo: () -> Unit = {},
+) : BottomToolBarState
 
 @Composable
 fun InfoToolBar(
     modifier: Modifier = Modifier,
-    title: String = "",
-    tags: List<String> = emptyList(),
-    onEditClick: () -> Unit = {},
+    state: DisplayInfoState,
 ) {
     Column(
         modifier =
@@ -58,12 +66,12 @@ fun InfoToolBar(
         Spacer(modifier = Modifier.height(16.dp))
         TitleRow(
             modifier = Modifier.padding(horizontal = 16.dp),
-            title = title,
-            onEditClick = onEditClick,
+            title = state.title,
+            onEditClick = state.editInfo,
         )
         TagRow(
             modifier = Modifier.padding(horizontal = 16.dp),
-            tags = tags,
+            tags = state.tags,
         )
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 8.dp),
@@ -166,14 +174,23 @@ private fun IconRow(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun BottomToolBarPreview() {
-    BottomToolBar()
+    InfoToolBar(
+        state =
+            DisplayInfoState(
+                title = "",
+                tags = persistentListOf(),
+            ),
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun BottomToolBarPreviewWithData() {
-    BottomToolBar(
-        title = "제목",
-        tags = listOf("태그1", "긴_태그2", "태그3", "태그4", "길고_긴_태그5", "태그6", "태그7"),
+    InfoToolBar(
+        state =
+            DisplayInfoState(
+                title = "제목",
+                tags = persistentListOf("태그1", "긴_태그2", "태그3", "태그4", "길고_긴_태그5", "태그6", "태그7"),
+            ),
     )
 }

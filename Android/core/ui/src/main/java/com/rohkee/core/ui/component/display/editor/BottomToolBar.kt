@@ -7,18 +7,23 @@ import androidx.compose.ui.Modifier
 @Immutable
 sealed interface BottomToolBarState {
     data class Info(
-        val title: String,
-        val tags: List<String>,
-    )
+        val infoState: DisplayInfoState,
+    ) : BottomToolBarState
 }
 
 @Composable
 fun BottomToolBar(
     modifier: Modifier = Modifier,
-    title: String = "",
-    tags: List<String> = emptyList(),
-    onEditClick: () -> Unit = {},
+    state: BottomToolBarState,
 ) {
-
+    when (state) {
+        is BottomToolBarState.Info -> {
+            InfoToolBar(
+                modifier = modifier,
+                state = state.infoState,
+            )
+        }
+        else -> {}
+    }
 }
 

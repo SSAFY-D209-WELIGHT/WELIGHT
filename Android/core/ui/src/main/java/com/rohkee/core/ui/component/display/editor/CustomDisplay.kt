@@ -28,6 +28,7 @@ data class DisplayImageState(
 @Immutable
 data class DisplayTextState(
     val textInfo: String,
+    val color: Color?,
     val rotation: Float,
     val font: FontFamily,
 )
@@ -98,6 +99,7 @@ private fun DisplayPreview() {
             DisplayTextState(
                 textInfo = "text",
                 rotation = 0f,
+                color = null,
                 font = FontFamily.Default,
             ),
         backgroundState =
