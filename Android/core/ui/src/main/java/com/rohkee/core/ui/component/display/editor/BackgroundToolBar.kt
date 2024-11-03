@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.component.common.ButtonType
 import com.rohkee.core.ui.component.common.ChipGroup
 import com.rohkee.core.ui.component.common.CommonCircleButton
-import com.rohkee.core.ui.component.common.CustomColor
+import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 import kotlinx.collections.immutable.persistentListOf
 
@@ -114,7 +114,7 @@ private fun BackgroundToolBarPreview() {
         state =
             EditorBackgroundState(
                 DisplayBackgroundState(
-                    color = CustomColor(persistentListOf(Color.White, Color.Black)),
+                    color = CustomColor.Single(Color.Red),
                     brightness = 0f,
                 ),
             ),

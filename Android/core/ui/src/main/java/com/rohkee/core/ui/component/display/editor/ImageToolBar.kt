@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.component.common.ButtonType
 import com.rohkee.core.ui.component.common.ChipGroup
 import com.rohkee.core.ui.component.common.CommonCircleButton
-import com.rohkee.core.ui.component.common.CustomColor
+import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 import kotlinx.collections.immutable.persistentListOf
 

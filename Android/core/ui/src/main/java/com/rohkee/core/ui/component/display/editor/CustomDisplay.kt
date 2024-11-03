@@ -1,22 +1,18 @@
 package com.rohkee.core.ui.component.display.editor
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
-import com.rohkee.core.ui.component.common.CustomColor
+import com.rohkee.core.ui.model.CustomColor
+import com.rohkee.core.ui.model.background
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
@@ -47,10 +43,8 @@ fun CustomDisplay(
     imageState: DisplayImageState,
     textState: DisplayTextState,
 ) {
-    val backgroundBrush by remember { mutableStateOf(Brush.verticalGradient(colors = backgroundState.color.colors)) }
-
     Box(
-        modifier = modifier.background(brush = backgroundBrush),
+        modifier = modifier.background(color = backgroundState.color),
     ) {
         DisplayImage(
             modifier = Modifier,
@@ -106,7 +100,7 @@ private fun DisplayPreview() {
             ),
         backgroundState =
             DisplayBackgroundState(
-                color = CustomColor(persistentListOf(Color.White, Color.Black)),
+                color = CustomColor.Gradient(persistentListOf(Color.White, Color.Black)),
                 brightness = 0f,
             ),
     )
