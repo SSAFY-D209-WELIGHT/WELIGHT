@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface DisplayColorRepository extends JpaRepository<DisplayColor, Long> {
     Optional<DisplayColor> findByDisplayBackground(DisplayBackground background);
+
+    void deleteByDisplayBackground(DisplayBackground background);
 }

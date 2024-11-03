@@ -22,7 +22,7 @@ public interface DisplayService {
     // 디스플레이 목록 조회
     DisplayListResponse getDisplayList(Pageable pageable);
 
-    // 사용자의 디스플레이 목록 조회
+    // 나의 디스플레이 목록 조회
     DisplayListResponse getMyDisplayList(String userId, Pageable pageable);
 
     // 디스플레이 복제
@@ -30,6 +30,9 @@ public interface DisplayService {
     void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay);
     void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId);
     void duplicateBackground(DisplayBackground originalBackground, Display newDisplay);
+
+    // 디스플레이 삭제
+    void deleteDisplay(Long displayUid, String userId);
 
     // 디스플레이 저장소 - 다운로드, 삭제
     void downloadDisplay(User user, long displayUid);

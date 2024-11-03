@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface DisplayTagRepository extends JpaRepository<DisplayTag, Long> {
     List<DisplayTag> findByDisplay(Display display);
+
+    void deleteByDisplay(Display display);
 }

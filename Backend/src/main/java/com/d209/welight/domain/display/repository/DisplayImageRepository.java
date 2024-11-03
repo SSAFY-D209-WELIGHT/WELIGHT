@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface DisplayImageRepository extends JpaRepository<DisplayImage, Long> {
     List<DisplayImage> findByDisplay(Display display);
+
+    void deleteByDisplay(Display display);
 }

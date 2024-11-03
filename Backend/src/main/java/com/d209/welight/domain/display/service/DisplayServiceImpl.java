@@ -378,6 +378,67 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteDisplay(Long displayUid, String userId) {
+        // 1. Display와 User 정보 확인
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 2. 권한 확인 (생성자 또는 관리자만 삭제 가능)
+        if (!display.getCreatorUid().equals(user.getUserUid()) && !user.isUserIsAdmin()) {
+            throw new IllegalStateException("디스플레이를 삭제할 권한이 없습니다.");
+        }
+
+        try {
+            // 3. S3에서 이미지 파일들 삭제
+            // 썸네일 삭제
+            if (display.getDisplayThumbnailUrl() != null) {
+                s3Service.deleteS3(display.getDisplayThumbnailUrl());
+            }
+
+            // 디스플레이 이미지들 삭제
+            display.getImages().forEach(image -> {
+                if (image.getDisplayImgUrl() != null) {
+                    try {
+                        s3Service.deleteS3(image.getDisplayImgUrl());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // 4. 연관된 데이터 삭제
+            // 좋아요 삭제
+            displayLikeRepository.deleteByUserAndDisplay(user, display);
+
+            // 저장소 삭제
+            displayStorageRepository.deleteByUserAndDisplay(user, display);
+
+            // 태그 삭제
+            displayTagRepository.deleteByDisplay(display);
+
+            // 이미지 삭제
+            displayImageRepository.deleteByDisplay(display);
+
+            // 텍스트 삭제
+            displayTextRepository.deleteByDisplay(display);
+
+            // 배경 색상 삭제
+            DisplayBackground background = display.getBackground();
+            displayColorRepository.deleteByDisplayBackground(background);
+            displayBackgroundRepository.findByDisplay(display);
+
+            // 5. 디스플레이 삭제
+            displayRepository.delete(display);
+
+        } catch (Exception e) {
+            throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
 
 
     private String generateFileName(String userId, String type, String originalFileUrl) {

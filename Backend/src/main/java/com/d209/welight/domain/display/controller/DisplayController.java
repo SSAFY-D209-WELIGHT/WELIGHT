@@ -144,6 +144,23 @@ public class DisplayController {
         }
     }
 
+    @DeleteMapping("/{displayId}")
+    @Operation(summary = "디스플레이 삭제", description = "특정 디스플레이를 삭제합니다.")
+    public ResponseEntity<?> deleteDisplay(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            displayService.deleteDisplay(displayId, userDetails.getUsername());
+            return ResponseEntity.ok().body("디스플레이가 성공적으로 삭제되었습니다.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("디스플레이를 찾을 수 없습니다.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 권한이 없습니다");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("디스플레이 삭제 중 오류가 발생했습니다.");
+        }
+    }
+
     @PostMapping("/{displayId}/storage")
     @Operation(summary = "디스플레이 다운로드", description = "디스플레이를 저장소에 저장합니다.")
     public ResponseEntity<?> downloadDisplay(Authentication authentication,
