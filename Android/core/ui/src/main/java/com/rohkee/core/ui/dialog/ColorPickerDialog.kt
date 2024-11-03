@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -36,12 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.rohkee.core.ui.component.common.HueBar
 import com.rohkee.core.ui.component.common.SaturationPanel
+import com.rohkee.core.ui.model.ColorType
 import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 import android.graphics.Color as AndroidColor
 
-private enum class SelectionType(
+private enum class ColorSelectionType(
     val text: String,
 ) {
     SINGLE("색상 선택"),
@@ -54,7 +57,11 @@ private enum class OrderType {
 }
 
 @Composable
-fun ColorPickerDialog(color: CustomColor? = null) {
+fun ColorPickerDialog(
+    color: CustomColor? = null,
+    onConfirm: (CustomColor) -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
     val config = LocalConfiguration.current
     val widthDp = remember { (config.screenWidthDp * 0.7).dp }
 
@@ -63,11 +70,13 @@ fun ColorPickerDialog(color: CustomColor? = null) {
         remember {
             mutableStateOf(
                 when (color) {
-                    is CustomColor.Gradient -> SelectionType.GRADIENT
-                    else -> SelectionType.SINGLE
-                }
+                    is CustomColor.Gradient -> ColorSelectionType.GRADIENT
+                    else -> ColorSelectionType.SINGLE
+                },
             )
         }
+    val (selectedOrder, setSelectedOrder) = remember { mutableStateOf(OrderType.PRIMARY) }
+    val (gradientType, setGradientType) = remember { mutableStateOf(ColorType.Horizontal) }
 
     val (primaryHsv, setPrimaryHsv) =
         remember(color) {
@@ -115,19 +124,8 @@ fun ColorPickerDialog(color: CustomColor? = null) {
             mutableStateOf(Color.hsv(secondaryHsv.first, secondaryHsv.second, secondaryHsv.third))
         }
 
-    val (selectedOrder, setSelectedOrder) = remember { mutableStateOf(OrderType.PRIMARY) }
-
-    val selectedHsv =
-        remember(primaryHsv, secondaryHsv, selectedType, selectedOrder) {
-            if (selectedType == SelectionType.GRADIENT && selectedOrder == OrderType.SECONDARY) {
-                secondaryHsv
-            } else {
-                primaryHsv
-            }
-        }
-
     Dialog(
-        onDismissRequest = {},
+        onDismissRequest = onDismiss,
     ) {
         Column(
             modifier =
@@ -148,7 +146,7 @@ fun ColorPickerDialog(color: CustomColor? = null) {
                     modifier = Modifier.weight(1f),
                 ) {
                     Row(
-                        modifier = Modifier.wrapContentWidth(),
+                        modifier = Modifier.wrapContentWidth().clickable { setOpenDropdown(true) },
                     ) {
                         Text(
                             text = selectedType.text,
@@ -158,26 +156,26 @@ fun ColorPickerDialog(color: CustomColor? = null) {
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = "open dropdown",
-                            modifier = Modifier.clickable { setOpenDropdown(true) },
                             tint = AppColor.OnSurface,
                         )
                     }
                     DropdownMenu(
+                        modifier = Modifier.background(color = AppColor.OverSurface),
                         expanded = openDropdown,
                         onDismissRequest = { setOpenDropdown(false) },
                     ) {
                         DropdownMenuItem(
-                            text = { Text(text = "색상 선택") },
+                            text = { Text(text = "색상 선택", style = Pretendard.SemiBold16) },
                             onClick = {
-                                setSelectedType(SelectionType.SINGLE)
+                                setSelectedType(ColorSelectionType.SINGLE)
                                 setSelectedOrder(OrderType.PRIMARY)
                                 setOpenDropdown(false)
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text(text = "그라데이션 선택") },
+                            text = { Text(text = "그라데이션 선택", style = Pretendard.SemiBold16) },
                             onClick = {
-                                setSelectedType(SelectionType.GRADIENT)
+                                setSelectedType(ColorSelectionType.GRADIENT)
                                 setSelectedOrder(OrderType.PRIMARY)
                                 setOpenDropdown(false)
                             },
@@ -187,12 +185,12 @@ fun ColorPickerDialog(color: CustomColor? = null) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "close dialog",
-                    modifier = Modifier.clickable { setOpenDropdown(true) },
+                    modifier = Modifier.clickable { onDismiss() },
                     tint = AppColor.OnSurface,
                 )
             }
             when (selectedType) {
-                SelectionType.SINGLE -> {
+                ColorSelectionType.SINGLE -> {
                     Box(
                         modifier =
                             Modifier
@@ -202,105 +200,282 @@ fun ColorPickerDialog(color: CustomColor? = null) {
                                     color = primaryColor,
                                     shape = RoundedCornerShape(4.dp),
                                 ),
-                    ) { }
+                    )
                 }
 
-                SelectionType.GRADIENT -> {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Box(
-                            modifier =
-                                Modifier
-                                    .size(32.dp)
-                                    .background(
-                                        color = primaryColor,
-                                        shape = RoundedCornerShape(8.dp),
-                                    ).then(
-                                        if (selectedOrder == OrderType.PRIMARY) {
-                                            Modifier.border(
-                                                color = AppColor.Active,
-                                                width = 3.dp,
-                                                shape = RoundedCornerShape(8.dp),
-                                            )
-                                        } else {
-                                            Modifier
-                                        },
-                                    ).clickable {
-                                        setSelectedOrder(OrderType.PRIMARY)
-                                                },
-                        ) { }
-                        Box(
-                            modifier =
-                                Modifier
-                                    .weight(1f)
-                                    .height(32.dp)
-                                    .padding(horizontal = 4.dp)
-                                    .background(
-                                        brush =
-                                            Brush.horizontalGradient(
-                                                listOf(primaryColor, secondaryColor),
-                                            ),
-                                        shape = RoundedCornerShape(8.dp),
-                                    ),
-                        ) { }
-                        Box(
-                            modifier =
-                                Modifier
-                                    .size(32.dp)
-                                    .background(
-                                        color = secondaryColor,
-                                        shape = RoundedCornerShape(8.dp),
-                                    ).then(
-                                        if (selectedOrder == OrderType.SECONDARY) {
-                                            Modifier.border(
-                                                color = AppColor.Active,
-                                                width = 3.dp,
-                                                shape = RoundedCornerShape(8.dp),
-                                            )
-                                        } else {
-                                            Modifier
-                                        },
-                                    ).clickable {
-                                        setSelectedOrder(OrderType.SECONDARY)
-                                                },
-                        ) { }
+                ColorSelectionType.GRADIENT -> {
+                    GradientTypeSelector(
+                        modifier = Modifier.fillMaxWidth(),
+                        primaryColor = primaryColor,
+                        secondaryColor = secondaryColor,
+                        selectedType = gradientType,
+                        setSelectedType = { setGradientType(it) },
+                    )
+                    GradientColorControls(
+                        modifier = Modifier.fillMaxWidth(),
+                        primaryColor = primaryColor,
+                        secondaryColor = secondaryColor,
+                        selectedOrder = selectedOrder,
+                        setSelectedOrder = { setSelectedOrder(it) },
+                    )
+                }
+            }
+            when (selectedType) {
+                ColorSelectionType.SINGLE -> {
+                    ColorControls(
+                        hsv = primaryHsv,
+                        setHsv = { hsv -> setPrimaryHsv(hsv) },
+                    )
+                }
+
+                ColorSelectionType.GRADIENT -> {
+                    when (selectedOrder) {
+                        OrderType.PRIMARY -> {
+                            ColorControls(
+                                hsv = primaryHsv,
+                                setHsv = { hsv -> setPrimaryHsv(hsv) },
+                            )
+                        }
+
+                        OrderType.SECONDARY -> {
+                            ColorControls(
+                                hsv = secondaryHsv,
+                                setHsv = { hsv -> setSecondaryHsv(hsv) },
+                            )
+                        }
                     }
                 }
             }
-
-            SaturationPanel(
-                initialHue = selectedHsv.first,
-                initialSaturation = selectedHsv.second,
-                initialValue = selectedHsv.third,
-                setSatVal = { sat, value ->
-                    if (selectedType == SelectionType.GRADIENT && selectedOrder == OrderType.SECONDARY) {
-                        setSecondaryHsv(Triple(secondaryHsv.first, sat, value))
-                    } else {
-                        setPrimaryHsv(
-                            Triple(primaryHsv.first, sat, value),
-                        )
-                    }
-                },
-            )
-            HueBar(
-                initialHue = selectedHsv.first,
-                setColor = { hue ->
-                    if (selectedType == SelectionType.GRADIENT && selectedOrder == OrderType.SECONDARY) {
-                        setSecondaryHsv(Triple(hue, secondaryHsv.second, secondaryHsv.third))
-                    } else {
-                        setPrimaryHsv(
-                            Triple(hue, primaryHsv.second, primaryHsv.third),
-                        )
-                    }
-                },
-            )
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = AppColor.Convex,
+                            shape = RoundedCornerShape(8.dp),
+                        ).padding(8.dp)
+                        .clickable {
+                            onConfirm(
+                                if (selectedType == ColorSelectionType.SINGLE) {
+                                    CustomColor.Single(color = primaryColor)
+                                } else {
+                                    CustomColor.Gradient(
+                                        colors = listOf(primaryColor, secondaryColor),
+                                        type = gradientType,
+                                    )
+                                },
+                            )
+                        },
+            ) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "확인",
+                    style = Pretendard.SemiBold16,
+                    color = AppColor.OnConvex,
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun GradientTypeSelector(
+    modifier: Modifier,
+    primaryColor: Color,
+    secondaryColor: Color,
+    selectedType: ColorType,
+    setSelectedType: (ColorType) -> Unit,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(text = "방향 지정", style = Pretendard.SemiBold20, color = AppColor.OnSurface)
+        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .background(
+                        brush = Brush.horizontalGradient(listOf(primaryColor, secondaryColor)),
+                        shape = RoundedCornerShape(4.dp),
+                    ).then(
+                        if (selectedType == ColorType.Horizontal) {
+                            Modifier.border(
+                                width = 2.dp,
+                                color = AppColor.Active,
+                                shape = RoundedCornerShape(4.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ).clickable { setSelectedType(ColorType.Horizontal) },
+        )
+        Box(
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .background(
+                        brush = Brush.verticalGradient(listOf(primaryColor, secondaryColor)),
+                        shape = RoundedCornerShape(4.dp),
+                    ).then(
+                        if (selectedType == ColorType.Vertical) {
+                            Modifier.border(
+                                width = 2.dp,
+                                color = AppColor.Active,
+                                shape = RoundedCornerShape(4.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ).clickable { setSelectedType(ColorType.Vertical) },
+        )
+        Box(
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .background(
+                        brush = Brush.radialGradient(listOf(primaryColor, secondaryColor)),
+                        shape = RoundedCornerShape(4.dp),
+                    ).then(
+                        if (selectedType == ColorType.Radial) {
+                            Modifier.border(
+                                width = 2.dp,
+                                color = AppColor.Active,
+                                shape = RoundedCornerShape(4.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ).clickable { setSelectedType(ColorType.Radial) },
+        )
+    }
+}
+
+@Composable
+private fun GradientColorControls(
+    modifier: Modifier,
+    primaryColor: Color,
+    secondaryColor: Color,
+    selectedOrder: OrderType,
+    setSelectedOrder: (OrderType) -> Unit,
+) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        Box(
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .background(
+                        color = primaryColor,
+                        shape = RoundedCornerShape(8.dp),
+                    ).then(
+                        if (selectedOrder == OrderType.PRIMARY) {
+                            Modifier.border(
+                                color = AppColor.Active,
+                                width = 3.dp,
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ).clickable {
+                        setSelectedOrder(OrderType.PRIMARY)
+                    },
+        )
+        Box(
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .height(32.dp)
+                    .padding(horizontal = 4.dp)
+                    .background(
+                        brush =
+                            Brush.horizontalGradient(
+                                listOf(primaryColor, secondaryColor),
+                            ),
+                        shape = RoundedCornerShape(8.dp),
+                    ),
+        )
+        Box(
+            modifier =
+                Modifier
+                    .size(32.dp)
+                    .background(
+                        color = secondaryColor,
+                        shape = RoundedCornerShape(8.dp),
+                    ).then(
+                        if (selectedOrder == OrderType.SECONDARY) {
+                            Modifier.border(
+                                color = AppColor.Active,
+                                width = 3.dp,
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ).clickable {
+                        setSelectedOrder(OrderType.SECONDARY)
+                    },
+        )
+    }
+}
+
+@Composable
+private fun ColorControls(
+    hsv: Triple<Float, Float, Float>,
+    setHsv: (Triple<Float, Float, Float>) -> Unit,
+) {
+    SaturationPanel(
+        initialHue = hsv.first,
+        initialSaturation = hsv.second,
+        initialValue = hsv.third,
+        setSatVal = { sat, value ->
+            setHsv(Triple(hsv.first, sat, value))
+        },
+    )
+    HueBar(
+        initialHue = hsv.first,
+        setColor = { hue ->
+            setHsv(
+                Triple(
+                    hue,
+                    hsv.second,
+                    hsv.third,
+                ),
+            )
+        },
+    )
+}
+
+@Preview
+@Composable
+private fun GradientTypeSelectorPreview() {
+    GradientTypeSelector(
+        modifier = Modifier.fillMaxWidth(),
+        primaryColor = Color.Red,
+        secondaryColor = Color.Blue,
+        selectedType = ColorType.Horizontal,
+        setSelectedType = {},
+    )
+}
+
+@Preview
+@Composable
+private fun GradientColorControlsPreview() {
+    GradientColorControls(
+        modifier = Modifier.fillMaxWidth(),
+        primaryColor = Color.Red,
+        secondaryColor = Color.Blue,
+        selectedOrder = OrderType.PRIMARY,
+        setSelectedOrder = {},
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun ColorPickerDialogPreview() {
     ColorPickerDialog(
-        color = CustomColor.Single(color = Color.Blue)
+        color = CustomColor.Single(color = Color.Blue),
     )
 }
