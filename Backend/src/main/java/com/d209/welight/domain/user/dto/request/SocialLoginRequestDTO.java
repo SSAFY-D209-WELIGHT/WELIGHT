@@ -15,7 +15,7 @@ public class SocialLoginRequestDTO {
     private String userId;
     @Schema(description = "회원 닉네임", example = "TEST")
     private String userNickname;
-    @Schema(description = "회원 프로필 사진", example = "String 이미지")
+    @Schema(description = "회원 프로필 사진", example = "S3에 저장된 이미지 url")
     private String userProfileImg;
     @Schema(description = "회원 로그인처", example = "Form")
     private String userLogin;

@@ -57,11 +57,11 @@ public class DisplayServiceImpl implements DisplayService {
      */
     @Override
     @Transactional
-    public DisplayCreateResponse createDisplay(DisplayCreateRequest request) {
+    public DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request) {
         try {
             // 1. Display 엔티티 생성
             Display display = Display.builder()
-                .creatorUid(request.getCreatorUid())
+                .creatorUid(user.getUserUid())
                 .displayName(request.getDisplayName())
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
                 .displayIsPosted(request.getDisplayIsPosted())  // 초기 생성시 게시되지 않은 상태
@@ -445,7 +445,7 @@ public class DisplayServiceImpl implements DisplayService {
 
             // DisplayCreateRequest 생성 및 반환
             return DisplayCreateRequest.builder()
-                    .creatorUid(display.getCreatorUid())
+//                    .creatorUid(display.getCreatorUid())
                     .displayName(display.getDisplayName())
                     .displayThumbnailUrl(display.getDisplayThumbnailUrl())
                     .displayIsPosted(display.getDisplayIsPosted())

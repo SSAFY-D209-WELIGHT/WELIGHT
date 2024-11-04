@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayCreateRequest {
-    private Long creatorUid;  // 생성자 ID
+//    private Long creatorUid;  // 생성자 ID -> header 사용
     private String displayName;  // 디스플레이 이름
     private String displayThumbnailUrl;  // 썸네일 URL
     private Boolean displayIsPosted;  // 게시 여부
