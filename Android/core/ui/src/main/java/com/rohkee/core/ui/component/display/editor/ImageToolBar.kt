@@ -98,7 +98,7 @@ fun ImageToolBar(
                 "회전" ->
                     SliderRow(
                         modifier = Modifier.align(Alignment.Center),
-                        value = state.rotation,
+                        value = state.rotationDegree,
                         onValueChange = onRotate,
                     )
             }

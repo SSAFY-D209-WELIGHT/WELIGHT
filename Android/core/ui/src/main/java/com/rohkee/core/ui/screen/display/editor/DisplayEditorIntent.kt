@@ -1,6 +1,8 @@
 package com.rohkee.core.ui.screen.display.editor
 
 import androidx.compose.ui.text.font.FontFamily
+import com.rohkee.core.ui.component.display.editor.DisplayImageState
+import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.model.CustomColor
 
 sealed interface DisplayEditorIntent {
@@ -8,9 +10,17 @@ sealed interface DisplayEditorIntent {
 
     data object SaveDisplay : DisplayEditorIntent
 
+    data class UpdateImageState(
+        val imageState: DisplayImageState,
+    ) : DisplayEditorIntent
+
+    data class UpdateTextState(
+        val textState: DisplayTextState,
+    ) : DisplayEditorIntent
+
     // Info ToolBar
     sealed interface InfoToolBar : DisplayEditorIntent {
-        data object EditInfo : InfoToolBar
+        data object EditText : InfoToolBar
 
         data object EditImage : InfoToolBar
 

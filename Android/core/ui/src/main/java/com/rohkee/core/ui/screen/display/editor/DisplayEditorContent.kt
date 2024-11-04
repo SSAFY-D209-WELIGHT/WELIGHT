@@ -21,9 +21,14 @@ fun DisplayEditorContent(
     onIntent: (DisplayEditorIntent) -> Unit = {},
 ) {
     when (state) {
-        is DisplayEditorState.Loading -> LoadingContent()
+        is DisplayEditorState.Loading -> LoadingContent(modifier = modifier)
 
-        is DisplayEditorState.Edit -> EditContent(state = state, onIntent = onIntent)
+        is DisplayEditorState.Edit ->
+            EditContent(
+                modifier = modifier,
+                state = state,
+                onIntent = onIntent,
+            )
 
         is DisplayEditorState.Error -> {
         }
@@ -34,7 +39,7 @@ fun DisplayEditorContent(
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(
         modifier =
-            Modifier
+            modifier
                 .animateGradientBackground(
                     startColor = AppColor.Background,
                     endColor = AppColor.Surface,
@@ -62,10 +67,10 @@ private fun EditContent(
                     InfoToolBar(
                         modifier = modifier,
                         state = state.editorInfoState,
-                        onTextEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditInfo) },
+                        onTextEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditText) },
                         onImageEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditImage) },
                         onBackgroundEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditBackground) },
-                        onEditInfo = { onIntent(DisplayEditorIntent.InfoToolBar.EditInfo) },
+                        onEditInfo = { onIntent(DisplayEditorIntent.InfoToolBar.EditText) },
                     )
                 }
 
@@ -99,9 +104,21 @@ private fun EditContent(
                     BackgroundToolBar(
                         modifier = modifier,
                         state = state.editorBackgroundState,
-                        onSelectColor = { onIntent(DisplayEditorIntent.BackgroundToolBar.SelectColor(it)) },
+                        onSelectColor = {
+                            onIntent(
+                                DisplayEditorIntent.BackgroundToolBar.SelectColor(
+                                    it,
+                                ),
+                            )
+                        },
                         onSelectCustomColor = { onIntent(DisplayEditorIntent.BackgroundToolBar.SelectCustomColor) },
-                        onChangeBrightness = { onIntent(DisplayEditorIntent.BackgroundToolBar.ChangeBrightness(it)) },
+                        onChangeBrightness = {
+                            onIntent(
+                                DisplayEditorIntent.BackgroundToolBar.ChangeBrightness(
+                                    it,
+                                ),
+                            )
+                        },
                         onDelete = { onIntent(DisplayEditorIntent.BackgroundToolBar.Delete) },
                         onClose = { onIntent(DisplayEditorIntent.BackgroundToolBar.Close) },
                     )
@@ -114,6 +131,8 @@ private fun EditContent(
             imageState = state.editorImageState,
             textState = state.editorTextState,
             backgroundState = state.editorBackgroundState,
+            onImageTransformed = { onIntent(DisplayEditorIntent.UpdateImageState(it)) },
+            onTextTransformed = { onIntent(DisplayEditorIntent.UpdateTextState(it)) },
         )
     }
 }

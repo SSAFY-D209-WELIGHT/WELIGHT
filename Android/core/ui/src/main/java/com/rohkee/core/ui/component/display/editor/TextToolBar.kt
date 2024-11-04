@@ -98,7 +98,7 @@ fun TextToolBar(
                 "회전" ->
                     SliderRow(
                         modifier = Modifier.align(Alignment.Center),
-                        value = state.rotation,
+                        value = state.rotationDegree,
                         onValueChange = onRotate,
                     )
             }
@@ -113,7 +113,7 @@ private fun TextToolBarPreview() {
         state =
             DisplayTextState(
                 textInfo = "text",
-                rotation = 0f,
+                rotationDegree = 0f,
                 color = null,
                 font = FontFamily.Default,
             ),
