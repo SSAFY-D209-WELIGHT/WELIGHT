@@ -30,9 +30,6 @@ public class Display {
     private Boolean displayIsPosted;
 
     @Column(nullable = false)
-    private LocalDateTime displayUpdatedAt;
-
-    @Column(nullable = false)
     private LocalDateTime displayCreatedAt;
 
     @Column(nullable = false)

@@ -33,6 +33,6 @@ public interface DisplayService {
     // 디스플레이 댓글
     List<DisplayCommentResponse> getComments(User user, long displayUid);
     void createComment(User user, Long displayId, DisplayCommentRequest request);
-    DisplayCommentResponse updateComment(User user, DisplayCommentUpdateRequest request);
+    void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request);
     void deleteComment(User user, Long displayId, Long commentUid);
 }

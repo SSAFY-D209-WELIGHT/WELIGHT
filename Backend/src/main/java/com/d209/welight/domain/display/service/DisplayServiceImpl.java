@@ -53,7 +53,6 @@ public class DisplayServiceImpl implements DisplayService {
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
                 .displayIsPosted(false)  // 초기 생성시 게시되지 않은 상태
                 .displayCreatedAt(LocalDateTime.now())
-                .displayUpdatedAt(LocalDateTime.now())
                 .displayDownloadCount(0L)
                 .displayLikeCount(0L)
                 .build();
@@ -343,8 +342,28 @@ public class DisplayServiceImpl implements DisplayService {
 
     // 내 댓글 수정
     @Override
-    public DisplayCommentResponse updateComment(User user, DisplayCommentUpdateRequest request) {
-        return null;
+    public void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request) {
+        // display찾기
+        Display display = displayRepository.findById(displayId)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // comment찾기
+        DisplayComment comment = displayCommentRepository.findById(request.getCommentUid())
+                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+
+        // display에 달린 댓글인지 확인
+        if (!comment.getDisplay().equals(display)) {
+            throw new IllegalArgumentException("해당 디스플레이의 댓글이 아닙니다.");
+        }
+
+        // 현재 유저가 작성한 댓글인지 확인
+        if (!comment.getUser().equals(user)) {
+            throw new IllegalArgumentException("자신의 댓글만 수정할 수 있습니다.");
+        }
+
+        comment.setCommentText(request.getNewCommentText());
+        comment.setCommentUpdatedAt(LocalDateTime.now());
+        displayCommentRepository.save(comment);
     }
 
     // 내 댓글 삭제
