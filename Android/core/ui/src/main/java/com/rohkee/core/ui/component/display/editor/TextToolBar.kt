@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,21 +28,16 @@ import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 import kotlinx.collections.immutable.persistentListOf
 
-@Immutable
-data class EditorTextState(
-    val textState: DisplayTextState,
-    val onClose: () -> Unit = {},
-    val onDelete: () -> Unit = {},
-    val onSelectColor: (CustomColor) -> Unit = {},
-    val onSelectCustomColor: () -> Unit = {},
-    val onSelectFont: (FontFamily) -> Unit = {},
-    val onRotate: (Float) -> Unit = {},
-)
-
 @Composable
 fun TextToolBar(
     modifier: Modifier = Modifier,
-    state: EditorTextState,
+    state: DisplayTextState,
+    onClose: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onSelectColor: (CustomColor) -> Unit = {},
+    onSelectCustomColor: () -> Unit = {},
+    onSelectFont: (FontFamily) -> Unit = {},
+    onRotate: (Float) -> Unit = {},
 ) {
     val options = remember { persistentListOf("색상", "폰트", "회전") }
     val (selected, setSelected) = remember { mutableStateOf(options[0]) }
@@ -56,7 +50,7 @@ fun TextToolBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            CommonCircleButton(icon = Icons.Rounded.Close, onClick = state.onClose)
+            CommonCircleButton(icon = Icons.Rounded.Close, onClick = onClose)
             ChipGroup(
                 list = options,
                 selected = selected,
@@ -65,7 +59,7 @@ fun TextToolBar(
             CommonCircleButton(
                 icon = Icons.Default.Delete,
                 buttonType = ButtonType.Warning,
-                onClick = state.onDelete,
+                onClick = onDelete,
             )
         }
         Box(
@@ -89,23 +83,23 @@ fun TextToolBar(
                 "색상" ->
                     ColorRow(
                         modifier = Modifier.align(Alignment.Center),
-                        selectedColor = state.textState.color,
-                        onColorSelected = state.onSelectColor,
-                        onSelectCustomColor = state.onSelectCustomColor,
+                        selectedColor = state.color,
+                        onColorSelected = onSelectColor,
+                        onSelectCustomColor = onSelectCustomColor,
                     )
 
                 "폰트" ->
                     FontRow(
                         modifier = Modifier.align(Alignment.Center),
-                        selectedFont = state.textState.font,
-                        onFontSelected = state.onSelectFont,
+                        selectedFont = state.font,
+                        onFontSelected = onSelectFont,
                     )
 
                 "회전" ->
                     SliderRow(
                         modifier = Modifier.align(Alignment.Center),
-                        value = state.textState.rotation,
-                        onValueChange = state.onRotate,
+                        value = state.rotation,
+                        onValueChange = onRotate,
                     )
             }
         }
@@ -117,13 +111,11 @@ fun TextToolBar(
 private fun TextToolBarPreview() {
     TextToolBar(
         state =
-            EditorTextState(
-                DisplayTextState(
-                    textInfo = "text",
-                    rotation = 0f,
-                    color = null,
-                    font = FontFamily.Default,
-                ),
+            DisplayTextState(
+                textInfo = "text",
+                rotation = 0f,
+                color = null,
+                font = FontFamily.Default,
             ),
     )
 }

@@ -40,16 +40,16 @@ import kotlinx.collections.immutable.persistentListOf
 data class EditorInfoState(
     val title: String,
     val tags: PersistentList<String>,
-    val editInfo: () -> Unit = {},
-    val onTextEditClick: () -> Unit = {},
-    val onImageEditClick: () -> Unit = {},
-    val onBackgroundEditClick: () -> Unit = {},
 )
 
 @Composable
 fun InfoToolBar(
     modifier: Modifier = Modifier,
     state: EditorInfoState,
+    editInfo: () -> Unit = {},
+    onTextEditClick: () -> Unit = {},
+    onImageEditClick: () -> Unit = {},
+    onBackgroundEditClick: () -> Unit = {},
 ) {
     Column(
         modifier =
@@ -72,7 +72,7 @@ fun InfoToolBar(
         TitleRow(
             modifier = Modifier.padding(horizontal = 16.dp),
             title = state.title,
-            onEditClick = state.editInfo,
+            onEditClick = editInfo,
         )
         TagRow(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -83,9 +83,9 @@ fun InfoToolBar(
             color = AppColor.Convex,
         )
         IconRow(
-            onTextEditClick = state.onTextEditClick,
-            onImageEditClick = state.onImageEditClick,
-            onBackgroundEditClick = state.onBackgroundEditClick,
+            onTextEditClick = onTextEditClick,
+            onImageEditClick = onImageEditClick,
+            onBackgroundEditClick = onBackgroundEditClick,
         )
         Spacer(modifier = Modifier.height(16.dp))
     }

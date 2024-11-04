@@ -63,9 +63,9 @@ private fun EditContent(
     ) { innerPadding ->
         CustomDisplay(
             modifier = Modifier.padding(innerPadding),
-            imageState = state.editorImageState.imageState,
-            textState = state.editorTextState.textState,
-            backgroundState = state.editorBackgroundState.backgroundState,
+            imageState = state.editorImageState,
+            textState = state.editorTextState,
+            backgroundState = state.editorBackgroundState,
         )
     }
 }

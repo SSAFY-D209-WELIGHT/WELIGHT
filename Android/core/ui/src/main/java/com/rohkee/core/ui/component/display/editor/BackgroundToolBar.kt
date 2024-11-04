@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,20 +28,15 @@ import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 import kotlinx.collections.immutable.persistentListOf
 
-@Immutable
-data class EditorBackgroundState(
-    val backgroundState: DisplayBackgroundState,
-    val onClose: () -> Unit = {},
-    val onDelete: () -> Unit = {},
-    val onSelectColor: (CustomColor) -> Unit = {},
-    val onSelectCustomColor: () -> Unit = {},
-    val onChangeBrightness: (Float) -> Unit = {},
-)
-
 @Composable
 fun BackgroundToolBar(
     modifier: Modifier = Modifier,
-    state: EditorBackgroundState,
+    state: DisplayBackgroundState,
+    onClose: () -> Unit = {},
+    onDelete: () -> Unit = {},
+    onSelectColor: (CustomColor) -> Unit = {},
+    onSelectCustomColor: () -> Unit = {},
+    onChangeBrightness: (Float) -> Unit = {},
 ) {
     val options = remember { persistentListOf("색상", "밝기") }
     val (selected, setSelected) = remember { mutableStateOf(options[0]) }
@@ -58,7 +52,7 @@ fun BackgroundToolBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            CommonCircleButton(icon = Icons.Rounded.Close, onClick = state.onClose)
+            CommonCircleButton(icon = Icons.Rounded.Close, onClick = onClose)
             ChipGroup(
                 list = options,
                 selected = selected,
@@ -67,7 +61,7 @@ fun BackgroundToolBar(
             CommonCircleButton(
                 icon = Icons.Default.Delete,
                 buttonType = ButtonType.Warning,
-                onClick = state.onDelete,
+                onClick = onDelete,
             )
         }
         Box(
@@ -91,16 +85,16 @@ fun BackgroundToolBar(
                 "색상" ->
                     ColorRow(
                         modifier = Modifier.align(Alignment.Center),
-                        selectedColor = state.backgroundState.color,
-                        onColorSelected = state.onSelectColor,
-                        onSelectCustomColor = state.onSelectCustomColor,
+                        selectedColor = state.color,
+                        onColorSelected = onSelectColor,
+                        onSelectCustomColor = onSelectCustomColor,
                     )
 
                 "회전" ->
                     SliderRow(
                         modifier = Modifier.align(Alignment.Center),
-                        value = state.backgroundState.brightness,
-                        onValueChange = state.onChangeBrightness,
+                        value = state.brightness,
+                        onValueChange = onChangeBrightness,
                     )
             }
         }
@@ -112,11 +106,9 @@ fun BackgroundToolBar(
 private fun BackgroundToolBarPreview() {
     BackgroundToolBar(
         state =
-            EditorBackgroundState(
-                DisplayBackgroundState(
-                    color = CustomColor.Single(Color.Red),
-                    brightness = 0f,
-                ),
+            DisplayBackgroundState(
+                color = CustomColor.Single(Color.Red),
+                brightness = 0f,
             ),
     )
 }

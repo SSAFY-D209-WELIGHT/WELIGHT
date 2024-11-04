@@ -20,9 +20,9 @@ fun BottomToolBar(
     modifier: Modifier = Modifier,
     state: BottomToolBarState,
     infoState: EditorInfoState,
-    textState: EditorTextState,
-    imageState: EditorImageState,
-    backgroundState: EditorBackgroundState,
+    textState: DisplayTextState,
+    imageState: DisplayImageState,
+    backgroundState: DisplayBackgroundState,
 ) {
     when (state) {
         is BottomToolBarState.Info -> {
