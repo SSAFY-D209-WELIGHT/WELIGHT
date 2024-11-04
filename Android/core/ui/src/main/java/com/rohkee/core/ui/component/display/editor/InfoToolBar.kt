@@ -46,7 +46,7 @@ data class EditorInfoState(
 fun InfoToolBar(
     modifier: Modifier = Modifier,
     state: EditorInfoState,
-    editInfo: () -> Unit = {},
+    onEditInfo: () -> Unit = {},
     onTextEditClick: () -> Unit = {},
     onImageEditClick: () -> Unit = {},
     onBackgroundEditClick: () -> Unit = {},
@@ -72,7 +72,7 @@ fun InfoToolBar(
         TitleRow(
             modifier = Modifier.padding(horizontal = 16.dp),
             title = state.title,
-            onEditClick = editInfo,
+            onEditClick = onEditInfo,
         )
         TagRow(
             modifier = Modifier.padding(horizontal = 16.dp),
