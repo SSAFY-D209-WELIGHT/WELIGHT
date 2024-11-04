@@ -34,5 +34,5 @@ public interface DisplayService {
     List<DisplayCommentResponse> getComments(User user, long displayUid);
     void createComment(User user, Long displayId, DisplayCommentRequest request);
     DisplayCommentResponse updateComment(User user, DisplayCommentUpdateRequest request);
-    void deleteComment(User user, Long commentUid);
+    void deleteComment(User user, Long displayId, Long commentUid);
 }

@@ -215,6 +215,30 @@ public class DisplayController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+    @DeleteMapping("/{displayId}/comment/{commentId}")
+    @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다.")
+    public ResponseEntity<?> deleteComment(
+            Authentication authentication,
+            @PathVariable("displayId") Long displayId,
+            @PathVariable("commentId") Long commentId) {
+
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+            displayService.deleteComment(user, displayId, commentId);
+            return ResponseEntity.status(HttpStatus.CREATED).body("댓글 삭제 완료");
+        } catch (EntityNotFoundException e) {
+            // 디스플레이나 댓글을 찾을 수 없는 경우
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // 디스플레이의 댓글이 아니거나, 자신의 댓글이 아닌 경우
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 삭제 중 오류가 발생했습니다.");
+        }
 
     }
 }
