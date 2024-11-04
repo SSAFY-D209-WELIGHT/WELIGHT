@@ -2,12 +2,17 @@ package com.d209.welight.domain.display.service;
 
 import com.d209.welight.domain.display.entity.*;
 import org.springframework.data.domain.Pageable;
+import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
+import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
+import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
+
+import java.util.List;
 
 import java.util.List;
 
@@ -42,4 +47,9 @@ public interface DisplayService {
     void doLikeDisplay(User user, long displayUid);
     void cancelLikeDisplay(User user, long displayUid);
 
+    // 디스플레이 댓글
+    List<DisplayCommentResponse> getComments(User user, long displayUid);
+    void createComment(User user, Long displayId, DisplayCommentRequest request);
+    void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request);
+    void deleteComment(User user, Long displayId, Long commentUid);
 }

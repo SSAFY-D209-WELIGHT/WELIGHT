@@ -1,6 +1,9 @@
 package com.d209.welight.domain.display.service;
 
+import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
+import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
+import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.entity.*;
@@ -39,6 +42,7 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayColorRepository displayColorRepository;
     private final DisplayStorageRepository displayStorageRepository;
     private final DisplayLikeRepository displayLikeRepository;
+    private final DisplayCommentRepository displayCommentRepository;
     private final UserRepository userRepository;
     private final S3Service s3Service;
 
@@ -58,7 +62,6 @@ public class DisplayServiceImpl implements DisplayService {
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
                 .displayIsPosted(request.getDisplayIsPosted())  // 초기 생성시 게시되지 않은 상태
                 .displayCreatedAt(LocalDateTime.now())
-                .displayUpdatedAt(LocalDateTime.now())
                 .displayDownloadCount(0L)
                 .displayLikeCount(0L)
                 .build();
@@ -512,6 +515,104 @@ public class DisplayServiceImpl implements DisplayService {
         // 4. Display의 Display_like_count 횟수 -1
         display.setDisplayLikeCount(display.getDisplayLikeCount() - 1);
         displayRepository.save(display);
+    }
+
+
+    /*
+     * 댓글
+     * */
+
+    // 해당 display에 있는 댓글 전체 조회
+    @Override
+    public List<DisplayCommentResponse> getComments(User currentUser, long displayUid) {
+        // 해당 display찾기
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // 부모 댓글들 다 찾기
+        List<DisplayComment> comments = displayCommentRepository
+                .findByDisplayAndParentCommentIsNullOrderByCommentCreatedAt(display);
+
+        return comments.stream()
+                .map(comment -> DisplayCommentResponse.convertToDTO(comment, currentUser))
+                .collect(Collectors.toList());
+    }
+
+    // display에 댓글 작성
+    @Override
+    public void createComment(User user, Long displayId, DisplayCommentRequest requestDTO) {
+        // 해당 display찾기
+        Display display = displayRepository.findById(displayId)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // 댓글 객체 생성
+        DisplayComment comment = DisplayComment.builder()
+                .display(display)
+                .user(user)
+                .commentText(requestDTO.getCommentText())
+                .commentCreatedAt(LocalDateTime.now())
+                .commentUpdatedAt(LocalDateTime.now())
+                .build();
+
+        // 대댓글인 경우 - parentComment도 추가
+        if (requestDTO.getParentCommentUid() != null) {
+            DisplayComment parentComment = displayCommentRepository.findById(requestDTO.getParentCommentUid())
+                    .orElseThrow(() -> new EntityNotFoundException("부모 댓글을 찾을 수 없습니다."));
+            comment.setParentComment(parentComment);
+        }
+
+        displayCommentRepository.save(comment);
+    }
+
+    // 내 댓글 수정
+    @Override
+    public void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request) {
+        // display찾기
+        Display display = displayRepository.findById(displayId)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // comment찾기
+        DisplayComment comment = displayCommentRepository.findById(request.getCommentUid())
+                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+
+        // display에 달린 댓글인지 확인
+        if (!comment.getDisplay().equals(display)) {
+            throw new IllegalArgumentException("해당 디스플레이의 댓글이 아닙니다.");
+        }
+
+        // 현재 유저가 작성한 댓글인지 확인
+        if (!comment.getUser().equals(user)) {
+            throw new IllegalArgumentException("자신의 댓글만 수정할 수 있습니다.");
+        }
+
+        comment.setCommentText(request.getNewCommentText());
+        comment.setCommentUpdatedAt(LocalDateTime.now());
+        displayCommentRepository.save(comment);
+    }
+
+    // 내 댓글 삭제
+    @Override
+    public void deleteComment(User user, Long displayUid, Long commentUid) {
+        // display찾기
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        // comment찾기
+        DisplayComment comment = displayCommentRepository.findById(commentUid)
+                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+
+        // display에 달린 댓글인지 확인
+        if (!comment.getDisplay().equals(display)) {
+            throw new IllegalArgumentException("해당 디스플레이의 댓글이 아닙니다.");
+        }
+
+        // 현재 유저가 작성한 댓글인지 확인
+        if (!comment.getUser().equals(user)) {
+            throw new IllegalArgumentException("자신의 댓글만 삭제할 수 있습니다.");
+        }
+
+        // 삭제
+        displayCommentRepository.deleteById(commentUid);
     }
 }
 
