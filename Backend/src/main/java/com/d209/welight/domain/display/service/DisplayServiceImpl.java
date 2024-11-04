@@ -308,7 +308,7 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 부모 댓글들 다 찾기
         List<DisplayComment> comments = displayCommentRepository
-                .findByDisplayAndParentCommentIsNullOrderByCommentCreatedAtDesc(display);
+                .findByDisplayAndParentCommentIsNullOrderByCommentCreatedAt(display);
 
         return comments.stream()
                 .map(comment -> DisplayCommentResponse.convertToDTO(comment, currentUser))
@@ -317,9 +317,9 @@ public class DisplayServiceImpl implements DisplayService {
 
     // display에 댓글 작성
     @Override
-    public void createComment(User user, DisplayCommentRequest requestDTO) {
+    public void createComment(User user, Long displayId, DisplayCommentRequest requestDTO) {
         // 해당 display찾기
-        Display display = displayRepository.findById(requestDTO.getDisplayUid())
+        Display display = displayRepository.findById(displayId)
                 .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
 
         // 댓글 객체 생성
@@ -328,6 +328,7 @@ public class DisplayServiceImpl implements DisplayService {
                 .user(user)
                 .commentText(requestDTO.getCommentText())
                 .commentCreatedAt(LocalDateTime.now())
+                .commentUpdatedAt(LocalDateTime.now())
                 .build();
 
         // 대댓글인 경우 - parentComment도 추가

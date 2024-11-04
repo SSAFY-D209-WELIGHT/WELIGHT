@@ -11,5 +11,6 @@ import java.util.List;
 public interface DisplayCommentRepository extends JpaRepository<DisplayComment, Long> {
     List<DisplayComment> findByDisplayOrderByCommentCreatedAtDesc(Display display);
     List<DisplayComment> findByDisplayAndParentCommentIsNullOrderByCommentCreatedAtDesc(Display display);
+    List<DisplayComment> findByDisplayAndParentCommentIsNullOrderByCommentCreatedAt(Display display);
     void deleteByCommentUid(Long commentUid);
 }

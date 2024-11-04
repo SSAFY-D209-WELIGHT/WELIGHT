@@ -208,8 +208,7 @@ public class DisplayController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
             }
 
-            requestDTO.setDisplayUid(displayId);
-            displayService.createComment(user, requestDTO);
+            displayService.createComment(user, displayId, requestDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("댓글 생성 완료");
         } catch (EntityNotFoundException e) { // 디스플레이 없음
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
