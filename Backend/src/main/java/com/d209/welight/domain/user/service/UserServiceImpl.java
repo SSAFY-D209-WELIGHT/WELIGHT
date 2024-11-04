@@ -82,25 +82,33 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional
     public JwtToken updateToken(String userRefreshToken) {
-        // 사용자 찾기
-//        User user = userRepository.findByUserRefreshToken(userRefreshToken)
-//                .orElseThrow(() -> new UsernameNotFoundException("해당 userRefreshToken의 맞는 회원을 찾을 수 없습니다."));
-        String userId = redisService.findUserIdByRefreshToken(userRefreshToken);
-        if (userId == null) {
-            throw new UsernameNotFoundException("해당 Refresh Token에 맞는 사용자를 찾을 수 없습니다.");
-        }
+        try {
+            String userId = redisService.findUserIdByRefreshToken(userRefreshToken);
+            if (userId == null) {
+                throw new InvalidTokenException("리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.");
+            }
 
-        // 사용자 검증
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+            // 사용자 검증
+            UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
 
-        // 토큰 확인
-        if (redisService.getRefreshToken(userId).equals(userRefreshToken)) {
-            // JWT 토큰 재발급, 재발급이므로 isLogin을 null로 설정
+            // 토큰 확인
+            String storedToken = redisService.getRefreshToken(userId);
+            if (storedToken == null) {
+                throw new InvalidTokenException("리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.");
+            }
+
+            if (!storedToken.contains(userRefreshToken)) {
+                redisService.deleteRefreshToken(userId);
+                throw new InvalidTokenException("유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.");
+            }
+
+            // JWT 토큰 재발급
             JwtToken token = jwtTokenService.generateToken(userId, userDetails.getPassword(), null);
-            redisService.saveRefreshToken(userId, String.valueOf(token));
+            redisService.saveRefreshToken(userId, String.valueOf(token));  // 전체 토큰 정보 저장
             return token;
-        } else {
-            throw new InvalidTokenException("유효하지 않은 토큰입니다.");
+
+        } catch (Exception e) {
+            throw new InvalidTokenException("리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.");
         }
     }
 

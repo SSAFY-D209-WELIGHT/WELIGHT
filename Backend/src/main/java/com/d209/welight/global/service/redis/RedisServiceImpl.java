@@ -37,7 +37,9 @@ public class RedisServiceImpl implements RedisService {
         Set<String> keys = redisTemplate.keys("RefreshToken:*");
         for (String key : Objects.requireNonNull(keys)) {
             String storedToken = redisTemplate.opsForValue().get(key);
-            if (refreshToken.equals(storedToken)) {
+
+            // JwtToken 객체 문자열에서 refreshToken 부분만 추출해서 비교
+            if (storedToken != null && storedToken.contains(refreshToken)) {
                 return key.substring("RefreshToken:".length());
             }
         }
@@ -47,6 +49,13 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public void deleteRefreshToken(String userId) {
         redisTemplate.delete("RefreshToken:" + userId);
+    }
+
+    private String extractRefreshToken(String jwtTokenString) {
+        // "refreshToken=" 다음부터 ")" 전까지의 문자열 추출
+        int startIndex = jwtTokenString.indexOf("refreshToken=") + "refreshToken=".length();
+        int endIndex = jwtTokenString.lastIndexOf(")");
+        return jwtTokenString.substring(startIndex, endIndex);
     }
 }
 
