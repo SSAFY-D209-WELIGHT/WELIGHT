@@ -137,7 +137,7 @@ public class DisplayController {
         try {
             String userId = userDetails.getUsername();
             Long newDisplayId = displayService.duplicateDisplay(displayId, userId);
-            return ResponseEntity.status(HttpStatus.CREATED).body("디스플레이 복제에 성공했습니다!, 복제된 디스플레이 Uid:"+ newDisplayId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(String.format("디스플레이 복제에 성공했습니다!\n복제된 디스플레이 Uid: %d", newDisplayId));
         } catch (EntityNotFoundException e) {
             log.error("디스플레이 복제 중 엔티티를 찾을 수 없음: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
             return ResponseEntity.notFound().build();

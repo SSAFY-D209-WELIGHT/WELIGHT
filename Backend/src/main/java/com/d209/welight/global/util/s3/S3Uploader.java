@@ -143,7 +143,16 @@ public class S3Uploader {
 
     // URL에서 S3 키 추출하는 유틸리티 메서드
     public String extractKeyFromUrl(String url) {
-        return url.substring(url.indexOf(".com/") + 5);
+//        return url.substring(url.indexOf(".com/") + 5);
+        try {
+            URI uri = new URI(url);
+            String path = uri.getPath();
+            // 첫 번째 '/'를 제거하여 실제 S3 키 추출
+            return path.startsWith("/") ? path.substring(1) : path;
+        } catch (Exception e) {
+            log.error("URL 파싱 실패: {}", e.getMessage());
+            throw new RuntimeException("URL 파싱 중 오류가 발생했습니다.");
+        }
     }
 
     // 로컬에 저장된 파일 삭제
