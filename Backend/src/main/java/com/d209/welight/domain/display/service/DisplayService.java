@@ -35,7 +35,7 @@ public interface DisplayService {
     public DisplayCreateRequest getDisplayForEdit(Long displayId, String userId);
 
     // 수정된 디스플레이 저장
-    DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId);
+    DisplayCreateResponse updateDisplay(Long displayUid, DisplayCreateRequest request, String userId);
 
     // 디스플레이 삭제
     void deleteDisplay(Long displayUid, String userId);

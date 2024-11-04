@@ -18,15 +18,15 @@ public class DisplayColor {
     @JoinColumn(name = "DISPLAY_BACKGROUND_UID", nullable = false)
     private DisplayBackground displayBackground;
 
-    @Column(length = 7)
+    @Column(length = 7, nullable = true)
     private String displayColorSolid;
 
-    @Column(length = 7)
+    @Column(length = 7, nullable = true)
     private String displayBackgroundGradationColor1;
 
-    @Column(length = 7)
+    @Column(length = 7, nullable = true)
     private String displayBackgroundGradationColor2;
 
-    @Column(length = 50)
+    @Column(length = 50, nullable = true)
     private String displayBackgroundGradationType;
 }

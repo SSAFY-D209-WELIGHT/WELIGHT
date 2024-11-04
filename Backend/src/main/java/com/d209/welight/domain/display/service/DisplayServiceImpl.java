@@ -62,7 +62,6 @@ public class DisplayServiceImpl implements DisplayService {
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
                 .displayIsPosted(request.getDisplayIsPosted())  // 초기 생성시 게시되지 않은 상태
                 .displayCreatedAt(LocalDateTime.now())
-                .displayUpdatedAt(LocalDateTime.now())
                 .displayDownloadCount(0L)
                 .displayLikeCount(0L)
                 .build();
@@ -128,8 +127,7 @@ public class DisplayServiceImpl implements DisplayService {
                 background.setDisplayBackgroundCreatedAt(LocalDateTime.now());
 
                 // 배경 색상 정보 저장
-                if (request.getBackground().getColor() != null 
-                    && request.getBackground().getColor().getDisplayColorSolid() != null) {
+                if (request.getBackground().getColor() != null) {
 
                     color.setDisplayBackground(background);
                     color.setDisplayColorSolid(request.getBackground().getColor().getDisplayColorSolid());
@@ -480,11 +478,11 @@ public class DisplayServiceImpl implements DisplayService {
                     .displayThumbnailUrl(request.getDisplayThumbnailUrl() != null ? request.getDisplayThumbnailUrl() : originalDisplay.getDisplayThumbnailUrl())
                     .displayIsPosted(request.getDisplayIsPosted() != null ? request.getDisplayIsPosted() : originalDisplay.getDisplayIsPosted())
                     .displayCreatedAt(LocalDateTime.now())
-                    .displayUpdatedAt(LocalDateTime.now())
                     .displayDownloadCount(0L)
                     .displayLikeCount(0L)
                     .build();
-
+            
+            // 수정된(새로운) 디스플레이 저장
             Display savedDisplay = displayRepository.save(newDisplay);
 
             // 3. 컨텐츠 복사 또는 업데이트
@@ -501,6 +499,8 @@ public class DisplayServiceImpl implements DisplayService {
                             .displayTagCreatedAt(LocalDateTime.now())
                             .build())
                     .collect(Collectors.toList());
+            
+            // 수정된 태그 저장
             displayTagRepository.saveAll(tags);
 
             // 3-2. 이미지 처리
@@ -524,6 +524,8 @@ public class DisplayServiceImpl implements DisplayService {
                                 .build())
                         .collect(Collectors.toList());
             }
+
+            // 수정된 이미지 저장 
             displayImageRepository.saveAll(images);
 
             // 3-3. 텍스트 처리
@@ -553,6 +555,8 @@ public class DisplayServiceImpl implements DisplayService {
                                 .build())
                         .collect(Collectors.toList());
             }
+            
+            // 수정된 텍스트 저장
             displayTextRepository.saveAll(texts);
 
             // 3-4. 배경 및 색상 처리
@@ -571,6 +575,8 @@ public class DisplayServiceImpl implements DisplayService {
                         .displayBackgroundCreatedAt(LocalDateTime.now())
                         .build();
             }
+            
+            // 수정된 배경 저장
             DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
 
             // 색상 처리
@@ -597,12 +603,10 @@ public class DisplayServiceImpl implements DisplayService {
             }
 
             if (newColor != null) {
+
+                // 수정된 배경 색상 저장
                 displayColorRepository.save(newColor);
             }
-
-            // 4. 기존 디스플레이 비활성화
-            originalDisplay.setDisplayIsPosted(false);
-            displayRepository.save(originalDisplay);
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -611,7 +615,7 @@ public class DisplayServiceImpl implements DisplayService {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다: ");
         }
     }
 
