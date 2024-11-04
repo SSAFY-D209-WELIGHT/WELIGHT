@@ -52,11 +52,11 @@ public class S3ServiceImpl implements S3Service{
 
     @Override
     @Transactional
-    public String copyS3(String srcFileUrl, String destFileUrl, String userId) throws Exception {
+    public String copyS3(String srcFileUrl, String destFileUrl) throws Exception {
         if (!Objects.equals(srcFileUrl, "") && !Objects.equals(destFileUrl, "")) {
             String sourceKey = s3Uploader.extractKeyFromUrl(srcFileUrl);
             String destFileName = s3Uploader.extractKeyFromUrl(destFileUrl);
-            return s3Uploader.copyAndRename(sourceKey, destFileName, userId);
+            return s3Uploader.copyAndRename(sourceKey, destFileName);
         }
         throw new IllegalArgumentException("원본 URL 또는 새 URL이 존재하지 않습니다.");
     }

@@ -270,8 +270,7 @@ public class DisplayServiceImpl implements DisplayService {
                 // S3에 썸네일 복사
                 String newThumbnailUrl = s3Service.copyS3(
                         originalThumbnailUrl,
-                        newThumbnailName,
-                        userId
+                        newThumbnailName
                 );
 
                 // 새로운 디스플레이에 썸네일 URL 설정
@@ -330,7 +329,7 @@ public class DisplayServiceImpl implements DisplayService {
                         String newFileName = generateFileName(userId, "images", originalImgUrl);
 
                         // S3에 이미지 복사
-                        String newImgUrl = s3Service.copyS3(originalImgUrl, newFileName, userId);
+                        String newImgUrl = s3Service.copyS3(originalImgUrl, newFileName);
 
                         // 새로운 이미지 엔티티 생성 및 저장
                         DisplayImage newImage = DisplayImage.builder()

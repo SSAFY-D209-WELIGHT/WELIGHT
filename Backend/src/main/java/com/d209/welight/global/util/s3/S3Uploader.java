@@ -109,7 +109,7 @@ public class S3Uploader {
         return Optional.empty();
     }
 
-    public String copyAndRename(String sourceKey, String destKey, String userId) {
+    public String copyAndRename(String sourceKey, String destKey) {
         try {
             // 1. S3에서 원본 이미지 가져오기
             S3Object s3Object = amazonS3Client.getObject(bucket, sourceKey);

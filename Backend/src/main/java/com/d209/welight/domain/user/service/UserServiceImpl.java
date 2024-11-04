@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService{
         s3Service.deleteS3(beforeImg); // S3에서 변경 전 이미지 삭제
 
         // 기본 이미지 DB에 업데이트
-        String basicImgUrl = "https://ljycloud.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
+        String basicImgUrl = "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
         user.setUserProfileImg(basicImgUrl);
 
         // DB 저장

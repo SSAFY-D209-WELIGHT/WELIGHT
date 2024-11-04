@@ -72,7 +72,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     public void createUser
             (FormSignUpRequestDTO request, MultipartFile image) throws IOException {
 
-        String imgUrl = "https://ljycloud.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
+        String imgUrl = "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
 
         if(image != null && !image.isEmpty())
             imgUrl = s3Service.uploadS3(image, "profileImg");
