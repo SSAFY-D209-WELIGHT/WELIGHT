@@ -11,4 +11,6 @@ import java.util.List;
 public interface DisplayTextRepository extends JpaRepository<DisplayText, Long> {
 
     List<DisplayText> findByDisplay(Display display);
+
+    void deleteByDisplay(Display display);
 }

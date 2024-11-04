@@ -8,6 +8,7 @@ import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityExistsException;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,25 +42,25 @@ public class DisplayController {
     private final DisplayService displayService;
 
     @PostMapping
-    @Operation(summary = "디스플레이 생성", description = "디스플레이 생성")
+    @Operation(summary = "디스플레이 생성", description = "디스플레이를 생성합니다.")
     public ResponseEntity<DisplayCreateResponse> createDisplay(@Valid @RequestBody DisplayCreateRequest request) {
         try {
             DisplayCreateResponse response = displayService.createDisplay(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (EntityNotFoundException e) {
-            // 필요한 엔티티를 찾을 수 없는 경우 (예: 연관된 사용자나 리소스가 없는 경우)
+            log.error("디스플레이 생성 중 엔티티를 찾을 수 없음: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
-            // 잘못된 입력값이 들어온 경우
+            log.error("디스플레이 생성 중 잘못된 입력값: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
-            // 기타 예상치 못한 서버 오류
+            log.error("디스플레이 생성 중 예상치 못한 오류 발생: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/{displayId}")
-    @Operation(summary = "디스플레이 상세 조회", description = "디스플레이 상세 정보를 조회합니다.")
+    @Operation(summary = "디스플레이 정보 조회", description = "디스플레이 정보를 조회합니다.")
     public ResponseEntity<DisplayDetailResponse> getDisplayDetail(
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -82,7 +83,7 @@ public class DisplayController {
     }
 
     @GetMapping
-    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회 (최신순, 좋아요순, 다운로드순)")
+    @Operation(summary = "전체 디스플레이 조회", description = "게시 여부 1인 디스플레이만 조회합니다. (최신순, 좋아요순, 다운로드순)")
     public ResponseEntity<DisplayListResponse> getDisplayList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -104,8 +105,8 @@ public class DisplayController {
     }
 
     @GetMapping("/mylist")
-    @Operation(summary = "내 디스플레이 목록 조회", description = "현재 사용자가 제작한 디스플레이 목록 조회")
-    // 내가 다운로드한 리스트까지 함께 조회해야함!!!!
+    @Operation(summary = "내 디스플레이 목록 조회", description = "사용자가 제작한 디스플레이와 저장한 디스플레이를 조회합니다.")
+
     public ResponseEntity<DisplayListResponse> getMyDisplayList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -143,6 +144,66 @@ public class DisplayController {
         } catch (Exception e) {
             log.error("디스플레이 복제 중 예상치 못한 오류 발생: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{displayId}/edit")
+    @Operation(summary = "디스플레이 수정 정보 조회", description = "수정할 디스플레이의 정보를 조회합니다.")
+    public ResponseEntity<?> getDisplayForEdit(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            DisplayCreateRequest response = displayService.getDisplayForEdit(displayId, userDetails.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("디스플레이를 찾을 수 없습니다.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("조회 권한이 없습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("디스플레이 정보 조회 중 오류가 발생했습니다.");
+        }
+    }
+
+    @PostMapping("/{displayId}/edit")
+    @Operation(summary = "디스플레이 수정", description = "수정된 디스플레이를 생성합니다.")
+    public ResponseEntity<?> updateDisplay(
+            @PathVariable Long displayId,
+            @RequestBody DisplayCreateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            DisplayCreateResponse response = displayService.updateDisplay(displayId, request, userDetails.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("디스플레이를 찾을 수 없습니다.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("수정 권한이 없습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("디스플레이 수정 중 오류가 발생했습니다.");
+        }
+    }
+
+    @DeleteMapping("/{displayId}")
+    @Operation(summary = "디스플레이 삭제", description = "특정 디스플레이를 삭제합니다.")
+    public ResponseEntity<?> deleteDisplay(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            displayService.deleteDisplay(displayId, userDetails.getUsername());
+            return ResponseEntity.ok().body("디스플레이가 성공적으로 삭제되었습니다.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("디스플레이를 찾을 수 없습니다.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 권한이 없습니다");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("디스플레이 삭제 중 오류가 발생했습니다.");
         }
     }
 

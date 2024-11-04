@@ -2,6 +2,10 @@ package com.d209.welight.domain.display.service;
 
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
+import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
+import com.d209.welight.domain.display.dto.DisplayColorDto;
+import com.d209.welight.domain.display.dto.DisplayImageDto;
+import com.d209.welight.domain.display.dto.DisplayTextDto;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
@@ -127,8 +131,7 @@ public class DisplayServiceImpl implements DisplayService {
                 background.setDisplayBackgroundCreatedAt(LocalDateTime.now());
 
                 // 배경 색상 정보 저장
-                if (request.getBackground().getColor() != null 
-                    && request.getBackground().getColor().getDisplayColorSolid() != null) {
+                if (request.getBackground().getColor() != null) {
 
                     color.setDisplayBackground(background);
                     color.setDisplayColorSolid(request.getBackground().getColor().getDisplayColorSolid());
@@ -217,7 +220,9 @@ public class DisplayServiceImpl implements DisplayService {
             // 사용자 id를 통해 userUid 조회
             Optional<User> user = userRepository.findByUserId(userId);
             Long userUid = user.get().getUserUid();
-            Page<Display> displays = displayRepository.findAllByCreatorUid(userUid, pageable);
+
+            // 내가 생성한 디스플레이와 저장한 디스플레이 모두 조회
+            Page<Display> displays = displayRepository.findAllByCreatorUidOrStoredByUser(userUid, user, pageable);
 
             // 사용자의 디스플레이 목록 조회
             List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()
@@ -379,6 +384,306 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Override
+    public DisplayCreateRequest getDisplayForEdit(Long displayId, String userId) {
+        try {
+            // 권한 확인
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+            Display display = displayRepository.findById(displayId)
+                    .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+            if (!display.getCreatorUid().equals(user.getUserUid())) {
+                throw new IllegalStateException("디스플레이를 수정할 권한이 없습니다.");
+            }
+
+            // 태그 정보 변환
+            List<String> tags = display.getTags().stream()
+                    .map(DisplayTag::getDisplayTagText)
+                    .collect(Collectors.toList());
+
+            // 이미지 정보 변환
+            List<DisplayImageDto> images = display.getImages().stream()
+                    .map(image -> DisplayImageDto.builder()
+                            .displayImgUrl(image.getDisplayImgUrl())
+                            .displayImgPosition(image.getDisplayImgPosition())
+                            .build())
+                    .collect(Collectors.toList());
+
+            // 텍스트 정보 변환
+            List<DisplayTextDto> texts = display.getTexts().stream()
+                    .map(text -> DisplayTextDto.builder()
+                            .displayTextDetail(text.getDisplayTextDetail())
+                            .displayTextColor(text.getDisplayTextColor())
+                            .displayTextPosition(text.getDisplayTextPosition())
+                            .displayTextRotation(text.getDisplayTextRotation())
+                            .displayTextFont(text.getDisplayTextFont())
+                            .build())
+                    .collect(Collectors.toList());
+
+            // 배경 정보 변환
+            DisplayBackgroundDto background = null;
+            if (display.getBackground() != null) {
+                DisplayColor color = displayColorRepository.findByDisplayBackground(display.getBackground())
+                        .orElse(null);
+
+                DisplayColorDto colorDto = null;
+                if (color != null) {
+                    colorDto = DisplayColorDto.builder()
+                            .displayColorSolid(color.getDisplayColorSolid())
+                            .displayBackgroundGradationColor1(color.getDisplayBackgroundGradationColor1())
+                            .displayBackgroundGradationColor2(color.getDisplayBackgroundGradationColor2())
+                            .displayBackgroundGradationType(color.getDisplayBackgroundGradationType())
+                            .build();
+                }
+
+                background = DisplayBackgroundDto.builder()
+                        .displayBackgroundBrightness(display.getBackground().getDisplayBackgroundBrightness())
+                        .color(colorDto)
+                        .build();
+            }
+
+            // DisplayCreateRequest 생성 및 반환
+            return DisplayCreateRequest.builder()
+                    .creatorUid(display.getCreatorUid())
+                    .displayName(display.getDisplayName())
+                    .displayThumbnailUrl(display.getDisplayThumbnailUrl())
+                    .displayIsPosted(display.getDisplayIsPosted())
+                    .tags(tags)
+                    .images(images)
+                    .texts(texts)
+                    .background(background)
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("디스플레이 수정 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId) {
+        try {
+            // 1. 권한 확인
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+            Display originalDisplay = displayRepository.findById(displayId)
+                    .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+            if (!originalDisplay.getCreatorUid().equals(user.getUserUid())) {
+                throw new IllegalStateException("디스플레이를 수정할 권한이 없습니다.");
+            }
+
+            // 2. 새로운 디스플레이 생성 (기존 정보 복사)
+            Display newDisplay = Display.builder()
+                    .creatorUid(user.getUserUid())
+                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : originalDisplay.getDisplayName())
+                    .displayThumbnailUrl(request.getDisplayThumbnailUrl() != null ? request.getDisplayThumbnailUrl() : originalDisplay.getDisplayThumbnailUrl())
+                    .displayIsPosted(request.getDisplayIsPosted() != null ? request.getDisplayIsPosted() : originalDisplay.getDisplayIsPosted())
+                    .displayCreatedAt(LocalDateTime.now())
+                    .displayDownloadCount(0L)
+                    .displayLikeCount(0L)
+                    .build();
+            
+            // 수정된(새로운) 디스플레이 저장
+            Display savedDisplay = displayRepository.save(newDisplay);
+
+            // 3. 컨텐츠 복사 또는 업데이트
+            // 3-1. 태그 처리
+            List<String> newTags = request.getTags() != null ? request.getTags() :
+                    originalDisplay.getTags().stream()
+                            .map(DisplayTag::getDisplayTagText)
+                            .toList();
+
+            List<DisplayTag> tags = newTags.stream()
+                    .map(tag -> DisplayTag.builder()
+                            .display(savedDisplay)
+                            .displayTagText(tag)
+                            .displayTagCreatedAt(LocalDateTime.now())
+                            .build())
+                    .collect(Collectors.toList());
+            
+            // 수정된 태그 저장
+            displayTagRepository.saveAll(tags);
+
+            // 3-2. 이미지 처리
+            List<DisplayImage> images;
+            if (request.getImages() != null) {
+                images = request.getImages().stream()
+                        .map(imageDto -> DisplayImage.builder()
+                                .display(savedDisplay)
+                                .displayImgUrl(imageDto.getDisplayImgUrl())
+                                .displayImgPosition(imageDto.getDisplayImgPosition())
+                                .displayImgCreatedAt(LocalDateTime.now())
+                                .build())
+                        .collect(Collectors.toList());
+            } else {
+                images = originalDisplay.getImages().stream()
+                        .map(image -> DisplayImage.builder()
+                                .display(savedDisplay)
+                                .displayImgUrl(image.getDisplayImgUrl())
+                                .displayImgPosition(image.getDisplayImgPosition())
+                                .displayImgCreatedAt(LocalDateTime.now())
+                                .build())
+                        .collect(Collectors.toList());
+            }
+
+            // 수정된 이미지 저장 
+            displayImageRepository.saveAll(images);
+
+            // 3-3. 텍스트 처리
+            List<DisplayText> texts;
+            if (request.getTexts() != null) {
+                texts = request.getTexts().stream()
+                        .map(textDto -> DisplayText.builder()
+                                .display(savedDisplay)
+                                .displayTextDetail(textDto.getDisplayTextDetail())
+                                .displayTextColor(textDto.getDisplayTextColor())
+                                .displayTextPosition(textDto.getDisplayTextPosition())
+                                .displayTextRotation(textDto.getDisplayTextRotation())
+                                .displayTextFont(textDto.getDisplayTextFont())
+                                .displayTextCreatedAt(LocalDateTime.now())
+                                .build())
+                        .collect(Collectors.toList());
+            } else {
+                texts = originalDisplay.getTexts().stream()
+                        .map(text -> DisplayText.builder()
+                                .display(savedDisplay)
+                                .displayTextDetail(text.getDisplayTextDetail())
+                                .displayTextColor(text.getDisplayTextColor())
+                                .displayTextPosition(text.getDisplayTextPosition())
+                                .displayTextRotation(text.getDisplayTextRotation())
+                                .displayTextFont(text.getDisplayTextFont())
+                                .displayTextCreatedAt(LocalDateTime.now())
+                                .build())
+                        .collect(Collectors.toList());
+            }
+            
+            // 수정된 텍스트 저장
+            displayTextRepository.saveAll(texts);
+
+            // 3-4. 배경 및 색상 처리
+            DisplayBackground newBackground;
+            if (request.getBackground() != null) {
+                newBackground = DisplayBackground.builder()
+                        .display(savedDisplay)
+                        .displayBackgroundBrightness(request.getBackground().getDisplayBackgroundBrightness())
+                        .displayBackgroundCreatedAt(LocalDateTime.now())
+                        .build();
+            } else {
+                DisplayBackground originalBackground = originalDisplay.getBackground();
+                newBackground = DisplayBackground.builder()
+                        .display(savedDisplay)
+                        .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                        .displayBackgroundCreatedAt(LocalDateTime.now())
+                        .build();
+            }
+            
+            // 수정된 배경 저장
+            DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
+
+            // 색상 처리
+            DisplayColor originalColor = displayColorRepository.findByDisplayBackground(originalDisplay.getBackground()).orElse(null);
+            DisplayColor newColor;
+            if (request.getBackground() != null && request.getBackground().getColor() != null) {
+                newColor = DisplayColor.builder()
+                        .displayBackground(savedBackground)
+                        .displayColorSolid(request.getBackground().getColor().getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(request.getBackground().getColor().getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(request.getBackground().getColor().getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(request.getBackground().getColor().getDisplayBackgroundGradationType())
+                        .build();
+            } else if (originalColor != null) {
+                newColor = DisplayColor.builder()
+                        .displayBackground(savedBackground)
+                        .displayColorSolid(originalColor.getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(originalColor.getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(originalColor.getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(originalColor.getDisplayBackgroundGradationType())
+                        .build();
+            } else {
+                newColor = null;
+            }
+
+            if (newColor != null) {
+
+                // 수정된 배경 색상 저장
+                displayColorRepository.save(newColor);
+            }
+
+            return DisplayCreateResponse.builder()
+                    .displayUid(savedDisplay.getDisplayUid())
+                    .displayName(savedDisplay.getDisplayName())
+                    .message("디스플레이가 성공적으로 수정되었습니다.")
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다: ");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteDisplay(Long displayUid, String userId) {
+        // 1. Display와 User 정보 확인
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 2. 권한 확인 (생성자 또는 관리자만 삭제 가능)
+        if (!display.getCreatorUid().equals(user.getUserUid()) && !user.isUserIsAdmin()) {
+            throw new IllegalStateException("디스플레이를 삭제할 권한이 없습니다.");
+        }
+
+        try {
+            // 3. S3에서 이미지 파일들 삭제
+            // 썸네일 삭제
+            if (display.getDisplayThumbnailUrl() != null) {
+                s3Service.deleteS3(display.getDisplayThumbnailUrl());
+            }
+
+            // 디스플레이 이미지들 삭제
+            display.getImages().forEach(image -> {
+                if (image.getDisplayImgUrl() != null) {
+                    try {
+                        s3Service.deleteS3(image.getDisplayImgUrl());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+            // 4. 연관된 데이터 삭제
+            // 좋아요 삭제
+            displayLikeRepository.deleteByUserAndDisplay(user, display);
+
+            // 저장소 삭제
+            displayStorageRepository.deleteByUserAndDisplay(user, display);
+
+            // 태그 삭제
+            displayTagRepository.deleteByDisplay(display);
+
+            // 이미지 삭제
+            displayImageRepository.deleteByDisplay(display);
+
+            // 텍스트 삭제
+            displayTextRepository.deleteByDisplay(display);
+
+            // 배경 색상 삭제
+            DisplayBackground background = display.getBackground();
+            displayColorRepository.deleteByDisplayBackground(background);
+            displayBackgroundRepository.findByDisplay(display);
+
+            // 5. 디스플레이 삭제
+            displayRepository.delete(display);
+
+        } catch (Exception e) {
+            throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
 
 
     private String generateFileName(String userId, String type, String originalFileUrl) {

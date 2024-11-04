@@ -1,4 +1,5 @@
 package com.d209.welight.domain.display.entity;
+import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "DISPLAY_TAG")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayTag {
@@ -25,4 +27,5 @@ public class DisplayTag {
 
     @Column(nullable = false)
     private LocalDateTime displayTagCreatedAt;
+
 }
