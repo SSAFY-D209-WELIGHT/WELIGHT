@@ -57,7 +57,7 @@ public class DisplayController {
     }
 
     @GetMapping("/{displayId}")
-    @Operation(summary = "디스플레이 상세 조회", description = "디스플레이 상세 정보를 조회합니다.")
+    @Operation(summary = "디스플레이 정보 조회", description = "디스플레이 정보를 조회합니다.")
     public ResponseEntity<DisplayDetailResponse> getDisplayDetail(
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -141,6 +141,27 @@ public class DisplayController {
         } catch (Exception e) {
             log.error("디스플레이 복제 중 예상치 못한 오류 발생: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/displays/{displayId}/edit")
+    @Operation(summary = "디스플레이 수정 정보 조회", description = "수정할 디스플레이의 정보를 조회합니다.")
+    public ResponseEntity<?> getDisplayForEdit(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            DisplayCreateRequest response = displayService.getDisplayForEdit(displayId, userDetails.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("디스플레이를 찾을 수 없습니다.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("조회 권한이 없습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("디스플레이 정보 조회 중 오류가 발생했습니다.");
         }
     }
 

@@ -31,6 +31,12 @@ public interface DisplayService {
     void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId);
     void duplicateBackground(DisplayBackground originalBackground, Display newDisplay);
 
+    // 수정하는 디스플레이 정보 전송
+    public DisplayCreateRequest getDisplayForEdit(Long displayId, String userId);
+
+    // 수정된 디스플레이 저장
+    DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId);
+
     // 디스플레이 삭제
     void deleteDisplay(Long displayUid, String userId);
 
