@@ -19,7 +19,7 @@ import java.util.List;
 public interface DisplayService {
 
     // 디스플레이 정보 저장 (기본 정보, 배경, 이미지, 텍스트, 태그)
-    DisplayCreateResponse createDisplay(DisplayCreateRequest request);
+    DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request);
 
     // 디스플레이 상세 보기
     DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request);

@@ -43,9 +43,14 @@ public class DisplayController {
 
     @PostMapping
     @Operation(summary = "디스플레이 생성", description = "디스플레이를 생성합니다.")
-    public ResponseEntity<DisplayCreateResponse> createDisplay(@Valid @RequestBody DisplayCreateRequest request) {
+    public ResponseEntity<DisplayCreateResponse> createDisplay(Authentication authentication,
+                                                               @Valid @RequestBody DisplayCreateRequest request) {
         try {
-            DisplayCreateResponse response = displayService.createDisplay(request);
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            DisplayCreateResponse response = displayService.createDisplay(user, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (EntityNotFoundException e) {
             log.error("디스플레이 생성 중 엔티티를 찾을 수 없음: {}", e.getMessage());
