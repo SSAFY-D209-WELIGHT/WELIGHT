@@ -19,7 +19,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -33,6 +33,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.play.services.auth)
+    implementation(project(":demo"))
     implementation(libs.androidx.material3)
     implementation(libs.coil.compose)
     implementation(libs.androidx.core.ktx)
