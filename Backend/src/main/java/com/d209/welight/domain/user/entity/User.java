@@ -22,31 +22,31 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_uid", nullable = false)
+    @Column(name = "USER_UID", nullable = false)
     @Schema(description = "회원 고유 번호", example = "1")
     private long userUid;
 
-    @Column(name = "user_id", nullable = false)
-    @Schema(description = "회원 아이디", example = "1")
+    @Column(name = "USER_ID", nullable = false)
+    @Schema(description = "회원 아이디", example = "abcde")
     private String userId;
 
-    @Column(name = "user_password", nullable = false)
+    @Column(name = "USER_PASSWORD", nullable = false)
     @Schema(description = "회원 비밀번호", example = "암호화된 내용")
     private String userPassword;
 
-    @Column(name = "user_nickname", nullable = false)
+    @Column(name = "USER_NICKNAME", nullable = false)
     @Schema(description = "회원 닉네임", example = "TEST")
     private String userNickname;
 
-    @Column(name = "user_profile_img")
+    @Column(name = "USER_PROFILE_IMG")
     @Schema(description = "회원 프로필 사진", example = "multipart 이미지")
     private String userProfileImg;
 
-    @Column(name = "user_login", nullable = false)
-    @Schema(description = "회원 로그인처", example = "Form")
+    @Column(name = "USER_LOGIN", nullable = false)
+    @Schema(description = "회원 로그인 유형", example = "Form")
     private String userLogin;
 
-    @Column(name = "user_is_admin", nullable = false)
+    @Column(name = "USER_IS_ADMIN", nullable = false)
     @Schema(description = "회원 관리자 유무", example = "false")
     private boolean userIsAdmin;
 
@@ -54,7 +54,7 @@ public class User implements UserDetails {
 //    @Schema(description = "회원 refreshToken", example = "ex7534487435468~~")
 //    private String userRefreshToken;
 
-    @Column(name = "user_signup_date")
+    @Column(name = "USER_SIGNUP_DATE")
     @Schema(description = "회원 가입 일자", example = "2024.09.12 14:00:00")
     private LocalDateTime userSignupDate;
 
