@@ -131,8 +131,8 @@ private fun EditContent(
             imageState = state.editorImageState,
             textState = state.editorTextState,
             backgroundState = state.editorBackgroundState,
-            onImageTransformed = { onIntent(EditorIntent.TransformImage(it)) },
-            onTextTransformed = { onIntent(EditorIntent.TransfromText(it)) },
+            onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
+            onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
         )
     }
 }
