@@ -80,6 +80,8 @@ public class UserController {
     @Operation(summary = "폼 로그인", description = "폼 로그인")
     public ResponseEntity<?> login(@RequestBody FormLoginRequestDTO request) {
         try {
+            // 로그인 로직
+            log.info("로그인 성공 - userId: {}", request.getUserId());
             JwtToken tokens = userService.FormLogin(request);
             // 200, 클라이언트 요청 성공
             return ResponseEntity.ok(tokens);
@@ -88,6 +90,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             // 400, 잘못된 요청
+            log.error("로그인 실패 - userId: {}, error: {}", request.getUserId(), e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
