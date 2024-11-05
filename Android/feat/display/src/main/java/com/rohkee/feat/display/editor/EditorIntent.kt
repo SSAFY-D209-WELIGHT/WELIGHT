@@ -1,28 +1,32 @@
-package com.rohkee.core.ui.screen.display.editor
+package com.rohkee.feat.display.editor
 
 import androidx.compose.ui.text.font.FontFamily
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.model.CustomColor
 
-sealed interface DisplayEditorIntent {
+sealed interface EditorIntent {
+    data object ExitPage : EditorIntent
 
-    data object AttemptExitPage : DisplayEditorIntent
+    data object Save : EditorIntent
 
-    data object ExitPage : DisplayEditorIntent
+    // Text Object
+    sealed interface TextObject : EditorIntent {
+        data object Select : TextObject
+        data class Transform(
+            val textState: DisplayTextState,
+        ) : TextObject
+    }
 
-    data object SaveDisplay : DisplayEditorIntent
-
-    data class UpdateImageState(
-        val imageState: DisplayImageState,
-    ) : DisplayEditorIntent
-
-    data class UpdateTextState(
-        val textState: DisplayTextState,
-    ) : DisplayEditorIntent
-
+    // Image Object
+    sealed interface ImageObject : EditorIntent {
+        data object Select : ImageObject
+        data class Transform(
+            val imageState: DisplayImageState,
+        ) : ImageObject
+    }
     // Info ToolBar
-    sealed interface InfoToolBar : DisplayEditorIntent {
+    sealed interface InfoToolBar : EditorIntent {
         data object EditText : InfoToolBar
 
         data object EditImage : InfoToolBar
@@ -31,7 +35,9 @@ sealed interface DisplayEditorIntent {
     }
 
     // Text ToolBar
-    sealed interface TextToolBar : DisplayEditorIntent {
+    sealed interface TextToolBar : EditorIntent {
+        data object Select : TextToolBar
+
         data class SelectColor(
             val color: CustomColor,
         ) : TextToolBar
@@ -52,7 +58,9 @@ sealed interface DisplayEditorIntent {
     }
 
     // Image ToolBar
-    sealed interface ImageToolBar : DisplayEditorIntent {
+    sealed interface ImageToolBar : EditorIntent {
+        data object Select : ImageToolBar
+
         data class SelectColor(
             val color: CustomColor,
         ) : ImageToolBar
@@ -71,7 +79,7 @@ sealed interface DisplayEditorIntent {
     }
 
     // Background ToolBar
-    sealed interface BackgroundToolBar : DisplayEditorIntent {
+    sealed interface BackgroundToolBar : EditorIntent {
         data class SelectColor(
             val color: CustomColor,
         ) : BackgroundToolBar
@@ -88,9 +96,17 @@ sealed interface DisplayEditorIntent {
     }
 
     // Dialog
-    sealed interface Dialog : DisplayEditorIntent {
+    sealed interface Dialog : EditorIntent {
         data class ColorPicked(
             val color: CustomColor,
         ) : Dialog
+
+        data object ExitPage : Dialog
+
+        data object DeleteText : Dialog
+
+        data object DeleteImage : Dialog
+
+        data object DeleteBackground : Dialog
     }
 }
