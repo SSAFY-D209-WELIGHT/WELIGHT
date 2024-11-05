@@ -12,8 +12,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rohkee.core.ui.dialog.AskingDialog
 import com.rohkee.core.ui.dialog.ColorPickerDialog
 import com.rohkee.core.ui.dialog.WarningDialog
-import com.rohkee.core.ui.screen.display.editor.DisplayEditorContent
-import com.rohkee.core.ui.screen.display.editor.DisplayEditorIntent
 import com.rohkee.core.ui.util.collectWithLifecycle
 import com.rohkee.feat.display.R
 
@@ -26,8 +24,8 @@ fun EditorScreen(
 ) {
     val editorUIState by editorViewModel.editorState.collectAsStateWithLifecycle()
 
-    var isColorPickerOpen by remember { mutableStateOf(false) }
     var isExitAskingDialogOpen by remember { mutableStateOf(false) }
+    var isColorPickerOpen by remember { mutableStateOf(false) }
     var isTextDeleteWarningDialogOpen by remember { mutableStateOf(false) }
     var isImageDeleteWarningDialogOpen by remember { mutableStateOf(false) }
     var isBackgroundDeleteWarningDialogOpen by remember { mutableStateOf(false) }
@@ -35,7 +33,7 @@ fun EditorScreen(
     editorViewModel.editorEvent.collectWithLifecycle { event ->
         when (event) {
             is EditorEvent.ExitPage -> onPopBackStack()
-            is EditorEvent.OpenColorPicker -> {
+            is EditorEvent.Open.ColorPicker -> {
                 isColorPickerOpen = true
             }
             is EditorEvent.SaveDisplay -> onNavigateToDisplayDetail(event.displayId)
@@ -44,18 +42,18 @@ fun EditorScreen(
         }
     }
 
-    if (isColorPickerOpen) {
-        ColorPickerDialog(
-            onConfirm = { editorViewModel.onIntent(DisplayEditorIntent.Dialog.ColorPicked(it)) },
-            onDismiss = { isColorPickerOpen = false },
-        )
-    }
     if (isExitAskingDialogOpen) {
         AskingDialog(
             title = stringResource(R.string.dialog_exit_edit_title),
             content = stringResource(R.string.dialog_exit_edit_content),
-            onConfirm = { editorViewModel.onIntent(DisplayEditorIntent.ExitPage) },
+            onConfirm = { editorViewModel.onIntent(EditorIntent.ExitPage) },
             onDismiss = { isExitAskingDialogOpen = false },
+        )
+    }
+    if (isColorPickerOpen) {
+        ColorPickerDialog(
+            onConfirm = { editorViewModel.onIntent(EditorIntent.Dialog.ColorPicked(it)) },
+            onDismiss = { isColorPickerOpen = false },
         )
     }
     if (isTextDeleteWarningDialogOpen) {
@@ -83,7 +81,7 @@ fun EditorScreen(
         )
     }
 
-    DisplayEditorContent(
+    EditorContent(
         modifier = modifier,
         state = editorUIState,
         onIntent = editorViewModel::onIntent,

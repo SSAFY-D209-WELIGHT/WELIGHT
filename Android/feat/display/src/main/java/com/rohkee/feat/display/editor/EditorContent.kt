@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.screen.display.editor
+package com.rohkee.feat.display.editor
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -15,22 +15,22 @@ import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
 
 @Composable
-fun DisplayEditorContent(
+fun EditorContent(
     modifier: Modifier = Modifier,
-    state: DisplayEditorState,
-    onIntent: (DisplayEditorIntent) -> Unit = {},
+    state: EditorState,
+    onIntent: (EditorIntent) -> Unit = {},
 ) {
     when (state) {
-        is DisplayEditorState.Loading -> LoadingContent(modifier = modifier)
+        is EditorState.Loading -> LoadingContent(modifier = modifier)
 
-        is DisplayEditorState.Edit ->
+        is EditorState.Edit ->
             EditContent(
                 modifier = modifier,
                 state = state,
                 onIntent = onIntent,
             )
 
-        is DisplayEditorState.Error -> {
+        is EditorState.Error -> {
         }
     }
 }
@@ -50,15 +50,15 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
 @Composable
 private fun EditContent(
     modifier: Modifier = Modifier,
-    state: DisplayEditorState.Edit,
-    onIntent: (DisplayEditorIntent) -> Unit = {},
+    state: EditorState.Edit,
+    onIntent: (EditorIntent) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
         topBar = {
             SavableAppBar(
-                onCloseClick = { onIntent(DisplayEditorIntent.ExitPage) },
-                onSaveClick = { onIntent(DisplayEditorIntent.SaveDisplay) },
+                onCloseClick = { onIntent(EditorIntent.ExitPage) },
+                onSaveClick = { onIntent(EditorIntent.Save) },
             )
         },
         bottomBar = {
@@ -67,10 +67,10 @@ private fun EditContent(
                     InfoToolBar(
                         modifier = modifier,
                         state = state.editorInfoState,
-                        onTextEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditText) },
-                        onImageEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditImage) },
-                        onBackgroundEditClick = { onIntent(DisplayEditorIntent.InfoToolBar.EditBackground) },
-                        onEditInfo = { onIntent(DisplayEditorIntent.InfoToolBar.EditText) },
+                        onTextEditClick = { onIntent(EditorIntent.InfoToolBar.EditText) },
+                        onImageEditClick = { onIntent(EditorIntent.InfoToolBar.EditImage) },
+                        onBackgroundEditClick = { onIntent(EditorIntent.InfoToolBar.EditBackground) },
+                        onEditInfo = { onIntent(EditorIntent.InfoToolBar.EditText) },
                     )
                 }
 
@@ -78,12 +78,12 @@ private fun EditContent(
                     TextToolBar(
                         modifier = modifier,
                         state = state.editorTextState,
-                        onSelectColor = { onIntent(DisplayEditorIntent.TextToolBar.SelectColor(it)) },
-                        onSelectCustomColor = { onIntent(DisplayEditorIntent.TextToolBar.SelectCustomColor) },
-                        onSelectFont = { onIntent(DisplayEditorIntent.TextToolBar.SelectFont(it)) },
-                        onRotate = { onIntent(DisplayEditorIntent.TextToolBar.Rotate(it)) },
-                        onDelete = { onIntent(DisplayEditorIntent.TextToolBar.Delete) },
-                        onClose = { onIntent(DisplayEditorIntent.TextToolBar.Close) },
+                        onSelectColor = { onIntent(EditorIntent.TextToolBar.SelectColor(it)) },
+                        onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor) },
+                        onSelectFont = { onIntent(EditorIntent.TextToolBar.SelectFont(it)) },
+                        onRotate = { onIntent(EditorIntent.TextToolBar.Rotate(it)) },
+                        onDelete = { onIntent(EditorIntent.TextToolBar.Delete) },
+                        onClose = { onIntent(EditorIntent.TextToolBar.Close) },
                     )
                 }
 
@@ -91,12 +91,12 @@ private fun EditContent(
                     ImageToolBar(
                         modifier = modifier,
                         state = state.editorImageState,
-                        onDelete = { onIntent(DisplayEditorIntent.ImageToolBar.Delete) },
-                        onClose = { onIntent(DisplayEditorIntent.ImageToolBar.Close) },
-                        onSelectColor = { onIntent(DisplayEditorIntent.ImageToolBar.SelectColor(it)) },
-                        onSelectCustomColor = { onIntent(DisplayEditorIntent.ImageToolBar.SelectCustomColor) },
-                        onRotate = { onIntent(DisplayEditorIntent.ImageToolBar.Rotate(it)) },
-                        onChangeImage = { onIntent(DisplayEditorIntent.ImageToolBar.Change) },
+                        onDelete = { onIntent(EditorIntent.ImageToolBar.Delete) },
+                        onClose = { onIntent(EditorIntent.ImageToolBar.Close) },
+                        onSelectColor = { onIntent(EditorIntent.ImageToolBar.SelectColor(it)) },
+                        onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor) },
+                        onRotate = { onIntent(EditorIntent.ImageToolBar.Rotate(it)) },
+                        onChangeImage = { onIntent(EditorIntent.ImageToolBar.Change) },
                     )
                 }
 
@@ -106,21 +106,21 @@ private fun EditContent(
                         state = state.editorBackgroundState,
                         onSelectColor = {
                             onIntent(
-                                DisplayEditorIntent.BackgroundToolBar.SelectColor(
+                                EditorIntent.BackgroundToolBar.SelectColor(
                                     it,
                                 ),
                             )
                         },
-                        onSelectCustomColor = { onIntent(DisplayEditorIntent.BackgroundToolBar.SelectCustomColor) },
+                        onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor) },
                         onChangeBrightness = {
                             onIntent(
-                                DisplayEditorIntent.BackgroundToolBar.ChangeBrightness(
+                                EditorIntent.BackgroundToolBar.ChangeBrightness(
                                     it,
                                 ),
                             )
                         },
-                        onDelete = { onIntent(DisplayEditorIntent.BackgroundToolBar.Delete) },
-                        onClose = { onIntent(DisplayEditorIntent.BackgroundToolBar.Close) },
+                        onDelete = { onIntent(EditorIntent.BackgroundToolBar.Delete) },
+                        onClose = { onIntent(EditorIntent.BackgroundToolBar.Close) },
                     )
                 }
             }
@@ -131,8 +131,8 @@ private fun EditContent(
             imageState = state.editorImageState,
             textState = state.editorTextState,
             backgroundState = state.editorBackgroundState,
-            onImageTransformed = { onIntent(DisplayEditorIntent.UpdateImageState(it)) },
-            onTextTransformed = { onIntent(DisplayEditorIntent.UpdateTextState(it)) },
+            onImageTransformed = { onIntent(EditorIntent.TransformImage(it)) },
+            onTextTransformed = { onIntent(EditorIntent.TransfromText(it)) },
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.screen.display.editor
+package com.rohkee.feat.display.editor
 
 import androidx.compose.runtime.Immutable
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
@@ -6,9 +6,9 @@ import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.component.display.editor.EditorInfoState
 
-sealed interface DisplayEditorState {
+sealed interface EditorState {
     @Immutable
-    data object Loading : DisplayEditorState
+    data object Loading : EditorState
 
     @Immutable
     data class Edit(
@@ -18,10 +18,10 @@ sealed interface DisplayEditorState {
         val editorTextState: DisplayTextState = DisplayTextState(),
         val editorBackgroundState: DisplayBackgroundState = DisplayBackgroundState(),
         val bottomBarState: EditingState,
-    ) : DisplayEditorState
+    ) : EditorState
 
     @Immutable
-    data object Error : DisplayEditorState
+    data object Error : EditorState
 }
 
 
