@@ -43,8 +43,7 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - /home/ubuntu/properties:/app/properties
-      - /home/ubuntu/env:/app/env
+      - /home/ubuntu/configure:/app/configure
     depends_on:
       - mysql
       - redis
@@ -58,8 +57,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /home/ubuntu/properties:/app/properties
-      - /home/ubuntu/env:/app/env
+      - /home/ubuntu/configure:/app/configure
+    environment:
+      - ENV_FILE_PATH: "/app/configure/.env"
     depends_on:
       - mysql
       - redis
