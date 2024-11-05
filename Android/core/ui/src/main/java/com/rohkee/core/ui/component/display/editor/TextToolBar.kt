@@ -112,10 +112,7 @@ private fun TextToolBarPreview() {
     TextToolBar(
         state =
             DisplayTextState(
-                textInfo = "text",
-                rotationDegree = 0f,
-                color = null,
-                font = FontFamily.Default,
+                text = "text",
             ),
     )
 }

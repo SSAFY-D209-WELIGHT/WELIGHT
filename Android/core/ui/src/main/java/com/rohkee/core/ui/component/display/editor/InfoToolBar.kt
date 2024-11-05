@@ -21,9 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -38,8 +35,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
 data class EditorInfoState(
-    val title: String,
-    val tags: PersistentList<String>,
+    val title: String = "",
+    val tags: PersistentList<String> = persistentListOf(),
 )
 
 @Composable
@@ -97,8 +94,6 @@ private fun TitleRow(
     title: String,
     onEditClick: () -> Unit = {},
 ) {
-    val isEmpty by remember { derivedStateOf { title.isEmpty() } }
-
     Row(
         modifier =
             modifier
@@ -107,9 +102,9 @@ private fun TitleRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = if (!isEmpty) title else "이름을 입력해주세요.",
+            text = title.ifEmpty { "이름을 입력해주세요." },
             style = Pretendard.Medium24,
-            color = if (!isEmpty) AppColor.OnSurface else AppColor.OnBackgroundTransparent,
+            color = if (title.isNotEmpty()) AppColor.OnSurface else AppColor.OnBackgroundTransparent,
             modifier = Modifier.weight(1f),
         )
         Icon(
@@ -127,9 +122,7 @@ private fun TagRow(
     modifier: Modifier = Modifier,
     tags: List<String>,
 ) {
-    val isEmpty by remember { derivedStateOf { tags.isEmpty() } }
-
-    if (!isEmpty) {
+    if (tags.isNotEmpty()) {
         FlowRow(
             modifier =
                 modifier
@@ -159,7 +152,12 @@ private fun Tag(
     modifier: Modifier = Modifier,
     tag: String,
 ) {
-    Text("#$tag", style = Pretendard.SemiBold16, color = AppColor.Convex)
+    Text(
+        modifier = modifier,
+        text = "#$tag",
+        style = Pretendard.SemiBold16,
+        color = AppColor.Convex,
+    )
 }
 
 @Composable

@@ -6,6 +6,9 @@ import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.model.CustomColor
 
 sealed interface DisplayEditorIntent {
+
+    data object AttemptExitPage : DisplayEditorIntent
+
     data object ExitPage : DisplayEditorIntent
 
     data object SaveDisplay : DisplayEditorIntent
@@ -82,5 +85,12 @@ sealed interface DisplayEditorIntent {
         data object Delete : BackgroundToolBar
 
         data object Close : BackgroundToolBar
+    }
+
+    // Dialog
+    sealed interface Dialog : DisplayEditorIntent {
+        data class ColorPicked(
+            val color: CustomColor,
+        ) : Dialog
     }
 }

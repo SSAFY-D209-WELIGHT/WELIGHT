@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,12 +19,14 @@ import coil.compose.AsyncImage
 import com.rohkee.core.ui.component.common.TransformableBox
 import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.model.background
+import com.rohkee.core.ui.theme.pretendardFamily
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
 data class DisplayImageState(
-    val imageSource: Any?,
-    val color: CustomColor?,
+    val isSelected: Boolean = false,
+    val imageSource: Any? = null,
+    val color: CustomColor? = null,
     val scale: Float = 1f,
     val rotationDegree: Float = 0f,
     val offsetPercentX: Float = 0f,
@@ -32,9 +35,10 @@ data class DisplayImageState(
 
 @Immutable
 data class DisplayTextState(
-    val textInfo: String,
-    val color: CustomColor?,
-    val font: FontFamily,
+    val isSelected: Boolean = false,
+    val text: String = "",
+    val color: CustomColor = CustomColor.Single(color = Color.Black),
+    val font: FontFamily = pretendardFamily,
     val scale: Float = 1f,
     val rotationDegree: Float = 0f,
     val offsetPercentX: Float = 0f,
@@ -43,8 +47,8 @@ data class DisplayTextState(
 
 @Immutable
 data class DisplayBackgroundState(
-    val color: CustomColor,
-    val brightness: Float,
+    val color: CustomColor = CustomColor.Single(color = Color.Black),
+    val brightness: Float = 1f,
 )
 
 @Composable
@@ -54,36 +58,39 @@ fun CustomDisplay(
     backgroundState: DisplayBackgroundState,
     imageState: DisplayImageState,
     textState: DisplayTextState,
+    onImageSelected: () -> Unit = {},
+    onTextSelected: () -> Unit = {},
     onImageTransformed: (DisplayImageState) -> Unit = {},
     onTextTransformed: (DisplayTextState) -> Unit = {},
 ) {
     Box(
-        modifier = modifier.background(color = backgroundState.color),
+        modifier =
+            modifier
+                .background(color = backgroundState.color),
     ) {
+        // 이미지
         TransformableBox(
             modifier = Modifier,
             scale = imageState.scale,
             rotation = imageState.rotationDegree,
             offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
+            selected = imageState.isSelected,
+            onSelect = { if (editable) onImageSelected() },
             onTransfrm =
-                if (editable) {
-                    { scale, rotation, offset ->
-                        onImageTransformed(
-                            imageState.copy(
-                                scale = scale,
-                                rotationDegree = rotation,
-                                offsetPercentX = offset.x,
-                                offsetPercentY = offset.y,
-                            ),
-                        )
-                    }
-                } else {
-                    null
+                { scale, rotation, offset ->
+                    onImageTransformed(
+                        imageState.copy(
+                            scale = scale,
+                            rotationDegree = rotation,
+                            offsetPercentX = offset.x,
+                            offsetPercentY = offset.y,
+                        ),
+                    )
                 },
         ) {
             DisplayImage(
                 modifier = Modifier,
-                editorDisplayImageState = imageState,
+                state = imageState,
             )
         }
         TransformableBox(
@@ -91,20 +98,18 @@ fun CustomDisplay(
             scale = textState.scale,
             rotation = textState.rotationDegree,
             offset = Offset(textState.offsetPercentX, textState.offsetPercentY),
+            selected = textState.isSelected,
+            onSelect = { if (editable) onTextSelected() },
             onTransfrm =
-                if (editable) {
-                    { scale, rotation, offset ->
-                        onTextTransformed(
-                            textState.copy(
-                                scale = scale,
-                                rotationDegree = rotation,
-                                offsetPercentX = offset.x,
-                                offsetPercentY = offset.y,
-                            ),
-                        )
-                    }
-                } else {
-                    null
+                { scale, rotation, offset ->
+                    onTextTransformed(
+                        textState.copy(
+                            scale = scale,
+                            rotationDegree = rotation,
+                            offsetPercentX = offset.x,
+                            offsetPercentY = offset.y,
+                        ),
+                    )
                 },
         ) {
             DisplayText(
@@ -118,7 +123,7 @@ fun CustomDisplay(
 @Composable
 fun DisplayImage(
     modifier: Modifier = Modifier,
-    editorDisplayImageState: DisplayImageState,
+    state: DisplayImageState,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -128,11 +133,21 @@ fun DisplayImage(
         modifier =
             modifier
                 .offset(
-                    x = editorDisplayImageState.offsetPercentX * screenWidth,
-                    y = editorDisplayImageState.offsetPercentY * screenHeight,
-                ).rotate(editorDisplayImageState.rotationDegree),
-        model = editorDisplayImageState.imageSource,
+                    x = state.offsetPercentX * screenWidth,
+                    y = state.offsetPercentY * screenHeight,
+                ).rotate(state.rotationDegree),
+        model = state.imageSource,
         contentDescription = "image",
+        colorFilter =
+            state.color?.let {
+                ColorFilter.tint(
+                    color =
+                        when (state.color) {
+                            is CustomColor.Single -> state.color.color
+                            is CustomColor.Gradient -> state.color.colors.first()
+                        },
+                )
+            },
     )
 }
 
@@ -152,7 +167,7 @@ fun DisplayText(
                     x = editorTextState.offsetPercentX * screenWidth,
                     y = editorTextState.offsetPercentY * screenHeight,
                 ).rotate(editorTextState.rotationDegree),
-        text = editorTextState.textInfo,
+        text = editorTextState.text,
         fontFamily = editorTextState.font,
     )
 }
@@ -162,19 +177,10 @@ fun DisplayText(
 private fun DisplayPreview() {
     CustomDisplay(
         imageState =
-            DisplayImageState(
-                imageSource = null,
-                rotationDegree = 0f,
-                color = null,
-            ),
+            DisplayImageState(),
         textState =
             DisplayTextState(
-                textInfo = "text",
-                rotationDegree = 90f,
-                offsetPercentX = 0.5f,
-                offsetPercentY = 0.5f,
-                color = null,
-                font = FontFamily.Default,
+                text = "text",
             ),
         backgroundState =
             DisplayBackgroundState(

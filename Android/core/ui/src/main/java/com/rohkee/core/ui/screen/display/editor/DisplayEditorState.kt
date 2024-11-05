@@ -13,10 +13,10 @@ sealed interface DisplayEditorState {
     @Immutable
     data class Edit(
         val displayId: Long? = null,
-        val editorInfoState: EditorInfoState,
-        val editorImageState: DisplayImageState,
-        val editorTextState: DisplayTextState,
-        val editorBackgroundState: DisplayBackgroundState,
+        val editorInfoState: EditorInfoState = EditorInfoState(),
+        val editorImageState: DisplayImageState = DisplayImageState(),
+        val editorTextState: DisplayTextState = DisplayTextState(),
+        val editorBackgroundState: DisplayBackgroundState = DisplayBackgroundState(),
         val bottomBarState: EditingState,
     ) : DisplayEditorState
 
