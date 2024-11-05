@@ -59,7 +59,7 @@ services:
     volumes:
       - /home/ubuntu/configure:/app/configure
     environment:
-      - ENV_FILE_PATH: "/app/configure/.env"
+      ENV_FILE_PATH: "/app/configure/.env"
     depends_on:
       - mysql
       - redis
