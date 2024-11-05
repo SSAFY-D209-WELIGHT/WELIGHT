@@ -1,57 +1,31 @@
-import android.content.Intent
+package com.rohkee.demo
+
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat.startActivityForResult
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.rohkee.feat.login.screen.loginScreen
+import androidx.compose.material3.MaterialTheme
+import com.rohkee.demo.login.loginScreen
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private val RC_SIGN_IN = 1
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Google Sign-In 옵션 설정
-        val gso =
-            GoogleSignInOptions
-                .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("YOUR_CLIENT_ID") // OAuth 클라이언트 ID를 입력
-                .requestEmail()
-                .build()
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
-
         setContent {
-            loginScreen(
-                onGoogleLoginClick = { startGoogleSignIn() },
-            )
-        }
-    }
-
-    // Google 로그인 인텐트 시작
-    private fun startGoogleSignIn() {
-        val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
-    }
-
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?,
-    ) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                // 로그인 성공 - account 객체에서 사용자 정보를 얻을 수 있습니다.
-            } catch (e: ApiException) {
-                // 로그인 실패 처리
+            MaterialTheme {
+                // `loginScreen`을 호출할 때 `onGoogleSignInSuccess` 콜백 정의
+                loginScreen(
+                    onGoogleSignInSuccess = { account ->
+                        // 로그인 성공 시 Google 계정 정보를 로그에 출력
+                        account?.let {
+                            // account가 null이 아닐 때만 실행
+                            Log.d("MainActivity", "User logged in: ${it.displayName}")
+                            // 추가로 필요한 작업이 있다면 여기에 작성
+                        }
+                    },
+                )
             }
         }
     }
 }
+// onGoogleLoginClick = { startGoogleSignIn() },
