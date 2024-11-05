@@ -16,13 +16,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none  # 스키마 자동 생성 전략 (update, create, create-drop 등)
+      dialect: org.hibernate.dialect.MySQLDialect  # MySQL 방언 설정
     show-sql: true  # SQL 쿼리 로깅 여부
     properties:
       hibernate:
         format_sql: true  # SQL 쿼리 포맷팅 여부
 
 server:
-  port: 8080
+  port: 8081
   forward-headers-strategy: framework
 
 logging:
