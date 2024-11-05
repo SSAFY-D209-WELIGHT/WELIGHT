@@ -1,0 +1,26 @@
+http.host: "0.0.0.0"
+xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+
+# 성능 관련 설정
+pipeline.workers: 2
+pipeline.batch.size: 125
+pipeline.batch.delay: 50
+
+# 메모리 설정
+pipeline.ordered: auto
+
+# 로그 레벨 설정
+log.level: info
+
+# 파이프라인 설정 자동 리로드
+config.reload.automatic: true
+config.reload.interval: 3s
+
+# 큐 타입 설정
+queue.type: memory
+
+# JVM 힙 사용량 모니터링
+xpack.monitoring.enabled: true
+
+# 파이프라인 설정 경로
+path.config: /usr/share/logstash/pipeline 
