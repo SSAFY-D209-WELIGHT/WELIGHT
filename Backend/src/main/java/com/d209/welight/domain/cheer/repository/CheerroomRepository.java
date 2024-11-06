@@ -17,7 +17,8 @@ public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {
             BigDecimal longStart, BigDecimal longEnd
     );
     @Query("SELECT DISTINCT c FROM Cheerroom c " +
-            "WHERE (6371 * acos(cos(radians(:latitude)) * cos(radians(c.latitude)) * " +
+            "WHERE c.isDone = false AND " +
+            "(6371 * acos(cos(radians(:latitude)) * cos(radians(c.latitude)) * " +
             "cos(radians(c.longitude) - radians(:longitude)) + " +
             "sin(radians(:latitude)) * sin(radians(c.latitude)))) <= :upToKm")
     List<Cheerroom> findByGeo(@Param("latitude") Double latitude,
