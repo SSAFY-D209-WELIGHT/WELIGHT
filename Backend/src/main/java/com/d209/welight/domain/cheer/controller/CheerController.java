@@ -43,4 +43,13 @@ public class CheerController {
                 cheerId, userDetails.getUsername()));
     }
 
+    @PatchMapping("/{cheerId}/leave")
+    @Operation(summary = "응원방 나가기", description = "응원방에서 나갑니다.")
+    public ResponseEntity<?> leaveCheerroom(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long cheerId) {
+        cheerService.leaveCheerroom(userDetails.getUsername(), cheerId);
+        return ResponseEntity.ok().build();
+    }
+
 }

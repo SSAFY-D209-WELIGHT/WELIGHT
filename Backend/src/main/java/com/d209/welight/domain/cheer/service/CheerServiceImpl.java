@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -68,6 +71,7 @@ public class CheerServiceImpl implements CheerService {
                 .user(user)
                 .cheerroom(savedCheerroom)
                 .participationDate(LocalDateTime.now())
+                .lastEntryTime(LocalDateTime.now())
                 .isOwner(true)
                 .build();
 
@@ -78,35 +82,90 @@ public class CheerServiceImpl implements CheerService {
 
     @Override
     public void enterCheerroom(String userId, Long cheerroomId) {
-        log.info("응원방 참여 시작 - userId: {}, cheerroomId: {}", userId, cheerroomId);
-
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> {
-                    log.error("사용자 조회 실패 - userId: {}", userId);
-                    return new IllegalArgumentException("사용자를 찾을 수 없습니다.");
-                });
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
-                .orElseThrow(() -> {
-                    log.error("응원방 조회 실패 - cheerroomId: {}", cheerroomId);
-                    return new IllegalArgumentException("응원방을 찾을 수 없습니다.");
-                });
+                .orElseThrow(() -> new IllegalArgumentException("응원방을 찾을 수 없습니다."));
 
-        // 이미 참여한 사용자인지 확인
-        if (cheerParticipationRepository.existsById(new CheerParticipationId(user.getUserUid(), cheerroomId))) {
-            log.error("이미 참여한 응원방입니다 - userId: {}, cheerroomId: {}", userId, cheerroomId);
-            throw new IllegalStateException("이미 참여한 응원방입니다.");
+        CheerParticipationId participationId = new CheerParticipationId(user.getUserUid(), cheerroomId);
+
+        CheerParticipation participation = cheerParticipationRepository
+                .findById(participationId)
+                .orElse(null);
+
+        if (participation == null) {
+            // 새로운 참여자
+            participation = CheerParticipation.builder()
+                    .id(participationId)
+                    .user(user)
+                    .cheerroom(cheerroom)
+                    .participationDate(LocalDateTime.now())
+                    .lastEntryTime(LocalDateTime.now())
+                    .entryCount(1)
+                    .isOwner(false)
+                    .totalDuration(LocalTime.of(0, 0, 0))
+                    .build();
+        } else {
+            // 재입장
+            participation.setLastEntryTime(LocalDateTime.now());
+            participation.setLastExitTime(null);
+            participation.setEntryCount(participation.getEntryCount() + 1);
         }
 
-        CheerParticipation participation = CheerParticipation.builder()
-                .id(new CheerParticipationId(user.getUserUid(), cheerroomId))
-                .user(user)
-                .cheerroom(cheerroom)
-                .participationDate(LocalDateTime.now())
-                .isOwner(false)  // 참여자는 방장이 아님
-                .build();
-
         cheerParticipationRepository.save(participation);
-        log.info("응원방 참여 완료 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+        log.info("응원방 입장 완료 - userId: {}, cheerroomId: {}, entryCount: {}",
+                userId, cheerroomId, participation.getEntryCount());
+    }
+
+    @Override
+    @Transactional
+    public void leaveCheerroom(String userId, Long cheerroomId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        CheerParticipationId participationId = new CheerParticipationId(user.getUserUid(), cheerroomId);
+
+        CheerParticipation participation = cheerParticipationRepository
+                .findById(participationId)
+                .orElseThrow(() -> new IllegalArgumentException("참여 정보를 찾을 수 없습니다."));
+
+        LocalDateTime exitTime = LocalDateTime.now();
+
+        if (participation.isOwner()) {
+            // 방장이 나가는 경우: 응원방 종료 및 모든 참여자 퇴장 처리
+            Cheerroom cheerroom = participation.getCheerroom();
+            cheerroom.setDone(true);
+            cheerroomRepository.save(cheerroom);
+
+            List<CheerParticipation> activeParticipations = cheerParticipationRepository
+                    .findByCheerroomAndLastExitTimeIsNull(cheerroom);
+
+            for (CheerParticipation activeParticipation : activeParticipations) {
+                updateExitInfo(activeParticipation, exitTime);
+                cheerParticipationRepository.save(activeParticipation);
+            }
+
+            log.info("응원방 종료 처리 완료 - cheerroomId: {}, 퇴장 처리된 참여자 수: {}",
+                    cheerroomId, activeParticipations.size());
+        } else {
+            // 방장이 아닌 경우: 본인만 퇴장 처리
+            updateExitInfo(participation, exitTime);
+            cheerParticipationRepository.save(participation);
+            log.info("참여자 퇴장 처리 완료 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+        }
+    }
+
+    private void updateExitInfo(CheerParticipation participation, LocalDateTime exitTime) {
+        participation.setLastExitTime(exitTime);
+        Duration cheerDuration = Duration.between(participation.getLastEntryTime(), exitTime);
+        LocalTime currentTotal = participation.getTotalDuration();
+        LocalTime newTotal = currentTotal.plusHours(cheerDuration.toHours())
+                .plusMinutes(cheerDuration.toMinutesPart())
+                .plusSeconds(cheerDuration.toSecondsPart());
+        participation.setTotalDuration(newTotal);
+
+        log.debug("퇴장 정보 업데이트 - userId: {}, totalDuration: {}",
+                participation.getUser().getUserId(), newTotal);
     }
 }

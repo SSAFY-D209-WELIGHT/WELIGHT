@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -35,4 +36,18 @@ public class CheerParticipation {
 
     @Column(name = "CHEER_MEMO")
     private String memo;
+
+    @Column(name = "LAST_ENTRY_TIME")
+    private LocalDateTime lastEntryTime;
+
+    @Column(name = "LAST_EXIT_TIME")
+    private LocalDateTime lastExitTime;
+
+    @Column(name = "ENTRY_COUNT")
+    @Builder.Default
+    private Integer entryCount = 0;
+
+    @Column(name = "TOTAL_DURATION")
+    @Builder.Default
+    private LocalTime totalDuration = LocalTime.of(0, 0, 0);
 }

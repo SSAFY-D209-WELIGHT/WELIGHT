@@ -7,4 +7,5 @@ public interface CheerService {
 
     public CheerroomResponse createCheerroom(String userId, CheerroomCreateRequest request);
     public void enterCheerroom(String userId, Long cheerroomId);
+    public void leaveCheerroom(String userId, Long cheerroomId);
 }
