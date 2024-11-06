@@ -35,4 +35,8 @@ public class CheerParticipation {
 
     @Column(name = "CHEER_MEMO")
     private String memo;
+
+    public void updateCheerMemo(String cheerMemo) {
+        this.memo = cheerMemo;
+    }
 }

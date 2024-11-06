@@ -1,5 +1,6 @@
 package com.d209.welight.domain.cheer.service;
 
+import com.d209.welight.domain.cheer.dto.request.CheerRecordRequest;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
@@ -10,6 +11,7 @@ import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.domain.cheer.repository.CheerroomRepository;
 import com.d209.welight.domain.cheer.repository.CheerParticipationRepository;
 import com.d209.welight.domain.cheer.entity.Cheerroom;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -90,5 +92,16 @@ public class CheerServiceImpl implements CheerService {
         return cheerrooms.stream()
                 .map(CheerroomResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    /* 기록 */
+    @Override
+    public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest) {
+        // 참여한 응원 찾기
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+
+        participation.updateCheerMemo(cheerRecordRequest.getCheerMemo());
     }
 }

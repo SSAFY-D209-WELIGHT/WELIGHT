@@ -1,16 +1,21 @@
 package com.d209.welight.domain.cheer.controller;
 
 
+import com.d209.welight.domain.cheer.dto.request.CheerRecordRequest;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.service.CheerService;
+import com.d209.welight.domain.user.entity.User;
+import com.d209.welight.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +28,7 @@ import java.util.List;
 @RequestMapping("/cheer")
 public class CheerController {
 
+    private final UserService userService;
     private final CheerService cheerService;
 
     @PostMapping("/room")
@@ -51,6 +57,30 @@ public class CheerController {
             FindByGeoRequest geoDTO = new FindByGeoRequest(latitude, longitude, radius);
             List<CheerroomResponse> cheerRooms = cheerService.getAllCheerroomsByGeo(geoDTO);
             return ResponseEntity.status(HttpStatus.OK).body(cheerRooms);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /* 기록 */
+    @PostMapping("{cheerId}/records")
+    @Operation(summary = "응원 기록 생성")
+    public ResponseEntity<?> createRecords(Authentication authentication,
+                                           @PathVariable(name="cheerId") long cheerId,
+                                           @RequestBody CheerRecordRequest cheerRecordRequest) {
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            cheerService.createRecords(user, cheerId, cheerRecordRequest);
+
+            return ResponseEntity.ok().body("응원 기록 생성 완료");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch(EntityExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
