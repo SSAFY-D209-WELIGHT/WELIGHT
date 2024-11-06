@@ -49,7 +49,8 @@ public class CheerController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long cheerId) {
         cheerService.leaveCheerroom(userDetails.getUsername(), cheerId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(String.format("응원방 '%d'에 사용자 '%s'가 퇴장합니다.",
+                cheerId, userDetails.getUsername()));
     }
 
 }
