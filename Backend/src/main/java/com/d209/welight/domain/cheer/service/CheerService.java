@@ -6,4 +6,5 @@ import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 public interface CheerService {
 
     public CheerroomResponse createCheerroom(String userId, CheerroomCreateRequest request);
+    public void enterCheerroom(String userId, Long cheerroomId);
 }

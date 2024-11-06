@@ -75,4 +75,38 @@ public class CheerServiceImpl implements CheerService {
         log.info("방장 참여 정보 생성 완료 - userUid: {}, cheerroomId: {}", userUid, savedCheerroom.getId());
         return CheerroomResponse.from(savedCheerroom);
     }
+
+    @Override
+    public void enterCheerroom(String userId, Long cheerroomId) {
+        log.info("응원방 참여 시작 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> {
+                    log.error("사용자 조회 실패 - userId: {}", userId);
+                    return new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+                });
+
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
+                .orElseThrow(() -> {
+                    log.error("응원방 조회 실패 - cheerroomId: {}", cheerroomId);
+                    return new IllegalArgumentException("응원방을 찾을 수 없습니다.");
+                });
+
+        // 이미 참여한 사용자인지 확인
+        if (cheerParticipationRepository.existsById(new CheerParticipationId(user.getUserUid(), cheerroomId))) {
+            log.error("이미 참여한 응원방입니다 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+            throw new IllegalStateException("이미 참여한 응원방입니다.");
+        }
+
+        CheerParticipation participation = CheerParticipation.builder()
+                .id(new CheerParticipationId(user.getUserUid(), cheerroomId))
+                .user(user)
+                .cheerroom(cheerroom)
+                .participationDate(LocalDateTime.now())
+                .isOwner(false)  // 참여자는 방장이 아님
+                .build();
+
+        cheerParticipationRepository.save(participation);
+        log.info("응원방 참여 완료 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+    }
 }
