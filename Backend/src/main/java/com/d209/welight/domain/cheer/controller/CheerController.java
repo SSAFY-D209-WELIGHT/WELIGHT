@@ -2,6 +2,7 @@ package com.d209.welight.domain.cheer.controller;
 
 
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.service.CheerService;
@@ -57,13 +58,25 @@ public class CheerController {
     }
 
     @GetMapping("/records")
-    @Operation(summary = "사용자의 응원 기록 목록 조회")
+    @Operation(summary = "사용자의 응원 기록 목록 조회", description = "사용자의 응원 기록을 조회합니다." )
     public ResponseEntity<List<CheerHistoryResponse>> getMyCheerHistory(
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         String userId = userDetails.getUsername();
         List<CheerHistoryResponse> histories = cheerService.getUserCheerHistory(userId);
         return ResponseEntity.ok(histories);
+    }
+
+
+    @GetMapping("/{cheerId}/records")
+    @Operation(summary = "응원 기록 상세 조회", description = "해당 응원 기록에 대한 상세 정보를 조회합니다.")
+    public ResponseEntity<CheerHistoryDetailResponse> getCheerHistoryDetail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long cheerId
+    ) {
+        String userId = userDetails.getUsername();
+        CheerHistoryDetailResponse detail = cheerService.getCheerHistoryDetail(userId, cheerId);
+        return ResponseEntity.ok(detail);
     }
 
 }

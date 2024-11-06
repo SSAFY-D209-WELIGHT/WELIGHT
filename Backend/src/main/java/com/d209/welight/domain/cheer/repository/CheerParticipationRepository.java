@@ -1,7 +1,7 @@
 package com.d209.welight.domain.cheer.repository;
 
-import com.d209.welight.domain.cheer.entity.CheerParticipation;
-import com.d209.welight.domain.cheer.entity.CheerParticipationId;
+import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipation;
+import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipationId;
 import com.d209.welight.domain.cheer.entity.Cheerroom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,4 +30,12 @@ public interface CheerParticipationRepository extends JpaRepository<CheerPartici
             "WHERE cp.cheerroom.id = :cheerroomId")
     int countParticipantsByCheerroomId(Long cheerroomId);
 
+    @Query("SELECT cp FROM CheerParticipation cp " +
+            "JOIN FETCH cp.cheerroom c " +
+            "LEFT JOIN FETCH c.displays cd " +
+            "LEFT JOIN FETCH cd.display " +
+            "WHERE cp.user.userUid = :userUid " +
+            "AND cp.cheerroom.id = :cheerroomUid")
+    Optional<CheerParticipation> findByUserAndCheerroom(
+            Long userUid, Long cheerroomUid);
 }

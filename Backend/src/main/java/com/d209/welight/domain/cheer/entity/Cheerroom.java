@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipation;
 import com.d209.welight.domain.cheer.entity.cheerroomdisplay.CheerroomDisplay;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
