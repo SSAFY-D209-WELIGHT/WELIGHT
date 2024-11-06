@@ -1,6 +1,8 @@
 package com.d209.welight.domain.cheer.service;
 
+import com.d209.welight.domain.cheer.dto.CheerDisplayInfo;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.entity.CheerParticipation;
 import com.d209.welight.domain.cheer.entity.CheerParticipationId;
@@ -18,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -154,6 +158,30 @@ public class CheerServiceImpl implements CheerService {
             cheerParticipationRepository.save(participation);
             log.info("참여자 퇴장 처리 완료 - userId: {}, cheerroomId: {}", userId, cheerroomId);
         }
+    }
+
+    public List<CheerHistoryResponse> getUserCheerHistory(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        List<CheerParticipation> participations =
+                cheerParticipationRepository.findUserParticipationHistory(user.getUserUid());
+
+        return participations.stream()
+                .map(participation -> CheerHistoryResponse.builder()
+                        .participationDate(participation.getLastExitTime().format(
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
+                        .cheerroomName(participation.getCheerroom().getName())
+                        .participantCount(cheerParticipationRepository
+                                .countParticipantsByCheerroomId(participation.getCheerroom().getId()))
+                        .memo(participation.getMemo())
+                        .displays(participation.getCheerroom().getDisplays().stream()
+                                .map(cheerroomDisplay -> CheerDisplayInfo.builder()
+                                        .thumbnailUrl(cheerroomDisplay.getDisplay().getDisplayThumbnailUrl())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private void updateExitInfo(CheerParticipation participation, LocalDateTime exitTime) {

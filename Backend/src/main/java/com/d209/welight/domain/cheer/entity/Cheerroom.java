@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.d209.welight.domain.cheer.entity.cheerroomdisplay.CheerroomDisplay;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,4 +52,7 @@ public class Cheerroom {
     @OneToMany(mappedBy = "cheerroom", cascade = CascadeType.ALL)
     @Builder.Default
     private List<CheerParticipation> participations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cheerroom")
+    private List<CheerroomDisplay> displays;  // 응원방에서 사용된 디스플레이 목록
 }

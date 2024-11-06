@@ -2,6 +2,7 @@ package com.d209.welight.domain.cheer.controller;
 
 
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.service.CheerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,6 +54,16 @@ public class CheerController {
         cheerService.leaveCheerroom(userDetails.getUsername(), cheerId);
         return ResponseEntity.ok(String.format("응원방 '%d'에 사용자 '%s'가 퇴장합니다.",
                 cheerId, userDetails.getUsername()));
+    }
+
+    @GetMapping("/records")
+    @Operation(summary = "사용자의 응원 기록 목록 조회")
+    public ResponseEntity<List<CheerHistoryResponse>> getMyCheerHistory(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String userId = userDetails.getUsername();
+        List<CheerHistoryResponse> histories = cheerService.getUserCheerHistory(userId);
+        return ResponseEntity.ok(histories);
     }
 
 }
