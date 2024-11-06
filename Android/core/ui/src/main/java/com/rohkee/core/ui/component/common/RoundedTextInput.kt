@@ -26,6 +26,7 @@ fun RoundedTextInput(
     isError: Boolean = false,
     errorMessage: String = "",
     onValueChange: (String) -> Unit,
+    trailingContent: @Composable (() -> Unit)? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -44,8 +45,9 @@ fun RoundedTextInput(
             Text(text = hint, style = Pretendard.Medium20)
         },
         supportingText = {
-            Text(text = errorMessage, style = Pretendard.SemiBold12)
+            if (isError) Text(text = errorMessage, style = Pretendard.SemiBold12)
         },
+        trailingIcon = trailingContent,
         colors =
             OutlinedTextFieldDefaults.colors().copy(
                 focusedContainerColor = AppColor.Surface,
@@ -74,7 +76,7 @@ fun RoundedTextInput(
 private fun RoundedTextInputPreview() {
     Column {
         RoundedTextInput(value = "Value", hint = "hint", onValueChange = {})
-        RoundedTextInput(value = "", hint = "hint", onValueChange = {})
+        RoundedTextInput(value = "", hint = "hint", errorMessage = "error", onValueChange = {})
     }
 }
 

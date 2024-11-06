@@ -107,5 +107,9 @@ sealed interface EditorIntent {
         data object DeleteImage : Dialog
 
         data object DeleteBackground : Dialog
+
+        data class EditText(
+            val text: String,
+        ) : Dialog
     }
 }

@@ -142,6 +142,8 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                         intent.currentColor,
                     ),
                 )
+
+            is EditorIntent.Dialog.EditText -> TODO()
         }
     }
 
