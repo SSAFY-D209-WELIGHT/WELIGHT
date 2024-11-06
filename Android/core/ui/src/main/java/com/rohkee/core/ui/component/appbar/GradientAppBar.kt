@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -68,11 +69,32 @@ fun SavableAppBar(
     onSaveClick: () -> Unit = {},
 ) {
     GradientAppBar(
+        modifier = modifier,
         onClick = onCloseClick,
     ) {
         Text(
             "저장",
             modifier = Modifier.clickable { onSaveClick() },
+            style = Pretendard.Medium16,
+            color = AppColor.OnBackground,
+        )
+    }
+}
+
+@Composable
+fun ConfirmAppBar(
+    modifier: Modifier = Modifier,
+    onCloseClick: () -> Unit = {},
+    onConfirmClick: () -> Unit = {},
+) {
+    GradientAppBar(
+        modifier = modifier,
+        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+        onClick = onCloseClick,
+    ) {
+        Text(
+            "완료",
+            modifier = Modifier.clickable { onConfirmClick() },
             style = Pretendard.Medium16,
             color = AppColor.OnBackground,
         )
@@ -89,4 +111,10 @@ private fun GradientAppBarPreview() {
 @Composable
 private fun SavableAppBarPreview() {
     SavableAppBar()
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ConfirmAppBarPreview() {
+    ConfirmAppBar()
 }

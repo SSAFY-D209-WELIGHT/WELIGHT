@@ -6,7 +6,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -16,14 +20,21 @@ import com.rohkee.core.ui.theme.Pretendard
 @Composable
 fun RoundedTextInput(
     modifier: Modifier = Modifier,
+    autofocus: Boolean = false,
     value: String,
     hint: String = "",
     isError: Boolean = false,
     errorMessage: String = "",
     onValueChange: (String) -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        if (autofocus) focusRequester.requestFocus()
+    }
+
     OutlinedTextField(
-        modifier = modifier,
+        modifier = modifier.focusRequester(focusRequester),
         value = value,
         onValueChange = onValueChange,
         isError = isError,
@@ -70,5 +81,11 @@ private fun RoundedTextInputPreview() {
 @Preview
 @Composable
 private fun RoundedTextInputWarningPreview() {
-    RoundedTextInput(value = "error", hint = "hint", isError = true, errorMessage = "잘못된 입력입니다.", onValueChange = {})
+    RoundedTextInput(
+        value = "error",
+        hint = "hint",
+        isError = true,
+        errorMessage = "잘못된 입력입니다.",
+        onValueChange = {},
+    )
 }
