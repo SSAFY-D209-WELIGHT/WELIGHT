@@ -33,16 +33,29 @@ android {
         buildConfigField("String", "GOOGLE_OAUTH_CLIENT_ID", "\"$googleClientId\"")
     }
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("C:\\Users\\KDGKING\\.android\\debug.keystore") // 실제 키스토어 경로로 변경하세요
+            storePassword = "android" // 키스토어 비밀번호
+            keyAlias = "androiddebugkey" // 키 별칭
+            keyPassword = "android" // 키 비밀번호
+        }
+    }
+
     buildFeatures {
         buildConfig = true
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug") // 디버그 빌드에 signingConfig 추가
+        }
         release {
+            signingConfig = signingConfigs.getByName("debug") // 필요 시 다른 signingConfig 사용 가능
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
         }
     }
@@ -70,8 +83,6 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.appcompat)
     implementation(libs.play.services.auth)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
