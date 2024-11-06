@@ -1,17 +1,18 @@
 package com.d209.welight.domain.cheer.controller;
 
-
 import com.d209.welight.domain.cheer.dto.request.CheerRecordRequest;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.request.LeaderDelegateRequest;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.dto.response.ParticipantsResponse;
 import com.d209.welight.domain.cheer.service.CheerService;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.persistence.EntityExistsException;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,32 +22,25 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cheer")
+@Tag(name = "응원 컨트롤러", description = "응원 관련 기능 수행")
 public class CheerController {
 
     private final UserService userService;
     private final CheerService cheerService;
 
-    @PostMapping("/room")
+    @PostMapping
+    @Operation(summary = "응원방 생성", description = "응원방을 생성합니다.")
     public ResponseEntity<CheerroomResponse> createCheerroom(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CheerroomCreateRequest request) {
-        try {
-            CheerroomResponse response = cheerService.createCheerroom(userDetails.getUsername(), request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.", e);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 위치 정보입니다.", e);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "응원방 생성 중 오류가 발생했습니다.", e);
-        }
+        CheerroomResponse response = cheerService.createCheerroom(userDetails.getUsername(), request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
@@ -150,4 +144,47 @@ public class CheerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PostMapping("/{cheerId}/enter")
+    @Operation(summary = "응원방 입장", description = "응원방에 입장합니다.")
+    public ResponseEntity<String> enterCheerroom(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long cheerId) {
+        cheerService.enterCheerroom(userDetails.getUsername(), cheerId);
+        return ResponseEntity.ok(String.format("응원방 '%d'에 사용자 '%s'가 입장합니다.",
+                cheerId, userDetails.getUsername()));
+    }
+
+    @PatchMapping("/{cheerId}/leave")
+    @Operation(summary = "응원방 나가기", description = "응원방에서 나갑니다.")
+    public ResponseEntity<?> leaveCheerroom(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long cheerId) {
+        cheerService.leaveCheerroom(userDetails.getUsername(), cheerId);
+        return ResponseEntity.ok(String.format("응원방 '%d'에 사용자 '%s'가 퇴장합니다.",
+                cheerId, userDetails.getUsername()));
+    }
+
+    @GetMapping("/records")
+    @Operation(summary = "사용자의 응원 기록 목록 조회", description = "사용자의 응원 기록을 조회합니다." )
+    public ResponseEntity<List<CheerHistoryResponse>> getMyCheerHistory(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String userId = userDetails.getUsername();
+        List<CheerHistoryResponse> histories = cheerService.getUserCheerHistory(userId);
+        return ResponseEntity.ok(histories);
+    }
+
+
+    @GetMapping("/{cheerId}/records")
+    @Operation(summary = "응원 기록 상세 조회", description = "해당 응원 기록에 대한 상세 정보를 조회합니다.")
+    public ResponseEntity<CheerHistoryDetailResponse> getCheerHistoryDetail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long cheerId
+    ) {
+        String userId = userDetails.getUsername();
+        CheerHistoryDetailResponse detail = cheerService.getCheerHistoryDetail(userId, cheerId);
+        return ResponseEntity.ok(detail);
+    }
+
 }

@@ -5,8 +5,12 @@ import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.dto.response.ParticipantsResponse;
-import com.d209.welight.domain.cheer.entity.CheerParticipation;
-import com.d209.welight.domain.cheer.entity.CheerParticipationId;
+import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipation;
+import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipationId;
+
+import com.d209.welight.domain.cheer.dto.CheerDisplayInfo;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.domain.cheer.repository.CheerroomRepository;
@@ -17,10 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,10 +76,10 @@ public class CheerServiceImpl implements CheerService {
 
         // 방장 참여 정보 생성
         CheerParticipation participation = CheerParticipation.builder()
-                .id(new CheerParticipationId(userUid, savedCheerroom.getId()))
                 .user(user)
                 .cheerroom(savedCheerroom)
                 .participationDate(LocalDateTime.now())
+                .lastEntryTime(LocalDateTime.now())
                 .isOwner(true)
                 .build();
 
@@ -154,5 +159,148 @@ public class CheerServiceImpl implements CheerService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
         // 저장소에서 삭제
         cheerParticipationRepository.deleteByUserAndCheerroom(user, cheerroom);
+    }
+
+    public void enterCheerroom(String userId, Long cheerroomId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
+                .orElseThrow(() -> new IllegalArgumentException("응원방을 찾을 수 없습니다."));
+
+        CheerParticipationId participationId = new CheerParticipationId(user.getUserUid(), cheerroomId);
+
+        CheerParticipation participation = cheerParticipationRepository
+                .findById(participationId)
+                .orElse(null);
+
+        if (participation == null) {
+            // 새로운 참여자
+            participation = CheerParticipation.builder()
+                    .user(user)
+                    .cheerroom(cheerroom)
+                    .participationDate(LocalDateTime.now())
+                    .lastEntryTime(LocalDateTime.now())
+                    .entryCount(1)
+                    .isOwner(false)
+                    .totalDuration(LocalTime.of(0, 0, 0))
+                    .build();
+        } else {
+            // 재입장
+            participation.setLastEntryTime(LocalDateTime.now());
+            participation.setLastExitTime(null);
+            participation.setEntryCount(participation.getEntryCount() + 1);
+        }
+
+        cheerParticipationRepository.save(participation);
+        log.info("응원방 입장 완료 - userId: {}, cheerroomId: {}, entryCount: {}",
+                userId, cheerroomId, participation.getEntryCount());
+    }
+
+    @Override
+    @Transactional
+    public void leaveCheerroom(String userId, Long cheerroomId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        CheerParticipationId participationId = new CheerParticipationId(user.getUserUid(), cheerroomId);
+
+        CheerParticipation participation = cheerParticipationRepository
+                .findById(participationId)
+                .orElseThrow(() -> new IllegalArgumentException("참여 정보를 찾을 수 없습니다."));
+
+        LocalDateTime exitTime = LocalDateTime.now();
+
+        if (participation.isOwner()) {
+            // 방장이 나가는 경우: 응원방 종료 및 모든 참여자 퇴장 처리
+            Cheerroom cheerroom = participation.getCheerroom();
+            cheerroom.setDone(true);
+            cheerroomRepository.save(cheerroom);
+
+            List<CheerParticipation> activeParticipations = cheerParticipationRepository
+                    .findByCheerroomAndLastExitTimeIsNull(cheerroom);
+
+            for (CheerParticipation activeParticipation : activeParticipations) {
+                updateExitInfo(activeParticipation, exitTime);
+                cheerParticipationRepository.save(activeParticipation);
+            }
+
+            log.info("응원방 종료 처리 완료 - cheerroomId: {}, 퇴장 처리된 참여자 수: {}",
+                    cheerroomId, activeParticipations.size());
+        } else {
+            // 방장이 아닌 경우: 본인만 퇴장 처리
+            updateExitInfo(participation, exitTime);
+            cheerParticipationRepository.save(participation);
+            log.info("참여자 퇴장 처리 완료 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+        }
+    }
+
+    public List<CheerHistoryResponse> getUserCheerHistory(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        List<CheerParticipation> participations =
+                cheerParticipationRepository.findUserParticipationHistory(user.getUserUid());
+
+        return participations.stream()
+                .map(participation -> CheerHistoryResponse.builder()
+                        .participationDate(participation.getLastExitTime().format(
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
+                        .cheerroomName(participation.getCheerroom().getName())
+                        .participantCount(cheerParticipationRepository
+                                .countParticipantsByCheerroomId(participation.getCheerroom().getId()))
+                        .memo(participation.getMemo())
+                        .displays(participation.getCheerroom().getDisplays().stream()
+                                .map(cheerroomDisplay -> CheerDisplayInfo.builder()
+                                        .thumbnailUrl(cheerroomDisplay.getDisplay().getDisplayThumbnailUrl())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public CheerHistoryDetailResponse getCheerHistoryDetail(String userId, Long cheerroomUid) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroom(user.getUserUid(), cheerroomUid)
+                .orElseThrow(() -> new IllegalArgumentException("해당 응원 기록을 찾을 수 없습니다."));
+
+        String durationStr = String.valueOf(participation.getTotalDuration());
+        LocalTime duration = LocalTime.parse(durationStr);
+        String totalDuration = String.format("%d시간 %d분",
+                duration.getHour(),
+                duration.getMinute());
+
+        return CheerHistoryDetailResponse.builder()
+                .participationDate(participation.getLastExitTime().format(
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
+                .cheerroomName(participation.getCheerroom().getName())
+                .participantCount(cheerParticipationRepository
+                        .countParticipantsByCheerroomId(participation.getCheerroom().getId()))
+                .memo(participation.getMemo())
+                .displays(participation.getCheerroom().getDisplays().stream()
+                        .map(display -> CheerDisplayInfo.builder()
+                                .thumbnailUrl(display.getDisplay().getDisplayThumbnailUrl())
+                                .build())
+                        .collect(Collectors.toList()))
+                .totalDuration(totalDuration)
+                .latitude(participation.getCheerroom().getLatitude())
+                .longitude(participation.getCheerroom().getLongitude())
+                .build();
+    }
+
+    private void updateExitInfo(CheerParticipation participation, LocalDateTime exitTime) {
+        participation.setLastExitTime(exitTime);
+        Duration cheerDuration = Duration.between(participation.getLastEntryTime(), exitTime);
+        LocalTime currentTotal = participation.getTotalDuration();
+        LocalTime newTotal = currentTotal.plusHours(cheerDuration.toHours())
+                .plusMinutes(cheerDuration.toMinutesPart())
+                .plusSeconds(cheerDuration.toSecondsPart());
+        participation.setTotalDuration(newTotal);
+
+        log.debug("퇴장 정보 업데이트 - userId: {}, totalDuration: {}",
+                participation.getUser().getUserId(), newTotal);
     }
 }

@@ -4,7 +4,6 @@ import com.d209.welight.domain.cheer.entity.Cheerroom;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
