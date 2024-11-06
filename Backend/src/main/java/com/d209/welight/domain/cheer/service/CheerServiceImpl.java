@@ -94,6 +94,26 @@ public class CheerServiceImpl implements CheerService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void delegateLeader(long roomId, User currentLeader, User newLeader) {
+        //cheerparticipation에서 useruid로 찾아서 cheerroom_is_owner 1->0 / 0-> 1
+        CheerParticipation currentLeaderCheerParticipation = cheerParticipationRepository
+                .findByUserAndCheerroomId(currentLeader, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+        CheerParticipation newLeaderCheerParticipation = cheerParticipationRepository
+                .findByUserAndCheerroomId(newLeader, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+
+        // CheerParticipation 테이블에서 새 방장의 cheerroom_is_owner 0->1
+        newLeaderCheerParticipation.setOwner(true);
+        // CheerParticipation 테이블에서 기존 방장의 cheerroom_is_owner 1->0
+        currentLeaderCheerParticipation.setOwner(false);
+
+        cheerParticipationRepository.save(currentLeaderCheerParticipation);
+        cheerParticipationRepository.save(newLeaderCheerParticipation);
+
+    }
+
     /* 기록 */
     @Override
     public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest) {

@@ -4,6 +4,7 @@ package com.d209.welight.domain.cheer.controller;
 import com.d209.welight.domain.cheer.dto.request.CheerRecordRequest;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
+import com.d209.welight.domain.cheer.dto.request.LeaderDelegateRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.service.CheerService;
 import com.d209.welight.domain.user.entity.User;
@@ -49,7 +50,7 @@ public class CheerController {
 
     @GetMapping
     @Operation(summary = "내 위치 기반 n KM 반경 내의 응원방 리스트 조회")
-    public ResponseEntity<List<CheerroomResponse>> getAllCheerrooms(
+    public ResponseEntity<List<CheerroomResponse>> getAllCheerroomsByGeo(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam double radius) {
@@ -57,6 +58,31 @@ public class CheerController {
             FindByGeoRequest geoDTO = new FindByGeoRequest(latitude, longitude, radius);
             List<CheerroomResponse> cheerRooms = cheerService.getAllCheerroomsByGeo(geoDTO);
             return ResponseEntity.status(HttpStatus.OK).body(cheerRooms);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/{cheerId}/delegate")
+    @Operation(summary = "방장을 다른 회원에게 위임합니다.")
+    public ResponseEntity<?> delegateLeader(Authentication authentication,
+                                                            @PathVariable(name="cheerId") long cheerId,
+                                                            @RequestBody LeaderDelegateRequest leaderDelegateRequest) {
+        try {
+            User currentLeader = userService.findByUserId(authentication.getName());
+            if (currentLeader == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+            User newLeader = userService.findByUserUid(leaderDelegateRequest.getUserUid());
+            if (newLeader == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            cheerService.delegateLeader(cheerId, currentLeader, newLeader);
+
+            return ResponseEntity.ok().body("그룹 방장 위임 완료");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

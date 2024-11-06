@@ -14,6 +14,7 @@ public interface CheerService {
     public CheerroomResponse createCheerroom(String userId, CheerroomCreateRequest request);
     public List<CheerroomResponse> getAllCheerroomsByGeo(FindByGeoRequest findByGeoRequest);
 
+    public void delegateLeader(long roomId, User currentLeader, User newLeader);
     /* 기록 */
     public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest);
 }
