@@ -154,6 +154,5 @@ public class CheerServiceImpl implements CheerService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
         // 저장소에서 삭제
         cheerParticipationRepository.deleteByUserAndCheerroom(user, cheerroom);
-
     }
 }
