@@ -5,27 +5,56 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
-import com.rohkee.demo.login.loginScreen
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
+import com.rohkee.demo.login.GoogleSignInHandler
+import com.rohkee.demo.login.LoginScreen
 
 class MainActivity : ComponentActivity() {
+    private lateinit var googleSignInHandler: GoogleSignInHandler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // GoogleSignInHandler 초기화
+        googleSignInHandler = GoogleSignInHandler(this)
+
+        // 로그인 런처 설정
+        val googleSignInLauncher =
+            registerForActivityResult(googleSignInHandler) { task ->
+                if (task != null) {
+                    try {
+                        val account = task.getResult(ApiException::class.java)
+                        Log.d("MainActivity", "account info : $account")
+                        onGoogleSignInSuccess(account)
+                    } catch (e: ApiException) {
+                        Log.e("MainActivity", "Google sign-in failed", e)
+                    }
+                } else {
+                    Log.e("MainActivity", "Google sign-in canceled or failed.")
+                }
+            }
+
         setContent {
             MaterialTheme {
-                // `loginScreen`을 호출할 때 `onGoogleSignInSuccess` 콜백 정의
-                loginScreen(
+                LoginScreen(
                     onGoogleSignInSuccess = { account ->
-                        // 로그인 성공 시 Google 계정 정보를 로그에 출력
                         account?.let {
-                            // account가 null이 아닐 때만 실행
                             Log.d("MainActivity", "User logged in: ${it.displayName}")
-                            // 추가로 필요한 작업이 있다면 여기에 작성
                         }
+                    },
+                    onGoogleLoginClick = {
+                        val signInIntent = googleSignInHandler.getSignInIntent()
+                        googleSignInLauncher.launch(null)
                     },
                 )
             }
         }
     }
+
+    private fun onGoogleSignInSuccess(account: GoogleSignInAccount?) {
+        account?.let {
+            Log.d("MainActivity", "User logged in: ${it.displayName}")
+        }
+    }
 }
-// onGoogleLoginClick = { startGoogleSignIn() },

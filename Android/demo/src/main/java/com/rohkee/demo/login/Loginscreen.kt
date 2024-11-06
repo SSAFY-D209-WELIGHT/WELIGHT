@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -19,20 +20,32 @@ import com.google.android.gms.common.api.ApiException
 import com.rohkee.demo.R
 
 @Composable
-fun loginScreen(
+fun LoginScreen(
     modifier: Modifier = Modifier,
     onGoogleSignInSuccess: (GoogleSignInAccount) -> Unit,
+    onGoogleLoginClick: () -> Unit,
 ) {
+    // GoogleSignInHandler 인스턴스 생성
+    val googleSignInHandler = GoogleSignInHandler(context = LocalContext.current)
+
     // `googleSignInLauncher` 설정
     val googleSignInLauncher =
         rememberLauncherForActivityResult(
-            contract = GoogleApiContract(),
+            contract = googleSignInHandler,
             onResult = { task ->
+                if (task == null) {
+                    Log.e(
+                        "LoginScreen",
+                        "Google sign-in task is null, indicating failure or cancellation.",
+                    )
+                    return@rememberLauncherForActivityResult
+                }
+
                 try {
                     // Google 로그인 성공 시 계정 정보를 가져옴
-                    val account = task?.getResult(ApiException::class.java)
-                    Log.d("LoginScreen", "${task?.exception}")
+                    val account = task.getResult(ApiException::class.java)
                     if (account != null) {
+                        Log.d("LoginScreen", "Google sign-in successful: ${account.displayName}")
                         onGoogleSignInSuccess(account) // 계정 정보 전달
                     }
                 } catch (e: ApiException) {
@@ -84,7 +97,8 @@ fun loginScreen(
                         Modifier
                             .height(54.dp)
                             .width(250.dp)
-                            .clickable { googleSignInLauncher.launch(null) },
+                            .clickable { onGoogleLoginClick() },
+                    // Google 로그인 시작
                 )
             }
         }

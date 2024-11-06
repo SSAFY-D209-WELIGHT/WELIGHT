@@ -59,7 +59,6 @@ android {
 }
 
 dependencies {
-
     implementation(project(":feat:login"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
