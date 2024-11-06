@@ -13,6 +13,7 @@ sealed interface EditorIntent {
     // Text Object
     sealed interface TextObject : EditorIntent {
         data object Select : TextObject
+
         data class Transform(
             val textState: DisplayTextState,
         ) : TextObject
@@ -21,10 +22,12 @@ sealed interface EditorIntent {
     // Image Object
     sealed interface ImageObject : EditorIntent {
         data object Select : ImageObject
+
         data class Transform(
             val imageState: DisplayImageState,
         ) : ImageObject
     }
+
     // Info ToolBar
     sealed interface InfoToolBar : EditorIntent {
         data object EditText : InfoToolBar
@@ -36,21 +39,19 @@ sealed interface EditorIntent {
 
     // Text ToolBar
     sealed interface TextToolBar : EditorIntent {
-        data object Select : TextToolBar
-
         data class SelectColor(
             val color: CustomColor,
         ) : TextToolBar
 
-        data object SelectCustomColor : TextToolBar
+        data class SelectCustomColor(
+            val currentColor: CustomColor,
+        ) : TextToolBar
 
         data class SelectFont(
             val font: FontFamily,
         ) : TextToolBar
 
-        data class Rotate(
-            val degree: Float,
-        ) : TextToolBar
+        data object EditText : TextToolBar
 
         data object Delete : TextToolBar
 
@@ -59,16 +60,12 @@ sealed interface EditorIntent {
 
     // Image ToolBar
     sealed interface ImageToolBar : EditorIntent {
-        data object Select : ImageToolBar
-
         data class SelectColor(
             val color: CustomColor,
         ) : ImageToolBar
 
-        data object SelectCustomColor : ImageToolBar
-
-        data class Rotate(
-            val degree: Float,
+        data class SelectCustomColor(
+            val currentColor: CustomColor,
         ) : ImageToolBar
 
         data object Change : ImageToolBar
@@ -84,7 +81,9 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : BackgroundToolBar
 
-        data object SelectCustomColor : BackgroundToolBar
+        data class SelectCustomColor(
+            val currentColor: CustomColor,
+        ) : BackgroundToolBar
 
         data class ChangeBrightness(
             val brightness: Float,

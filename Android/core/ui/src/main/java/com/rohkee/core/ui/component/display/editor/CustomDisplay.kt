@@ -8,6 +8,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -26,7 +27,7 @@ import kotlinx.collections.immutable.persistentListOf
 data class DisplayImageState(
     val isSelected: Boolean = false,
     val imageSource: Any? = null,
-    val color: CustomColor? = null,
+    val color: CustomColor = CustomColor.Single(color = Color.Transparent),
     val scale: Float = 1f,
     val rotationDegree: Float = 0f,
     val offsetPercentX: Float = 0f,
@@ -139,15 +140,14 @@ fun DisplayImage(
         model = state.imageSource,
         contentDescription = "image",
         colorFilter =
-            state.color?.let {
-                ColorFilter.tint(
-                    color =
-                        when (state.color) {
-                            is CustomColor.Single -> state.color.color
-                            is CustomColor.Gradient -> state.color.colors.first()
-                        },
-                )
-            },
+            ColorFilter.tint(
+                color =
+                    when (state.color) {
+                        is CustomColor.Single -> state.color.color
+                        is CustomColor.Gradient -> state.color.colors.first()
+                    },
+                blendMode = BlendMode.Plus,
+            ),
     )
 }
 
@@ -168,7 +168,7 @@ fun DisplayText(
                     y = editorTextState.offsetPercentY * screenHeight,
                 ).rotate(editorTextState.rotationDegree),
         text = editorTextState.text,
-        fontFamily = editorTextState.font,
+        fontFamily = editorTextState.font
     )
 }
 

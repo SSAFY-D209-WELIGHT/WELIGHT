@@ -33,11 +33,10 @@ fun ImageToolBar(
     onClose: () -> Unit = {},
     onDelete: () -> Unit = {},
     onSelectColor: (CustomColor) -> Unit = {},
-    onSelectCustomColor: () -> Unit = {},
-    onRotate: (Float) -> Unit = {},
+    onSelectCustomColor: (CustomColor) -> Unit = {},
     onChangeImage: () -> Unit = {},
 ) {
-    val options = remember { persistentListOf("색상", "회전", "교체") }
+    val options = remember { persistentListOf("색상", "교체") }
     val (selected, setSelected) = remember { mutableStateOf(options[0]) }
 
     Column(
@@ -92,14 +91,7 @@ fun ImageToolBar(
                         modifier = Modifier.align(Alignment.Center),
                         selectedColor = state.color,
                         onColorSelected = onSelectColor,
-                        onSelectCustomColor = onSelectCustomColor,
-                    )
-
-                "회전" ->
-                    SliderRow(
-                        modifier = Modifier.align(Alignment.Center),
-                        value = state.rotationDegree,
-                        onValueChange = onRotate,
+                        onSelectCustomColor = { onSelectCustomColor(state.color) },
                     )
             }
         }

@@ -35,7 +35,7 @@ fun BackgroundToolBar(
     onClose: () -> Unit = {},
     onDelete: () -> Unit = {},
     onSelectColor: (CustomColor) -> Unit = {},
-    onSelectCustomColor: () -> Unit = {},
+    onSelectCustomColor: (CustomColor) -> Unit = {},
     onChangeBrightness: (Float) -> Unit = {},
 ) {
     val options = remember { persistentListOf("색상", "밝기") }
@@ -87,7 +87,7 @@ fun BackgroundToolBar(
                         modifier = Modifier.align(Alignment.Center),
                         selectedColor = state.color,
                         onColorSelected = onSelectColor,
-                        onSelectCustomColor = onSelectCustomColor,
+                        onSelectCustomColor = { onSelectCustomColor(state.color) },
                     )
 
                 "회전" ->

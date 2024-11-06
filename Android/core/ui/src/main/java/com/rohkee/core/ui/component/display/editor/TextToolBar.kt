@@ -35,18 +35,21 @@ fun TextToolBar(
     onClose: () -> Unit = {},
     onDelete: () -> Unit = {},
     onSelectColor: (CustomColor) -> Unit = {},
-    onSelectCustomColor: () -> Unit = {},
+    onSelectCustomColor: (CustomColor) -> Unit = {},
     onSelectFont: (FontFamily) -> Unit = {},
-    onRotate: (Float) -> Unit = {},
+    onTextChange: () -> Unit = {},
 ) {
-    val options = remember { persistentListOf("색상", "폰트", "회전") }
+    val options = remember { persistentListOf("색상", "폰트", "입력") }
     val (selected, setSelected) = remember { mutableStateOf(options[0]) }
 
     Column(
         modifier = modifier,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
@@ -54,7 +57,12 @@ fun TextToolBar(
             ChipGroup(
                 list = options,
                 selected = selected,
-                onChipSelected = setSelected,
+                onChipSelected = {
+                    when (it) {
+                        "입력" -> onTextChange()
+                        else -> setSelected(it)
+                    }
+                },
             )
             CommonCircleButton(
                 icon = Icons.Default.Delete,
@@ -85,7 +93,7 @@ fun TextToolBar(
                         modifier = Modifier.align(Alignment.Center),
                         selectedColor = state.color,
                         onColorSelected = onSelectColor,
-                        onSelectCustomColor = onSelectCustomColor,
+                        onSelectCustomColor = { onSelectCustomColor(state.color) },
                     )
 
                 "폰트" ->
@@ -93,13 +101,6 @@ fun TextToolBar(
                         modifier = Modifier.align(Alignment.Center),
                         selectedFont = state.font,
                         onFontSelected = onSelectFont,
-                    )
-
-                "회전" ->
-                    SliderRow(
-                        modifier = Modifier.align(Alignment.Center),
-                        value = state.rotationDegree,
-                        onValueChange = onRotate,
                     )
             }
         }

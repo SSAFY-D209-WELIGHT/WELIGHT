@@ -79,11 +79,11 @@ private fun EditContent(
                         modifier = modifier,
                         state = state.editorTextState,
                         onSelectColor = { onIntent(EditorIntent.TextToolBar.SelectColor(it)) },
-                        onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor) },
+                        onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor(it)) },
                         onSelectFont = { onIntent(EditorIntent.TextToolBar.SelectFont(it)) },
-                        onRotate = { onIntent(EditorIntent.TextToolBar.Rotate(it)) },
                         onDelete = { onIntent(EditorIntent.TextToolBar.Delete) },
                         onClose = { onIntent(EditorIntent.TextToolBar.Close) },
+                        onTextChange = { onIntent(EditorIntent.TextToolBar.EditText) },
                     )
                 }
 
@@ -94,8 +94,7 @@ private fun EditContent(
                         onDelete = { onIntent(EditorIntent.ImageToolBar.Delete) },
                         onClose = { onIntent(EditorIntent.ImageToolBar.Close) },
                         onSelectColor = { onIntent(EditorIntent.ImageToolBar.SelectColor(it)) },
-                        onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor) },
-                        onRotate = { onIntent(EditorIntent.ImageToolBar.Rotate(it)) },
+                        onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor(it)) },
                         onChangeImage = { onIntent(EditorIntent.ImageToolBar.Change) },
                     )
                 }
@@ -111,7 +110,7 @@ private fun EditContent(
                                 ),
                             )
                         },
-                        onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor) },
+                        onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor(it)) },
                         onChangeBrightness = {
                             onIntent(
                                 EditorIntent.BackgroundToolBar.ChangeBrightness(
