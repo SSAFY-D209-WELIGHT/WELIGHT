@@ -1,6 +1,7 @@
 package com.d209.welight.domain.cheer.service;
 
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
+import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
 import com.d209.welight.domain.cheer.entity.CheerParticipation;
 import com.d209.welight.domain.cheer.entity.CheerParticipationId;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -74,5 +77,18 @@ public class CheerServiceImpl implements CheerService {
         cheerParticipationRepository.save(participation);
         log.info("방장 참여 정보 생성 완료 - userUid: {}, cheerroomId: {}", userUid, savedCheerroom.getId());
         return CheerroomResponse.from(savedCheerroom);
+    }
+
+    @Override
+    public List<CheerroomResponse> getAllCheerroomsByGeo(FindByGeoRequest findByGeoRequest) {
+        List<Cheerroom> cheerrooms = cheerroomRepository.findByGeo(
+                findByGeoRequest.getLatitude(),
+                findByGeoRequest.getLongitude(),
+                findByGeoRequest.getRadius()
+        );
+
+        return cheerrooms.stream()
+                .map(CheerroomResponse::from)
+                .collect(Collectors.toList());
     }
 }
