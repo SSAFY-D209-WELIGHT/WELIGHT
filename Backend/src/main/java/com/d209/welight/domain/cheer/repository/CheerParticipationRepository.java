@@ -16,4 +16,5 @@ public interface CheerParticipationRepository extends JpaRepository<CheerPartici
     List<CheerParticipation> findByCheerroom_Id(Long cheerroomUid);
     Optional<CheerParticipation> findByUser_UserUidAndCheerroom_Id(Long userUid, Long cheerroomUid);
     Optional<CheerParticipation> findByUserAndCheerroomId(User user, Long cheerRoomUid);
+    void deleteByUserAndCheerroom(User user, Cheerroom cheerRoom);
 }

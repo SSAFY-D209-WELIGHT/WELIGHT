@@ -4,6 +4,7 @@ import com.d209.welight.domain.cheer.dto.request.CheerRecordRequest;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
+import com.d209.welight.domain.cheer.dto.response.ParticipantsResponse;
 import com.d209.welight.domain.cheer.entity.CheerParticipation;
 import com.d209.welight.domain.cheer.entity.CheerParticipationId;
 import com.d209.welight.domain.user.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,8 +97,26 @@ public class CheerServiceImpl implements CheerService {
     }
 
     @Override
+    public List<ParticipantsResponse> getParticipants(Long cheerId) {
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 응원방입니다."));
+        List<CheerParticipation> cheerParticipationList = cheerroom.getParticipations();
+        List<ParticipantsResponse> participantsResponses = new ArrayList<>();
+        for (CheerParticipation participation : cheerParticipationList) {
+            User user = participation.getUser();
+            boolean isLeader = participation.isOwner();
+            ParticipantsResponse participantInfo = ParticipantsResponse.builder()
+                    .userNickname(user.getUserNickname())
+                    .userProfileImg(user.getUserProfileImg())
+                    .isLeader(isLeader)
+                    .build();
+            participantsResponses.add(participantInfo);
+        }
+        return participantsResponses;
+    }
+
+    @Override
     public void delegateLeader(long roomId, User currentLeader, User newLeader) {
-        //cheerparticipation에서 useruid로 찾아서 cheerroom_is_owner 1->0 / 0-> 1
         CheerParticipation currentLeaderCheerParticipation = cheerParticipationRepository
                 .findByUserAndCheerroomId(currentLeader, roomId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
@@ -123,5 +143,17 @@ public class CheerServiceImpl implements CheerService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
 
         participation.updateCheerMemo(cheerRecordRequest.getCheerMemo());
+    }
+
+    @Override
+    public void deleteRecords(User user, long roomId) {
+        Cheerroom cheerroom = cheerroomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 응원방입니다."));
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+        // 저장소에서 삭제
+        cheerParticipationRepository.deleteByUserAndCheerroom(user, cheerroom);
+
     }
 }

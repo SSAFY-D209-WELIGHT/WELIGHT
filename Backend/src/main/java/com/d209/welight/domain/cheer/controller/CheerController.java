@@ -6,6 +6,7 @@ import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
 import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.request.LeaderDelegateRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
+import com.d209.welight.domain.cheer.dto.response.ParticipantsResponse;
 import com.d209.welight.domain.cheer.service.CheerService;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
@@ -64,7 +65,7 @@ public class CheerController {
     }
 
     @PatchMapping("/{cheerId}/delegate")
-    @Operation(summary = "방장을 다른 회원에게 위임합니다.")
+    @Operation(summary = "방장 위임")
     public ResponseEntity<?> delegateLeader(Authentication authentication,
                                                             @PathVariable(name="cheerId") long cheerId,
                                                             @RequestBody LeaderDelegateRequest leaderDelegateRequest) {
@@ -81,6 +82,26 @@ public class CheerController {
             cheerService.delegateLeader(cheerId, currentLeader, newLeader);
 
             return ResponseEntity.ok().body("그룹 방장 위임 완료");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{cheerId}/participants")
+    @Operation(summary = "해당 응원방에 참여 중인 유저 리스트")
+    public ResponseEntity<?> getParticipants(Authentication authentication,
+                                             @PathVariable(name="cheerId") long cheerId) {
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            List<ParticipantsResponse> participantsResponseList = cheerService.getParticipants(cheerId);
+
+            return ResponseEntity.ok().body(participantsResponseList);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
@@ -105,8 +126,26 @@ public class CheerController {
             return ResponseEntity.ok().body("응원 기록 생성 완료");
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch(EntityExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("{cheerId}/records")
+    @Operation(summary = "응원 기록 삭제")
+    public ResponseEntity<?> createRecords(Authentication authentication,
+                                           @PathVariable(name="cheerId") long cheerId) {
+        try {
+            User user = userService.findByUserId(authentication.getName());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
+            }
+
+            cheerService.deleteRecords(user, cheerId);
+
+            return ResponseEntity.ok().body("응원 기록 삭제 완료");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
