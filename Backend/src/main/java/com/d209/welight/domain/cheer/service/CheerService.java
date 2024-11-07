@@ -27,4 +27,6 @@ public interface CheerService {
     public void leaveCheerroom(String userId, Long cheerroomId);
     public List<CheerHistoryResponse> getUserCheerHistory(String userId);
     public CheerHistoryDetailResponse getCheerHistoryDetail(String userId, Long cheerId);
+
+//    public void useDisplayForCheer(Long cheerroomId, String userId, List<Long> displayIds);
 }

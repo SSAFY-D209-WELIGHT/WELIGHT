@@ -33,6 +33,7 @@ public class DisplayComment {
 
     // cascade 설정으로 부모 댓글 삭제 시 대댓글도 함께 삭제
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<DisplayComment> childComments = new ArrayList<>();
 
     @Column(name = "COMMENT_TEXT", nullable = false, length = 255)
