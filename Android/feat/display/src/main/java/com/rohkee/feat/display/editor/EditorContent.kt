@@ -128,12 +128,9 @@ private fun EditContent(
     ) {
         CustomDisplay(
             modifier = Modifier.fillMaxSize(),
-            editable = true,
             imageState = state.editorImageState,
             textState = state.editorTextState,
             backgroundState = state.editorBackgroundState,
-            onImageSelected = { onIntent(EditorIntent.ImageObject.Select) },
-            onTextSelected = { onIntent(EditorIntent.TextObject.Select) },
             onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
             onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
         )

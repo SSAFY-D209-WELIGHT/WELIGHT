@@ -54,16 +54,10 @@ class EditorViewModel @Inject constructor() : ViewModel() {
             }
 
             // ImageObject
-            is EditorIntent.ImageObject.Select ->
-                editorStateHolder.selectImageObject()
-
             is EditorIntent.ImageObject.Transform ->
                 editorStateHolder.updateImage(editorImageState = intent.imageState)
 
             // TextObject
-            is EditorIntent.TextObject.Select ->
-                editorStateHolder.selectTextObject()
-
             is EditorIntent.TextObject.Transform ->
                 editorStateHolder.updateText(editorTextState = intent.textState)
 

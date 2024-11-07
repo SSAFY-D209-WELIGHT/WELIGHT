@@ -53,12 +53,9 @@ data class DisplayBackgroundState(
 @Composable
 fun CustomDisplay(
     modifier: Modifier = Modifier,
-    editable: Boolean = false,
     backgroundState: DisplayBackgroundState,
     imageState: DisplayImageState,
     textState: DisplayTextState,
-    onImageSelected: () -> Unit = {},
-    onTextSelected: () -> Unit = {},
     onImageTransformed: (DisplayImageState) -> Unit = {},
     onTextTransformed: (DisplayTextState) -> Unit = {},
 ) {
@@ -73,8 +70,6 @@ fun CustomDisplay(
             scale = imageState.scale,
             rotation = imageState.rotationDegree,
             offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
-            selected = imageState.isSelected,
-            onSelect = { if (editable) onImageSelected() },
             onTransfrm =
                 { scale, rotation, offset ->
                     onImageTransformed(
@@ -86,9 +81,9 @@ fun CustomDisplay(
                         ),
                     )
                 },
-        ) { childMod ->
+        ) {
             DisplayImage(
-                modifier = childMod.align(Alignment.Center),
+                modifier = Modifier.align(Alignment.Center),
                 state = imageState,
             )
         }
@@ -96,8 +91,6 @@ fun CustomDisplay(
             scale = textState.scale,
             rotation = textState.rotationDegree,
             offset = Offset(textState.offsetPercentX, textState.offsetPercentY),
-            selected = textState.isSelected,
-            onSelect = { if (editable) onTextSelected() },
             onTransfrm =
                 { scale, rotation, offset ->
                     onTextTransformed(
@@ -109,9 +102,9 @@ fun CustomDisplay(
                         ),
                     )
                 },
-        ) { childMod ->
+        ) {
             DisplayText(
-                modifier = childMod.align(Alignment.Center),
+                modifier = Modifier.align(Alignment.Center),
                 editorTextState = textState,
             )
         }
