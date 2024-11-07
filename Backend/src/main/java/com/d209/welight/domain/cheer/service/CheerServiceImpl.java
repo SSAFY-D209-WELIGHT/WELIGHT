@@ -19,6 +19,7 @@ import com.d209.welight.domain.cheer.entity.Cheerroom;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
@@ -137,6 +138,25 @@ public class CheerServiceImpl implements CheerService {
         cheerParticipationRepository.save(currentLeaderCheerParticipation);
         cheerParticipationRepository.save(newLeaderCheerParticipation);
 
+    }
+
+    @Override
+    public void endCheering(User user, long cheerId) {
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 응원방입니다."));
+        // 현재 유저가 방장인지 확인
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, cheerId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+        if (!participation.isOwner()) {
+            throw new AccessDeniedException("방장만 응원을 종료할 수 있습니다.");
+        }
+
+        // is_done 값 true로 업데이트
+        cheerroom.setDone(true);
+        cheerParticipationRepository.save(participation);
+
+        // cheerroom_display 업데이트 -> 응원방 디스플레이 선택저장 API
     }
 
     /* 기록 */
