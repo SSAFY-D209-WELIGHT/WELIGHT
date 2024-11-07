@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {
@@ -25,6 +24,4 @@ public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {
     List<Cheerroom> findByGeo(@Param("latitude") Double latitude,
                              @Param("longitude") Double longitude,
                              @Param("upToKm") Double upToKm);
-
-    List<Cheerroom> findAllByName(String cheerroomName);
 }
