@@ -31,4 +31,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
     //compose-navigation
     implementation(libs.androidx.navigation.compose)
+
+    implementation(project(":feat:storage"))
+    implementation(project(":feat:display"))
 }
