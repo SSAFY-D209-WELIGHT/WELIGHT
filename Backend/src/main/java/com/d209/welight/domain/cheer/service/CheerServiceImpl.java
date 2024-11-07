@@ -43,6 +43,8 @@ public class CheerServiceImpl implements CheerService {
     private final UserRepository userRepository;
     private final DisplayRepository displayRepository;
     private final CheerroomDisplayRepository cheerroomDisplayRepository;
+    private static final String DEFAULT_THUMBNAIL_URL =
+            "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/default_thumbnail.png";
 
     @Override
     public CheerroomResponse createCheerroom(String userId, CheerroomCreateRequest request) {
@@ -87,7 +89,18 @@ public class CheerServiceImpl implements CheerService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        Display defaultDisplay = displayRepository.findByDisplayThumbnailUrl(DEFAULT_THUMBNAIL_URL)
+                .orElseThrow(() -> new IllegalArgumentException("기본 디스플레이를 찾을 수 없습니다."));
+
+
         Cheerroom savedCheerroom = cheerroomRepository.save(cheerroom);
+
+        CheerroomDisplay defaultCheerroomDisplay = CheerroomDisplay.builder()
+                .cheerroom(cheerroom)
+                .display(defaultDisplay)
+                .build();
+
+        cheerroomDisplayRepository.save(defaultCheerroomDisplay);
         log.info("응원방 생성 완료 - cheerroomId: {}", savedCheerroom.getId());
 
         // 방장 참여 정보 생성
@@ -326,48 +339,65 @@ public class CheerServiceImpl implements CheerService {
                 .build();
     }
 
-//    @Override
-//    public void useDisplayForCheer(Long cheerroomId, String userId, List<Long> displayIds) {
-//        // 사용자 검증
-//        User user = userRepository.findByUserId(userId)
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-//
-//        // 응원방 검증
-//        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
-//                .orElseThrow(() -> new IllegalArgumentException("응원방을 찾을 수 없습니다."));
-//
-//        // 방장 권한 검증
-//        CheerParticipation participation = cheerParticipationRepository
-//                .findByUserAndCheerroomId(user, cheerroomId)
-//                .orElseThrow(() -> new IllegalArgumentException("해당 응원방에 참여하지 않은 사용자입니다."));
-//        if (!participation.isOwner()) {
-//            throw new IllegalArgumentException("방장만 디스플레이를 선택할 수 있습니다.");
-//        }
-//
-//        // default.png 제거 (첫 디스플레이 선택 시에만)
-//        if (cheerroom.getDisplays().size() == 1 &&
-//                cheerroom.getDisplays().get(0).getDisplay().getDisplayThumbnailUrl().equals("default.png")) {
-//            cheerroomDisplayRepository.delete(cheerroom.getDisplays().get(0));
-//            cheerroom.getDisplays().clear();
-//        }
-//
-//        // 새로운 디스플레이 추가
-//        displayIds.forEach(displayId -> {
-//            Display display = displayRepository.findById(displayId)
-//                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 디스플레이입니다."));
-//
-//            CheerroomDisplay cheerroomDisplay = CheerroomDisplay.builder()
-//                    .cheerroom(cheerroom)
-//                    .display(display)
-//                    .build();
-//
-//            cheerroomDisplayRepository.save(cheerroomDisplay);
-//        });
-//
-//        log.info("응원방 디스플레이 업데이트 완료 - cheerroomId: {}, displayCount: {}",
-//                cheerroomId, displayIds.size());
-//
-//    }
+    @Override
+    public CheerHistoryResponse useDisplayForCheer(Long cheerroomId, String userId, Long displayId) {
+        // 사용자 검증
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 응원방 검증
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
+                .orElseThrow(() -> new IllegalArgumentException("응원방을 찾을 수 없습니다."));
+
+        // 방장 권한 검증
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, cheerroomId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 응원방에 참여하지 않은 사용자입니다."));
+        if (!participation.isOwner()) {
+            throw new IllegalArgumentException("방장만 디스플레이를 선택할 수 있습니다.");
+        }
+
+        // default.png 제거 (첫 디스플레이 선택 시에만)
+        if (cheerroom.getDisplays().size() == 1 &&
+                cheerroom.getDisplays().get(0).getDisplay().getDisplayThumbnailUrl().equals(DEFAULT_THUMBNAIL_URL)) {
+            cheerroomDisplayRepository.delete(cheerroom.getDisplays().get(0));
+            cheerroom.getDisplays().clear();
+        }
+
+        // 새로운 디스플레이 추가
+        Display display = displayRepository.findByDisplayUid(displayId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 디스플레이입니다."));
+
+        CheerroomDisplay cheerroomDisplay = CheerroomDisplay.builder()
+                .cheerroom(cheerroom)
+                .display(display)
+                .build();
+
+        CheerroomDisplay savedDisplay = cheerroomDisplayRepository.save(cheerroomDisplay);
+
+        // 최신 디스플레이 목록 조회
+        List<CheerroomDisplay> displays = cheerroomDisplayRepository.findByCheerroom(cheerroom);
+
+        List<CheerDisplayInfo> displayInfos = displays.stream()
+                .map(cd -> CheerDisplayInfo.builder()
+                        .displayUid(cd.getDisplay().getDisplayUid())
+                        .displayName(cd.getDisplay().getDisplayName())
+                        .thumbnailUrl(cd.getDisplay().getDisplayThumbnailUrl())
+                        .usedAt(LocalDateTime.now())
+                        .build())
+                .collect(Collectors.toList());
+
+        log.info("응원방 디스플레이 업데이트 완료 - cheerroomId: {}, displayId: {}, 총 디스플레이 수: {}",
+                cheerroomId, displayId, displayInfos.size());
+
+        return CheerHistoryResponse.builder()
+                .cheerroomName(cheerroom.getName())
+                .participationDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
+                .participantCount(cheerParticipationRepository.countParticipantsByCheerroomId(cheerroomId))
+                .displays(displayInfos)
+                .build();
+
+    }
 
     private void updateExitInfo(CheerParticipation participation, LocalDateTime exitTime) {
         participation.setLastExitTime(exitTime);

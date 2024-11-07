@@ -13,6 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface DisplayRepository extends JpaRepository<Display, Long> {
+
+    Optional<Display> findByDisplayThumbnailUrl(String defaultThumbnailUrl);
+    Optional<Display> findByDisplayUid(Long displayUid);
     
     // 게시 여부가 1인 디스플레이만 조회
     Page<Display> findAllByDisplayIsPostedTrue(Pageable pageable);
@@ -25,4 +28,5 @@ public interface DisplayRepository extends JpaRepository<Display, Long> {
             "LEFT JOIN DisplayStorage ds ON d = ds.display " +
             "WHERE d.creatorUid = :userUid OR ds.user = :user")
     Page<Display> findAllByCreatorUidOrStoredByUser(Long userUid, Optional<User> user, Pageable pageable);
+
 }
