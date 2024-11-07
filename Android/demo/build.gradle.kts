@@ -1,9 +1,7 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.module.android.application.compose)
 }
 
 // local.properties에서 GOOGLE_OAUTH_CLIENT_ID를 가져오기
@@ -19,12 +17,10 @@ val googleClientId: String =
 
 android {
     namespace = "com.rohkee.demo"
-    compileSdk = 34
 
     defaultConfig {
+        manifestPlaceholders += mapOf()
         applicationId = "com.rohkee.demo"
-        minSdk = 28
-        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,24 +45,13 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
     implementation(libs.gms.play.services.auth.v2070)
+    implementation(project(":feat:login"))
 
-//
 //    implementation(libs.androidx.lifecycle.viewmodel.compose.v262)
-//    implementation(project(":feat:login"))
 //    implementation(libs.androidx.core.ktx)
 //    implementation(libs.androidx.lifecycle.runtime.ktx)
 //    implementation(libs.androidx.activity.compose)
