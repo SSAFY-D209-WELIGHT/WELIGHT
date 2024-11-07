@@ -13,16 +13,17 @@ import java.time.LocalDateTime;
 public class DisplayBackground {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "DISPLAY_BACKGROUND_UID", columnDefinition = "BIGINT")
     private Long displayBackgroundUid;
 
     @OneToOne
     @JoinColumn(name = "DISPLAY_UID")
     private Display display;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_BACKGROUND_BRIGHTNESS", nullable = false)
     private Float displayBackgroundBrightness;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_BACKGROUND_CREATED_AT", nullable = false)
     private LocalDateTime displayBackgroundCreatedAt = LocalDateTime.now();
 }
