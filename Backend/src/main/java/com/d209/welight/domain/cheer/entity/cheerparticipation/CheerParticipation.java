@@ -14,6 +14,7 @@ import java.time.LocalTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "CHEER_PARTICIPATION")
 @IdClass(CheerParticipationId.class)
 public class CheerParticipation {
 
