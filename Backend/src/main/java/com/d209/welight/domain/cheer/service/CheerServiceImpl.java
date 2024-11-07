@@ -151,7 +151,7 @@ public class CheerServiceImpl implements CheerService {
         cheerroom.setDone(true);
         cheerParticipationRepository.save(participation);
 
-        // cheerroom_display 업데이트 하는 로직 추후 작성
+        // cheerroom_display 업데이트 -> 응원방 디스플레이 선택저장 API
     }
 
     /* 기록 */
