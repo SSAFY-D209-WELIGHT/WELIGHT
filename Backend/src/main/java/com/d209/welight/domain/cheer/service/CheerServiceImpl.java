@@ -11,7 +11,9 @@ import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipatio
 import com.d209.welight.domain.cheer.dto.CheerDisplayInfo;
 import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
+import com.d209.welight.domain.cheer.entity.cheerroomdisplay.CheerroomDisplay;
 import com.d209.welight.domain.cheer.repository.CheerroomDisplayRepository;
+import com.d209.welight.domain.display.entity.Display;
 import com.d209.welight.domain.display.repository.DisplayRepository;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
