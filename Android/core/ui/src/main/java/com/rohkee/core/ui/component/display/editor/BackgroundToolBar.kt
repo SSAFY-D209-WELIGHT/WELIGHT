@@ -90,7 +90,7 @@ fun BackgroundToolBar(
                         onSelectCustomColor = { onSelectCustomColor(state.color) },
                     )
 
-                "회전" ->
+                "밝기" ->
                     SliderRow(
                         modifier = Modifier.align(Alignment.Center),
                         value = state.brightness,

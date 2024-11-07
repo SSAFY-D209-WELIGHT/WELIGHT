@@ -14,6 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.rohkee.core.ui.component.appbar.ConfirmAppBar
 import com.rohkee.core.ui.component.common.RoundedTextInput
 import com.rohkee.core.ui.theme.AppColor
@@ -30,26 +32,35 @@ fun TextInputDialog(
 ) {
     val (textState, setTextState) = remember(initialValue) { mutableStateOf(initialValue) }
 
-    Column(
-        modifier = modifier.fillMaxSize().background(color = AppColor.BackgroundTransparent).imePadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
-        ConfirmAppBar(
-            modifier = Modifier.fillMaxWidth(),
-            onCloseClick = onDismiss,
-            onConfirmClick = { onConfirm(textState) },
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        RoundedTextInput(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            autofocus = true,
-            value = textState,
-            hint = hint,
-            isError = isError,
-            errorMessage = errorMessage,
-            onValueChange = setTextState,
-        )
-        Spacer(modifier = Modifier.weight(1f))
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .background(color = AppColor.BackgroundTransparent)
+                    .imePadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            ConfirmAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                onCloseClick = onDismiss,
+                onConfirmClick = { onConfirm(textState) },
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            RoundedTextInput(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                autofocus = true,
+                value = textState,
+                hint = hint,
+                isError = isError,
+                errorMessage = errorMessage,
+                onValueChange = setTextState,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 }
 

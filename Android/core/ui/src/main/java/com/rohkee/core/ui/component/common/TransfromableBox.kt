@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -44,9 +45,11 @@ fun TransformableBox(
     rotation: Float,
     offset: Offset,
     onTransfrm: (scale: Float, rotation: Float, offset: Offset) -> Unit = { _, _, _ -> },
-    content: @Composable () -> Unit,
+    content: @Composable (Modifier) -> Unit,
 ) {
-    BoxWithConstraints {
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize(),
+    ) {
         val density = LocalDensity.current
         val width = with(density) { maxWidth.toPx() }
         val height = with(density) { maxHeight.toPx() }
@@ -66,6 +69,7 @@ fun TransformableBox(
 
         Box(
             modifier
+                .fillMaxSize()
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
@@ -76,18 +80,25 @@ fun TransformableBox(
                     if (selected) {
                         Modifier
                             .transformable(state = state)
-                            .dashedBorder(
+                    } else {
+                        Modifier
+                    },
+                ),
+        ) {
+            content(
+                Modifier
+                    .then(
+                        if (selected) {
+                            Modifier.dashedBorder(
                                 shape = RectangleShape,
                                 width = 2.dp,
                                 color = AppColor.Active,
                             )
-                    } else {
-                        Modifier
-                    },
-                )
-                .clickable { onSelect() },
-        ) {
-            content()
+                        } else {
+                            Modifier
+                        },
+                    ).clickable { onSelect() },
+            )
         }
     }
 }
@@ -98,7 +109,7 @@ private fun TransformableBoxPreview() {
     var scale by remember { mutableFloatStateOf(1f) }
     var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    var selected by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf(true) }
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         TransformableBox(
@@ -112,9 +123,9 @@ private fun TransformableBoxPreview() {
                 rotation = r
                 offset = o
             },
-        ) {
+        ) { mod ->
             Text(
-                modifier = Modifier.background(color = Color.Cyan),
+                modifier = mod.align(Alignment.Center).background(color = Color.Cyan),
                 text = "$scale $rotation $offset",
                 fontSize = 40.sp,
             )

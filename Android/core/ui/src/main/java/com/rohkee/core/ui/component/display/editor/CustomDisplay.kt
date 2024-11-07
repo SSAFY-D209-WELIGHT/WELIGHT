@@ -1,21 +1,19 @@
 package com.rohkee.core.ui.component.display.editor
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import coil.compose.AsyncImage
 import com.rohkee.core.ui.component.common.TransformableBox
 import com.rohkee.core.ui.model.CustomColor
@@ -67,11 +65,11 @@ fun CustomDisplay(
     Box(
         modifier =
             modifier
+                .fillMaxSize()
                 .background(color = backgroundState.color),
     ) {
         // 이미지
         TransformableBox(
-            modifier = Modifier,
             scale = imageState.scale,
             rotation = imageState.rotationDegree,
             offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
@@ -88,14 +86,13 @@ fun CustomDisplay(
                         ),
                     )
                 },
-        ) {
+        ) { childMod ->
             DisplayImage(
-                modifier = Modifier,
+                modifier = childMod.align(Alignment.Center),
                 state = imageState,
             )
         }
         TransformableBox(
-            modifier = Modifier,
             scale = textState.scale,
             rotation = textState.rotationDegree,
             offset = Offset(textState.offsetPercentX, textState.offsetPercentY),
@@ -112,9 +109,9 @@ fun CustomDisplay(
                         ),
                     )
                 },
-        ) {
+        ) { childMod ->
             DisplayText(
-                modifier = Modifier,
+                modifier = childMod.align(Alignment.Center),
                 editorTextState = textState,
             )
         }
@@ -126,18 +123,11 @@ fun DisplayImage(
     modifier: Modifier = Modifier,
     state: DisplayImageState,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
-
     AsyncImage(
         modifier =
-            modifier
-                .offset(
-                    x = state.offsetPercentX * screenWidth,
-                    y = state.offsetPercentY * screenHeight,
-                ).rotate(state.rotationDegree),
+            modifier,
         model = state.imageSource,
+        contentScale = ContentScale.Inside,
         contentDescription = "image",
         colorFilter =
             ColorFilter.tint(
@@ -156,17 +146,9 @@ fun DisplayText(
     modifier: Modifier = Modifier,
     editorTextState: DisplayTextState,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val screenHeight = configuration.screenHeightDp.dp
-
     Text(
         modifier =
-            modifier
-                .offset(
-                    x = editorTextState.offsetPercentX * screenWidth,
-                    y = editorTextState.offsetPercentY * screenHeight,
-                ).rotate(editorTextState.rotationDegree),
+            modifier,
         text = editorTextState.text,
         fontFamily = editorTextState.font
     )

@@ -1,11 +1,18 @@
 package com.rohkee.feat.display.editor
 
+import android.net.Uri
 import androidx.compose.ui.text.font.FontFamily
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.model.CustomColor
 
 sealed interface EditorIntent {
+    data class Load(
+        val displayId: Long,
+    ) : EditorIntent
+
+    data object CreateNew : EditorIntent
+
     data object ExitPage : EditorIntent
 
     data object Save : EditorIntent
@@ -30,6 +37,8 @@ sealed interface EditorIntent {
 
     // Info ToolBar
     sealed interface InfoToolBar : EditorIntent {
+        data object EditInfo : InfoToolBar
+
         data object EditText : InfoToolBar
 
         data object EditImage : InfoToolBar
@@ -96,6 +105,8 @@ sealed interface EditorIntent {
 
     // Dialog
     sealed interface Dialog : EditorIntent {
+        data object Close : Dialog
+
         data class ColorPicked(
             val color: CustomColor,
         ) : Dialog
@@ -110,6 +121,15 @@ sealed interface EditorIntent {
 
         data class EditText(
             val text: String,
+        ) : Dialog
+
+        data class EditInfo(
+            val title: String,
+            val tags: List<String>,
+        ) : Dialog
+
+        data class PickedImage(
+            val image: Uri,
         ) : Dialog
     }
 }

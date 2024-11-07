@@ -9,6 +9,8 @@ import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.component.display.editor.EditorInfoState
 import com.rohkee.core.ui.model.CustomColor
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,13 +22,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class EditorViewModel @Inject constructor() : ViewModel() {
     private val editorStateHolder = MutableStateFlow<DisplayEditorData>(DisplayEditorData())
 
     val editorState: StateFlow<EditorState> =
         editorStateHolder
             .onStart {
-                // TODO: Load initial data
+                // TODO : init
             }.map { data ->
                 data.toState()
             }.stateIn(
@@ -39,117 +42,188 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
     fun onIntent(intent: EditorIntent) {
         when (intent) {
-            is EditorIntent.ExitPage -> {
-                emitEvent(EditorEvent.Open.ExitDialog)
-            }
+            is EditorIntent.CreateNew -> createData()
 
-            EditorIntent.Save -> TODO()
+            is EditorIntent.Load -> loadData(intent.displayId)
+
+            is EditorIntent.ExitPage -> emitEvent(EditorEvent.ExitPage)
+
+            EditorIntent.Save -> {
+                // TODO : Save Display
+                emitEvent(EditorEvent.ExitPage)
+            }
 
             // ImageObject
             is EditorIntent.ImageObject.Select ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Image) }
+                editorStateHolder.selectImageObject()
 
             is EditorIntent.ImageObject.Transform ->
-                editorStateHolder.update { editorStateHolder.value.copy(editorImageState = intent.imageState) }
+                editorStateHolder.updateImage(editorImageState = intent.imageState)
 
             // TextObject
             is EditorIntent.TextObject.Select ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Text) }
+                editorStateHolder.selectTextObject()
 
             is EditorIntent.TextObject.Transform ->
-                editorStateHolder.update { editorStateHolder.value.copy(editorTextState = intent.textState) }
+                editorStateHolder.updateText(editorTextState = intent.textState)
 
             // Dialog
-            is EditorIntent.Dialog.ExitPage -> emitEvent(EditorEvent.ExitPage)
+            is EditorIntent.Dialog.ExitPage ->
+                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
 
             is EditorIntent.Dialog.ColorPicked -> {
                 when (editorStateHolder.value.bottomBarState) {
                     EditingState.Text ->
-                        editorStateHolder.update { editorStateHolder.value.copyWithText(color = intent.color) }
+                        editorStateHolder.updateText(color = intent.color)
 
                     EditingState.Image ->
-                        editorStateHolder.update { editorStateHolder.value.copyWithImage(color = intent.color) }
+                        editorStateHolder.updateImage(color = intent.color)
 
                     EditingState.Background ->
-                        editorStateHolder.update { editorStateHolder.value.copyWithBackground(color = intent.color) }
+                        editorStateHolder.updateBackground(color = intent.color)
 
                     EditingState.None -> {}
                 }
             }
 
-            EditorIntent.Dialog.DeleteText -> TODO()
-            EditorIntent.Dialog.DeleteImage -> TODO()
+            EditorIntent.Dialog.DeleteText ->
+                editorStateHolder.updateText(editorTextState = DisplayTextState())
+
+            EditorIntent.Dialog.DeleteImage ->
+                editorStateHolder.updateImage(editorImageState = DisplayImageState())
+
             EditorIntent.Dialog.DeleteBackground ->
-                editorStateHolder.update {
-                    editorStateHolder.value.copyWithBackground()
-                }
+                editorStateHolder.updateBackground(editorBackgroundState = DisplayBackgroundState())
 
             // InfoToolBar
-            EditorIntent.InfoToolBar.EditText ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Text) }
+            EditorIntent.InfoToolBar.EditText -> tryEditText()
 
-            EditorIntent.InfoToolBar.EditImage ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Image) }
+            EditorIntent.InfoToolBar.EditImage -> tryEditImage()
 
             EditorIntent.InfoToolBar.EditBackground ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Background) }
+                editorStateHolder.updateBottomBar(bottomBarState = EditingState.Background)
+
+            EditorIntent.InfoToolBar.EditInfo ->
+                editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorStateHolder.value.editorInfoState))
 
             // TextToolBar
             EditorIntent.TextToolBar.Close ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.None) }
+                editorStateHolder.deselectObject()
 
-            EditorIntent.TextToolBar.Delete -> {
-                emitEvent(EditorEvent.Open.TextDeleteDialog)
-            }
+            EditorIntent.TextToolBar.Delete ->
+                editorStateHolder.updateDialog(dialogState = DialogState.TextDeleteWarning)
 
-            EditorIntent.TextToolBar.EditText -> TODO()
+            EditorIntent.TextToolBar.EditText ->
+                editorStateHolder.updateDialog(dialogState = DialogState.TextEdit(editorStateHolder.value.editorTextState.text))
 
             is EditorIntent.TextToolBar.SelectColor ->
-                editorStateHolder.update { editorStateHolder.value.copyWithText(color = intent.color) }
+                editorStateHolder.updateText(color = intent.color)
 
             is EditorIntent.TextToolBar.SelectFont ->
-                editorStateHolder.update { editorStateHolder.value.copyWithText(font = intent.font) }
+                editorStateHolder.updateText(font = intent.font)
 
             is EditorIntent.TextToolBar.SelectCustomColor ->
-                emitEvent(EditorEvent.Open.ColorPicker(intent.currentColor))
+                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(intent.currentColor))
 
             // ImageToolBar
             EditorIntent.ImageToolBar.Close ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.None) }
+                editorStateHolder.updateBottomBar(bottomBarState = EditingState.None)
 
-            EditorIntent.ImageToolBar.Delete -> emitEvent(EditorEvent.Open.ImageDeleteDialog)
-            EditorIntent.ImageToolBar.Change -> TODO()
+            EditorIntent.ImageToolBar.Delete ->
+                editorStateHolder.updateDialog(dialogState = DialogState.ImageDeleteWarning)
+
+            EditorIntent.ImageToolBar.Change -> {
+                // TODO load image
+                val imageSource = null
+                editorStateHolder.updateImage(imageSource = imageSource)
+            }
+
             is EditorIntent.ImageToolBar.SelectColor ->
-                editorStateHolder.update { editorStateHolder.value.copyWithImage(color = intent.color) }
+                editorStateHolder.updateImage(color = intent.color)
 
             is EditorIntent.ImageToolBar.SelectCustomColor ->
-                emitEvent(EditorEvent.Open.ColorPicker(intent.currentColor))
+                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(intent.currentColor))
 
             // BackgroundToolBar
             EditorIntent.BackgroundToolBar.Close ->
-                editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.None) }
+                editorStateHolder.resetBackground()
 
-            EditorIntent.BackgroundToolBar.Delete -> emitEvent(EditorEvent.Open.BackgroundDeleteDialog)
+            EditorIntent.BackgroundToolBar.Delete ->
+                editorStateHolder.updateDialog(dialogState = DialogState.BackgroundDeleteWarning)
+
             is EditorIntent.BackgroundToolBar.ChangeBrightness ->
-                editorStateHolder.update { editorStateHolder.value.copyWithBackground(brightness = intent.brightness) }
+                editorStateHolder.updateBackground(brightness = intent.brightness)
 
             is EditorIntent.BackgroundToolBar.SelectColor ->
-                editorStateHolder.update { editorStateHolder.value.copyWithBackground(color = intent.color) }
+                editorStateHolder.updateBackground(color = intent.color)
 
             is EditorIntent.BackgroundToolBar.SelectCustomColor ->
-                emitEvent(
-                    EditorEvent.Open.ColorPicker(
-                        intent.currentColor,
-                    ),
+                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(intent.currentColor))
+
+            is EditorIntent.Dialog.EditText ->
+                editorStateHolder.updateText(text = intent.text)
+
+            EditorIntent.Dialog.Close ->
+                editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+
+            is EditorIntent.Dialog.EditInfo ->
+                editorStateHolder.updateInfo(
+                    editorInfoState =
+                        EditorInfoState(
+                            title = intent.title,
+                            tags = intent.tags.toPersistentList(),
+                        ),
                 )
 
-            is EditorIntent.Dialog.EditText -> TODO()
+            is EditorIntent.Dialog.PickedImage ->
+                editorStateHolder.updateImage(imageSource = intent.image)
         }
     }
 
     private fun emitEvent(event: EditorEvent) {
         viewModelScope.launch {
             editorEvent.emit(event)
+        }
+    }
+
+    private fun createData() {
+        editorStateHolder.update {
+            DisplayEditorData(
+                displayId = null,
+                editorInfoState = EditorInfoState(),
+                editorImageState = DisplayImageState(),
+                editorTextState = DisplayTextState(),
+                editorBackgroundState = DisplayBackgroundState(),
+            )
+        }
+    }
+
+    private fun loadData(displayId: Long) {
+        viewModelScope.launch {
+            // TODO : load from api
+        }
+    }
+
+    private fun tryEditText() {
+        if (editorStateHolder.value.editorTextState.text
+                .isEmpty()
+        ) {
+            editorStateHolder.update {
+                editorStateHolder.value.copy(
+                    bottomBarState = EditingState.Text,
+                    dialogState = DialogState.TextEdit(""),
+                )
+            }
+        } else {
+            editorStateHolder.updateBottomBar(bottomBarState = EditingState.Text)
+        }
+    }
+
+    private fun tryEditImage() {
+        if (editorStateHolder.value.editorImageState.imageSource == null) {
+            emitEvent(EditorEvent.OpenPhotoGallery)
+        } else {
+            editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Image) }
         }
     }
 }
@@ -162,6 +236,7 @@ data class DisplayEditorData(
     val editorTextState: DisplayTextState = DisplayTextState(),
     val editorBackgroundState: DisplayBackgroundState = DisplayBackgroundState(),
     val bottomBarState: EditingState = EditingState.None,
+    val dialogState: DialogState = DialogState.Closed,
 ) {
     fun toState(): EditorState =
         EditorState.Edit(
@@ -171,6 +246,7 @@ data class DisplayEditorData(
             editorTextState = editorTextState,
             editorBackgroundState = editorBackgroundState,
             bottomBarState = bottomBarState,
+            dialogState = dialogState,
         )
 
     fun copyWithText(
@@ -228,3 +304,124 @@ data class DisplayEditorData(
             ),
     )
 }
+
+private fun MutableStateFlow<DisplayEditorData>.updateState(
+    displayId: Long? = this.value.displayId,
+    editorInfoState: EditorInfoState = this.value.editorInfoState,
+    editorImageState: DisplayImageState = this.value.editorImageState,
+    editorTextState: DisplayTextState = this.value.editorTextState,
+    editorBackgroundState: DisplayBackgroundState = this.value.editorBackgroundState,
+    bottomBarState: EditingState = this.value.bottomBarState,
+    dialogState: DialogState = this.value.dialogState,
+) = update {
+    DisplayEditorData(
+        displayId = displayId,
+        editorInfoState = editorInfoState,
+        editorImageState = editorImageState,
+        editorTextState = editorTextState,
+        editorBackgroundState = editorBackgroundState,
+        bottomBarState = bottomBarState,
+        dialogState = dialogState,
+    )
+}
+
+private fun MutableStateFlow<DisplayEditorData>.updateInfo(editorInfoState: EditorInfoState) =
+    update { this.value.copy(editorInfoState = editorInfoState) }
+
+private fun MutableStateFlow<DisplayEditorData>.resetText() = update { this.value.copy(editorTextState = DisplayTextState()) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateText(editorTextState: DisplayTextState) =
+    update { this.value.copy(editorTextState = editorTextState) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateText(
+    isSelected: Boolean = this.value.editorTextState.isSelected,
+    text: String = this.value.editorTextState.text,
+    color: CustomColor = this.value.editorTextState.color,
+    font: FontFamily = this.value.editorTextState.font,
+    scale: Float = this.value.editorTextState.scale,
+    rotationDegree: Float = this.value.editorTextState.rotationDegree,
+    offsetPercentX: Float = this.value.editorTextState.offsetPercentX,
+    offsetPercentY: Float = this.value.editorTextState.offsetPercentY,
+) = update {
+    this.value.copyWithText(
+        isSelected = isSelected,
+        text = text,
+        color = color,
+        font = font,
+        scale = scale,
+        rotationDegree = rotationDegree,
+        offsetPercentX = offsetPercentX,
+        offsetPercentY = offsetPercentY,
+    )
+}
+
+private fun MutableStateFlow<DisplayEditorData>.resetImage() = update { this.value.copy(editorImageState = DisplayImageState()) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateImage(editorImageState: DisplayImageState) =
+    update { this.value.copy(editorImageState = editorImageState) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateImage(
+    isSelected: Boolean = this.value.editorImageState.isSelected,
+    imageSource: Any? = this.value.editorImageState.imageSource,
+    color: CustomColor = this.value.editorImageState.color,
+    scale: Float = this.value.editorImageState.scale,
+    rotationDegree: Float = this.value.editorImageState.rotationDegree,
+    offsetPercentX: Float = this.value.editorImageState.offsetPercentX,
+    offsetPercentY: Float = this.value.editorImageState.offsetPercentY,
+) = update {
+    this.value.copyWithImage(
+        isSelected = isSelected,
+        imageSource = imageSource,
+        color = color,
+        scale = scale,
+        rotationDegree = rotationDegree,
+        offsetPercentX = offsetPercentX,
+        offsetPercentY = offsetPercentY,
+    )
+}
+
+private fun MutableStateFlow<DisplayEditorData>.resetBackground() =
+    update { this.value.copy(editorBackgroundState = DisplayBackgroundState()) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateBackground(editorBackgroundState: DisplayBackgroundState) =
+    update { this.value.copy(editorBackgroundState = editorBackgroundState) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateBackground(
+    color: CustomColor = this.value.editorBackgroundState.color,
+    brightness: Float = this.value.editorBackgroundState.brightness,
+) = update {
+    this.value.copyWithBackground(
+        color = color,
+        brightness = brightness,
+    )
+}
+
+private fun MutableStateFlow<DisplayEditorData>.updateDialog(dialogState: DialogState) =
+    update { this.value.copy(dialogState = dialogState) }
+
+private fun MutableStateFlow<DisplayEditorData>.updateBottomBar(bottomBarState: EditingState) =
+    update { this.value.copy(bottomBarState = bottomBarState) }
+
+private fun MutableStateFlow<DisplayEditorData>.selectTextObject() =
+    update {
+        this.value
+            .copy(bottomBarState = EditingState.Text)
+            .copyWithText(isSelected = true)
+            .copyWithImage(isSelected = false)
+    }
+
+private fun MutableStateFlow<DisplayEditorData>.selectImageObject() =
+    update {
+        this.value
+            .copy(bottomBarState = EditingState.Image)
+            .copyWithImage(isSelected = true)
+            .copyWithText(isSelected = false)
+    }
+
+private fun MutableStateFlow<DisplayEditorData>.deselectObject() =
+    update {
+        this.value
+            .copy(bottomBarState = EditingState.None)
+            .copyWithText(isSelected = false)
+            .copyWithImage(isSelected = false)
+    }
