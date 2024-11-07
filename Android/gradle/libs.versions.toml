@@ -15,6 +15,7 @@ ksp = "2.0.21-1.0.25"
 kotlinStdlib = "2.0.21"
 kotlinxCoroutinesAndroid = "1.8.1"
 kotlinxSerializationCore = "1.5.1"
+kotlinxImmutableCollections = "0.3.5"
 
 # compose
 lifecycleRuntimeKtx = "2.8.6"
@@ -73,6 +74,7 @@ kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ve
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinStdlib" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxImmutableCollections" }
 
 # compose
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }

@@ -3,12 +3,15 @@ package com.d209.welight.domain.cheer.entity.cheerroomdisplay;
 import com.d209.welight.domain.cheer.entity.Cheerroom;
 import com.d209.welight.domain.display.entity.Display;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @IdClass(CheerroomDisplayId.class)
 public class CheerroomDisplay {
 

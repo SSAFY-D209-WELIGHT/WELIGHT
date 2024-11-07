@@ -11,6 +11,8 @@ import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipatio
 import com.d209.welight.domain.cheer.dto.CheerDisplayInfo;
 import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
 import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
+import com.d209.welight.domain.cheer.repository.CheerroomDisplayRepository;
+import com.d209.welight.domain.display.repository.DisplayRepository;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.domain.cheer.repository.CheerroomRepository;
@@ -19,6 +21,7 @@ import com.d209.welight.domain.cheer.entity.Cheerroom;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
@@ -38,11 +41,23 @@ public class CheerServiceImpl implements CheerService {
     private final CheerroomRepository cheerroomRepository;
     private final CheerParticipationRepository cheerParticipationRepository;
     private final UserRepository userRepository;
+    private final DisplayRepository displayRepository;
+    private final CheerroomDisplayRepository cheerroomDisplayRepository;
 
     @Override
     public CheerroomResponse createCheerroom(String userId, CheerroomCreateRequest request) {
         log.info("응원방 생성 시작 - userId: {}, cheerroomName: {}, location: [{}, {}]",
                 userId, request.getCheerroomName(), request.getLatitude(), request.getLongitude());
+
+        // 응원방 이름 중복 검사
+        List<Cheerroom> existingCheerrooms = cheerroomRepository.findAllByName(request.getCheerroomName());
+        boolean hasActiveCheerroom = existingCheerrooms.stream()
+                .anyMatch(cheerroom -> !cheerroom.isDone());
+
+        if (hasActiveCheerroom) {
+            log.error("중복된 응원방 이름 - cheerroomName: {}", request.getCheerroomName());
+            throw new IllegalArgumentException("이미 존재하는 응원방 이름입니다.");
+        }
 
         // 위도/경도 유효성 검사
         if (request.getLatitude() < -90 || request.getLatitude() > 90) {
@@ -53,6 +68,7 @@ public class CheerServiceImpl implements CheerService {
             log.error("잘못된 경도 값 - longitude: {}", request.getLongitude());
             throw new IllegalArgumentException("경도는 -180도에서 180도 사이의 값이어야 합니다.");
         }
+
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> {
                     log.error("사용자 조회 실패 - userId: {}", userId);
@@ -137,6 +153,25 @@ public class CheerServiceImpl implements CheerService {
         cheerParticipationRepository.save(currentLeaderCheerParticipation);
         cheerParticipationRepository.save(newLeaderCheerParticipation);
 
+    }
+
+    @Override
+    public void endCheering(User user, long cheerId) {
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 응원방입니다."));
+        // 현재 유저가 방장인지 확인
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, cheerId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+        if (!participation.isOwner()) {
+            throw new AccessDeniedException("방장만 응원을 종료할 수 있습니다.");
+        }
+
+        // is_done 값 true로 업데이트
+        cheerroom.setDone(true);
+        cheerParticipationRepository.save(participation);
+
+        // cheerroom_display 업데이트 -> 응원방 디스플레이 선택저장 API
     }
 
     /* 기록 */
@@ -290,6 +325,49 @@ public class CheerServiceImpl implements CheerService {
                 .longitude(participation.getCheerroom().getLongitude())
                 .build();
     }
+
+//    @Override
+//    public void useDisplayForCheer(Long cheerroomId, String userId, List<Long> displayIds) {
+//        // 사용자 검증
+//        User user = userRepository.findByUserId(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//
+//        // 응원방 검증
+//        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
+//                .orElseThrow(() -> new IllegalArgumentException("응원방을 찾을 수 없습니다."));
+//
+//        // 방장 권한 검증
+//        CheerParticipation participation = cheerParticipationRepository
+//                .findByUserAndCheerroomId(user, cheerroomId)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 응원방에 참여하지 않은 사용자입니다."));
+//        if (!participation.isOwner()) {
+//            throw new IllegalArgumentException("방장만 디스플레이를 선택할 수 있습니다.");
+//        }
+//
+//        // default.png 제거 (첫 디스플레이 선택 시에만)
+//        if (cheerroom.getDisplays().size() == 1 &&
+//                cheerroom.getDisplays().get(0).getDisplay().getDisplayThumbnailUrl().equals("default.png")) {
+//            cheerroomDisplayRepository.delete(cheerroom.getDisplays().get(0));
+//            cheerroom.getDisplays().clear();
+//        }
+//
+//        // 새로운 디스플레이 추가
+//        displayIds.forEach(displayId -> {
+//            Display display = displayRepository.findById(displayId)
+//                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 디스플레이입니다."));
+//
+//            CheerroomDisplay cheerroomDisplay = CheerroomDisplay.builder()
+//                    .cheerroom(cheerroom)
+//                    .display(display)
+//                    .build();
+//
+//            cheerroomDisplayRepository.save(cheerroomDisplay);
+//        });
+//
+//        log.info("응원방 디스플레이 업데이트 완료 - cheerroomId: {}, displayCount: {}",
+//                cheerroomId, displayIds.size());
+//
+//    }
 
     private void updateExitInfo(CheerParticipation participation, LocalDateTime exitTime) {
         participation.setLastExitTime(exitTime);
