@@ -32,9 +32,9 @@ fun LoginRoute() {
             context = context,
             launcher = launcher,
             onSignInSuccess = { account ->
-                Log.d("MainActivity", "Sign in successful")
-                Log.d("MainActivity", "Email: ${account.email}")
-                Log.d("MainActivity", "Display Name: ${account.displayName}")
+                Log.d("LoginRoute", "Sign in successful")
+                Log.d("LoginRoute", "Email: ${account.email}")
+                Log.d("LoginRoute", "Display Name: ${account.displayName}")
             },
         )
 
@@ -42,7 +42,7 @@ fun LoginRoute() {
         LoginScreen(
             onGoogleSignInSuccess = { account ->
                 account?.let {
-                    Log.d("MainActivity", "User logged in: ${it.displayName}")
+                    Log.d("LoginRoute", "User logged in: ${it.displayName}")
                 }
             },
             onGoogleLoginClick = {

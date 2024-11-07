@@ -13,12 +13,14 @@ class UserRepositoryImpl @Inject constructor(
     private val userApi: UserApi,
 ) : UserRepository {
     override suspend fun login(
-        provider: String,
-        accessToken: String,
+        userId: String,
+        userNickname: String,
+        userProfileImg: String,
+        userLogin: String,
     ): ApiResponse<TokenHolder> {
         val response =
             apiHandler {
-                userApi.login(LoginRequest(provider, accessToken))
+                userApi.login(LoginRequest(userId, userNickname, userProfileImg, userLogin))
             }
         return response.simplify()
     }

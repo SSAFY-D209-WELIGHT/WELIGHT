@@ -8,8 +8,8 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface UserApi {
-    // /user/login
-    @POST("/user/login")
+    // /user/login/social
+    @POST("/user/login/social")
     suspend fun login(
         @Body loginRequest: LoginRequest,
     ): Response<ResponseBody<TokenHolder>>
