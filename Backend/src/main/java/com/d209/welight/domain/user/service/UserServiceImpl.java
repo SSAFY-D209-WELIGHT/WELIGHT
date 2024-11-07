@@ -209,5 +209,10 @@ public class UserServiceImpl implements UserService{
     public User findByUserId(String userId) throws Exception {
         return userRepository.findByUserId(userId).get();
     }
+
+    @Override
+    public User findByUserUid(Long userUid) throws Exception {
+        return userRepository.findByUserUid(userUid).get();
+    }
 }
 

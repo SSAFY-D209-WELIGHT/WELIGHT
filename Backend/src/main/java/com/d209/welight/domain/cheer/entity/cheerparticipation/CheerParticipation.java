@@ -50,4 +50,8 @@ public class CheerParticipation {
     @Column(name = "TOTAL_DURATION")
     @Builder.Default
     private LocalTime totalDuration = LocalTime.of(0, 0, 0);
+
+    public void updateCheerMemo(String cheerMemo) {
+        this.memo = cheerMemo;
+    }
 }

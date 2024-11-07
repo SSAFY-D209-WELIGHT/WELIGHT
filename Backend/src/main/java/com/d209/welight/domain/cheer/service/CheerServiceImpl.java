@@ -1,25 +1,33 @@
 package com.d209.welight.domain.cheer.service;
 
-import com.d209.welight.domain.cheer.dto.CheerDisplayInfo;
+import com.d209.welight.domain.cheer.dto.request.CheerRecordRequest;
 import com.d209.welight.domain.cheer.dto.request.CheerroomCreateRequest;
-import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
-import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
+import com.d209.welight.domain.cheer.dto.request.FindByGeoRequest;
 import com.d209.welight.domain.cheer.dto.response.CheerroomResponse;
+import com.d209.welight.domain.cheer.dto.response.ParticipantsResponse;
 import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipation;
 import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipationId;
+
+import com.d209.welight.domain.cheer.dto.CheerDisplayInfo;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryDetailResponse;
+import com.d209.welight.domain.cheer.dto.response.CheerHistoryResponse;
+import com.d209.welight.domain.cheer.entity.cheerroomdisplay.CheerroomDisplay;
+import com.d209.welight.domain.cheer.repository.CheerroomDisplayRepository;
+import com.d209.welight.domain.display.entity.Display;
+import com.d209.welight.domain.display.repository.DisplayRepository;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.domain.cheer.repository.CheerroomRepository;
 import com.d209.welight.domain.cheer.repository.CheerParticipationRepository;
 import com.d209.welight.domain.cheer.entity.Cheerroom;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,11 +42,23 @@ public class CheerServiceImpl implements CheerService {
     private final CheerroomRepository cheerroomRepository;
     private final CheerParticipationRepository cheerParticipationRepository;
     private final UserRepository userRepository;
+    private final DisplayRepository displayRepository;
+    private final CheerroomDisplayRepository cheerroomDisplayRepository;
 
     @Override
     public CheerroomResponse createCheerroom(String userId, CheerroomCreateRequest request) {
         log.info("응원방 생성 시작 - userId: {}, cheerroomName: {}, location: [{}, {}]",
                 userId, request.getCheerroomName(), request.getLatitude(), request.getLongitude());
+
+        // 응원방 이름 중복 검사
+        List<Cheerroom> existingCheerrooms = cheerroomRepository.findAllByName(request.getCheerroomName());
+        boolean hasActiveCheerroom = existingCheerrooms.stream()
+                .anyMatch(cheerroom -> !cheerroom.isDone());
+
+        if (hasActiveCheerroom) {
+            log.error("중복된 응원방 이름 - cheerroomName: {}", request.getCheerroomName());
+            throw new IllegalArgumentException("이미 존재하는 응원방 이름입니다.");
+        }
 
         // 위도/경도 유효성 검사
         if (request.getLatitude() < -90 || request.getLatitude() > 90) {
@@ -49,6 +69,7 @@ public class CheerServiceImpl implements CheerService {
             log.error("잘못된 경도 값 - longitude: {}", request.getLongitude());
             throw new IllegalArgumentException("경도는 -180도에서 180도 사이의 값이어야 합니다.");
         }
+
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> {
                     log.error("사용자 조회 실패 - userId: {}", userId);
@@ -85,6 +106,78 @@ public class CheerServiceImpl implements CheerService {
     }
 
     @Override
+    public List<CheerroomResponse> getAllCheerroomsByGeo(FindByGeoRequest findByGeoRequest) {
+        List<Cheerroom> cheerrooms = cheerroomRepository.findByGeo(
+                findByGeoRequest.getLatitude(),
+                findByGeoRequest.getLongitude(),
+                findByGeoRequest.getRadius()
+        );
+
+        return cheerrooms.stream()
+                .map(CheerroomResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ParticipantsResponse> getParticipants(Long cheerId) {
+        Cheerroom cheerroom = cheerroomRepository.findById(cheerId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 응원방입니다."));
+        List<CheerParticipation> cheerParticipationList = cheerroom.getParticipations();
+        List<ParticipantsResponse> participantsResponses = new ArrayList<>();
+        for (CheerParticipation participation : cheerParticipationList) {
+            User user = participation.getUser();
+            boolean isLeader = participation.isOwner();
+            ParticipantsResponse participantInfo = ParticipantsResponse.builder()
+                    .userNickname(user.getUserNickname())
+                    .userProfileImg(user.getUserProfileImg())
+                    .isLeader(isLeader)
+                    .build();
+            participantsResponses.add(participantInfo);
+        }
+        return participantsResponses;
+    }
+
+    @Override
+    public void delegateLeader(long roomId, User currentLeader, User newLeader) {
+        CheerParticipation currentLeaderCheerParticipation = cheerParticipationRepository
+                .findByUserAndCheerroomId(currentLeader, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+        CheerParticipation newLeaderCheerParticipation = cheerParticipationRepository
+                .findByUserAndCheerroomId(newLeader, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+
+        // CheerParticipation 테이블에서 새 방장의 cheerroom_is_owner 0->1
+        newLeaderCheerParticipation.setOwner(true);
+        // CheerParticipation 테이블에서 기존 방장의 cheerroom_is_owner 1->0
+        currentLeaderCheerParticipation.setOwner(false);
+
+        cheerParticipationRepository.save(currentLeaderCheerParticipation);
+        cheerParticipationRepository.save(newLeaderCheerParticipation);
+
+    }
+
+    /* 기록 */
+    @Override
+    public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest) {
+        // 참여한 응원 찾기
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+
+        participation.updateCheerMemo(cheerRecordRequest.getCheerMemo());
+    }
+
+    @Override
+    public void deleteRecords(User user, long roomId) {
+        Cheerroom cheerroom = cheerroomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 응원방입니다."));
+        CheerParticipation participation = cheerParticipationRepository
+                .findByUserAndCheerroomId(user, roomId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+        // 저장소에서 삭제
+        cheerParticipationRepository.deleteByUserAndCheerroom(user, cheerroom);
+    }
+
     public void enterCheerroom(String userId, Long cheerroomId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -214,6 +307,49 @@ public class CheerServiceImpl implements CheerService {
                 .longitude(participation.getCheerroom().getLongitude())
                 .build();
     }
+
+//    @Override
+//    public void useDisplayForCheer(Long cheerroomId, String userId, List<Long> displayIds) {
+//        // 사용자 검증
+//        User user = userRepository.findByUserId(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//
+//        // 응원방 검증
+//        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
+//                .orElseThrow(() -> new IllegalArgumentException("응원방을 찾을 수 없습니다."));
+//
+//        // 방장 권한 검증
+//        CheerParticipation participation = cheerParticipationRepository
+//                .findByUserAndCheerroomId(user, cheerroomId)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 응원방에 참여하지 않은 사용자입니다."));
+//        if (!participation.isOwner()) {
+//            throw new IllegalArgumentException("방장만 디스플레이를 선택할 수 있습니다.");
+//        }
+//
+//        // default.png 제거 (첫 디스플레이 선택 시에만)
+//        if (cheerroom.getDisplays().size() == 1 &&
+//                cheerroom.getDisplays().get(0).getDisplay().getDisplayThumbnailUrl().equals("default.png")) {
+//            cheerroomDisplayRepository.delete(cheerroom.getDisplays().get(0));
+//            cheerroom.getDisplays().clear();
+//        }
+//
+//        // 새로운 디스플레이 추가
+//        displayIds.forEach(displayId -> {
+//            Display display = displayRepository.findById(displayId)
+//                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 디스플레이입니다."));
+//
+//            CheerroomDisplay cheerroomDisplay = CheerroomDisplay.builder()
+//                    .cheerroom(cheerroom)
+//                    .display(display)
+//                    .build();
+//
+//            cheerroomDisplayRepository.save(cheerroomDisplay);
+//        });
+//
+//        log.info("응원방 디스플레이 업데이트 완료 - cheerroomId: {}, displayCount: {}",
+//                cheerroomId, displayIds.size());
+//
+//    }
 
     private void updateExitInfo(CheerParticipation participation, LocalDateTime exitTime) {
         participation.setLastExitTime(exitTime);

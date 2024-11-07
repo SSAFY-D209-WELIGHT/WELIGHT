@@ -1,11 +1,13 @@
 package com.d209.welight.domain.cheer.entity.cheerparticipation;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode

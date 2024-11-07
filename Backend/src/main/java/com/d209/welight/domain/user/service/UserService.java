@@ -38,4 +38,7 @@ public interface UserService {
 
     User findByUserId(String userId) throws Exception;
 
+    // userUid로 User찾기
+    User findByUserUid(Long userUid) throws Exception;
+
 }
