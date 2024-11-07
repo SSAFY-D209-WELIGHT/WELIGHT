@@ -79,6 +79,7 @@ private fun EditContent(
 
         is DialogState.ColorPicker ->
             ColorPickerDialog(
+                color = state.dialogState.color,
                 onConfirm = { onIntent(EditorIntent.Dialog.ColorPicked(it)) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )
@@ -128,9 +129,9 @@ private fun EditContent(
     ) {
         CustomDisplay(
             modifier = Modifier.fillMaxSize(),
-            imageState = state.editorImageState,
-            textState = state.editorTextState,
-            backgroundState = state.editorBackgroundState,
+            imageState = state.displayImageState,
+            textState = state.displayTextState,
+            backgroundState = state.displayBackgroundState,
             onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
             onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
         )
@@ -155,7 +156,7 @@ private fun BottomBarContent(
     state: EditorState.Edit,
     onIntent: (EditorIntent) -> Unit = {},
 ) {
-    when (state.bottomBarState) {
+    when (state.editingState) {
         is EditingState.None -> {
             InfoToolBar(
                 modifier = modifier,
@@ -170,9 +171,9 @@ private fun BottomBarContent(
         is EditingState.Text -> {
             TextToolBar(
                 modifier = modifier,
-                state = state.editorTextState,
+                state = state.displayTextState,
                 onSelectColor = { onIntent(EditorIntent.TextToolBar.SelectColor(it)) },
-                onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor(it)) },
+                onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor) },
                 onSelectFont = { onIntent(EditorIntent.TextToolBar.SelectFont(it)) },
                 onDelete = { onIntent(EditorIntent.TextToolBar.Delete) },
                 onClose = { onIntent(EditorIntent.TextToolBar.Close) },
@@ -183,11 +184,11 @@ private fun BottomBarContent(
         is EditingState.Image -> {
             ImageToolBar(
                 modifier = modifier,
-                state = state.editorImageState,
+                state = state.displayImageState,
                 onDelete = { onIntent(EditorIntent.ImageToolBar.Delete) },
                 onClose = { onIntent(EditorIntent.ImageToolBar.Close) },
                 onSelectColor = { onIntent(EditorIntent.ImageToolBar.SelectColor(it)) },
-                onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor(it)) },
+                onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor) },
                 onChangeImage = { onIntent(EditorIntent.ImageToolBar.Change) },
             )
         }
@@ -195,7 +196,7 @@ private fun BottomBarContent(
         is EditingState.Background -> {
             BackgroundToolBar(
                 modifier = modifier,
-                state = state.editorBackgroundState,
+                state = state.displayBackgroundState,
                 onSelectColor = {
                     onIntent(
                         EditorIntent.BackgroundToolBar.SelectColor(
@@ -203,7 +204,7 @@ private fun BottomBarContent(
                         ),
                     )
                 },
-                onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor(it)) },
+                onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor) },
                 onChangeBrightness = {
                     onIntent(
                         EditorIntent.BackgroundToolBar.ChangeBrightness(
@@ -228,11 +229,11 @@ private fun EditorContentPreview() {
     EditorContent(
         state =
             EditorState.Edit(
-                bottomBarState = EditingState.None,
+                editingState = EditingState.None,
                 editorInfoState = EditorInfoState(),
-                editorTextState = DisplayTextState(),
-                editorImageState = DisplayImageState(),
-                editorBackgroundState = DisplayBackgroundState(),
+                displayTextState = DisplayTextState(),
+                displayImageState = DisplayImageState(),
+                displayBackgroundState = DisplayBackgroundState(),
             ),
     )
 }

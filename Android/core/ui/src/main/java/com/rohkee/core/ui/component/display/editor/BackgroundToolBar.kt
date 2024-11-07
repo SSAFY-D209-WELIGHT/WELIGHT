@@ -86,6 +86,7 @@ fun BackgroundToolBar(
                     ColorRow(
                         modifier = Modifier.align(Alignment.Center),
                         selectedColor = state.color,
+                        additionalColors = persistentListOf(CustomColor.Single(Color.Black)),
                         onColorSelected = onSelectColor,
                         onSelectCustomColor = { onSelectCustomColor(state.color) },
                     )

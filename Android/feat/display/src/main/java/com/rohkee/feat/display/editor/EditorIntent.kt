@@ -48,9 +48,7 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : TextToolBar
 
-        data class SelectCustomColor(
-            val currentColor: CustomColor,
-        ) : TextToolBar
+        data object SelectCustomColor : TextToolBar
 
         data class SelectFont(
             val font: FontFamily,
@@ -69,9 +67,7 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : ImageToolBar
 
-        data class SelectCustomColor(
-            val currentColor: CustomColor,
-        ) : ImageToolBar
+        data object SelectCustomColor : ImageToolBar
 
         data object Change : ImageToolBar
 
@@ -86,9 +82,7 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : BackgroundToolBar
 
-        data class SelectCustomColor(
-            val currentColor: CustomColor,
-        ) : BackgroundToolBar
+        data object SelectCustomColor : BackgroundToolBar
 
         data class ChangeBrightness(
             val brightness: Float,

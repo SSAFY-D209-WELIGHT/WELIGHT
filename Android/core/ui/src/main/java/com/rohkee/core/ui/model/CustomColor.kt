@@ -19,14 +19,21 @@ enum class ColorType {
 
 @Immutable
 sealed interface CustomColor {
+
+    val primary: Color
+
     data class Single(
         val color: Color,
-    ) : CustomColor
+    ) : CustomColor {
+        override val primary: Color = color
+    }
 
     data class Gradient(
         val colors: List<Color>,
         val type: ColorType = ColorType.Horizontal,
-    ) : CustomColor
+    ) : CustomColor {
+        override val primary: Color = colors.first()
+    }
 }
 
 fun CustomColor.Single.toGradient(): CustomColor.Gradient = CustomColor.Gradient(listOf(this.color))

@@ -15,10 +15,10 @@ sealed interface EditorState {
     data class Edit(
         val displayId: Long? = null,
         val editorInfoState: EditorInfoState = EditorInfoState(),
-        val editorImageState: DisplayImageState = DisplayImageState(),
-        val editorTextState: DisplayTextState = DisplayTextState(),
-        val editorBackgroundState: DisplayBackgroundState = DisplayBackgroundState(),
-        val bottomBarState: EditingState = EditingState.None,
+        val displayImageState: DisplayImageState = DisplayImageState(),
+        val displayTextState: DisplayTextState = DisplayTextState(),
+        val displayBackgroundState: DisplayBackgroundState = DisplayBackgroundState(),
+        val editingState: EditingState = EditingState.None,
         val dialogState: DialogState = DialogState.Closed,
     ) : EditorState
 

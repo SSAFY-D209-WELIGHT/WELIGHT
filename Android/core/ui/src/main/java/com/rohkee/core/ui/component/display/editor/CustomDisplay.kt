@@ -143,7 +143,8 @@ fun DisplayText(
         modifier =
             modifier,
         text = editorTextState.text,
-        fontFamily = editorTextState.font
+        fontFamily = editorTextState.font,
+        color = editorTextState.color.primary
     )
 }
 

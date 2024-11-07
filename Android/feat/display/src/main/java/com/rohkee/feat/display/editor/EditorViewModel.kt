@@ -55,39 +55,17 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
             // ImageObject
             is EditorIntent.ImageObject.Transform ->
-                editorStateHolder.updateImage(editorImageState = intent.imageState)
+                editorStateHolder.updateState(
+                    editorImageState = intent.imageState,
+                    bottomBarState = EditingState.Image,
+                )
 
             // TextObject
             is EditorIntent.TextObject.Transform ->
-                editorStateHolder.updateText(editorTextState = intent.textState)
-
-            // Dialog
-            is EditorIntent.Dialog.ExitPage ->
-                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
-
-            is EditorIntent.Dialog.ColorPicked -> {
-                when (editorStateHolder.value.bottomBarState) {
-                    EditingState.Text ->
-                        editorStateHolder.updateText(color = intent.color)
-
-                    EditingState.Image ->
-                        editorStateHolder.updateImage(color = intent.color)
-
-                    EditingState.Background ->
-                        editorStateHolder.updateBackground(color = intent.color)
-
-                    EditingState.None -> {}
-                }
-            }
-
-            EditorIntent.Dialog.DeleteText ->
-                editorStateHolder.updateText(editorTextState = DisplayTextState())
-
-            EditorIntent.Dialog.DeleteImage ->
-                editorStateHolder.updateImage(editorImageState = DisplayImageState())
-
-            EditorIntent.Dialog.DeleteBackground ->
-                editorStateHolder.updateBackground(editorBackgroundState = DisplayBackgroundState())
+                editorStateHolder.updateState(
+                    editorTextState = intent.textState,
+                    bottomBarState = EditingState.Text,
+                )
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()
@@ -117,7 +95,7 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                 editorStateHolder.updateText(font = intent.font)
 
             is EditorIntent.TextToolBar.SelectCustomColor ->
-                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(intent.currentColor))
+                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(color = editorStateHolder.value.editorTextState.color))
 
             // ImageToolBar
             EditorIntent.ImageToolBar.Close ->
@@ -136,7 +114,9 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                 editorStateHolder.updateImage(color = intent.color)
 
             is EditorIntent.ImageToolBar.SelectCustomColor ->
-                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(intent.currentColor))
+                editorStateHolder.updateDialog(
+                    dialogState = DialogState.ColorPicker(color = editorStateHolder.value.editorImageState.color),
+                )
 
             // BackgroundToolBar
             EditorIntent.BackgroundToolBar.Close ->
@@ -152,25 +132,83 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                 editorStateHolder.updateBackground(color = intent.color)
 
             is EditorIntent.BackgroundToolBar.SelectCustomColor ->
-                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(intent.currentColor))
+                editorStateHolder.updateDialog(
+                    dialogState = DialogState.ColorPicker(color = editorStateHolder.value.editorBackgroundState.color),
+                )
+
+            // Dialog
+            is EditorIntent.Dialog.ExitPage ->
+                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+
+            is EditorIntent.Dialog.ColorPicked -> {
+                when (editorStateHolder.value.bottomBarState) {
+                    EditingState.Text ->
+                        editorStateHolder.updateState(
+                            editorTextState = editorStateHolder.value.editorTextState.copy(color = intent.color),
+                            dialogState = DialogState.Closed,
+                        )
+
+                    EditingState.Image ->
+                        editorStateHolder.updateState(
+                            editorImageState = editorStateHolder.value.editorImageState.copy(color = intent.color),
+                            dialogState = DialogState.Closed,
+                        )
+
+                    EditingState.Background ->
+                        editorStateHolder.updateState(
+                            editorBackgroundState =
+                                editorStateHolder.value.editorBackgroundState.copy(
+                                    color = intent.color,
+                                ),
+                            dialogState = DialogState.Closed,
+                        )
+
+                    EditingState.None -> {}
+                }
+            }
+
+            EditorIntent.Dialog.DeleteText ->
+                editorStateHolder.updateState(
+                    bottomBarState = EditingState.None,
+                    editorTextState = DisplayTextState(),
+                )
+
+            EditorIntent.Dialog.DeleteImage ->
+                editorStateHolder.updateState(
+                    bottomBarState = EditingState.None,
+                    editorImageState = DisplayImageState(),
+                )
+
+            EditorIntent.Dialog.DeleteBackground ->
+                editorStateHolder.updateState(
+                    bottomBarState = EditingState.None,
+                    editorBackgroundState = DisplayBackgroundState(),
+                )
 
             is EditorIntent.Dialog.EditText ->
-                editorStateHolder.updateText(text = intent.text)
-
-            EditorIntent.Dialog.Close ->
-                editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+                editorStateHolder.updateState(
+                    editorTextState = editorStateHolder.value.editorTextState.copy(text = intent.text),
+                    dialogState = DialogState.Closed,
+                )
 
             is EditorIntent.Dialog.EditInfo ->
-                editorStateHolder.updateInfo(
+                editorStateHolder.updateState(
                     editorInfoState =
                         EditorInfoState(
                             title = intent.title,
                             tags = intent.tags.toPersistentList(),
                         ),
+                    dialogState = DialogState.Closed,
                 )
 
             is EditorIntent.Dialog.PickedImage ->
-                editorStateHolder.updateImage(imageSource = intent.image)
+                editorStateHolder.updateState(
+                    editorImageState = editorStateHolder.value.editorImageState.copy(imageSource = intent.image),
+                    dialogState = DialogState.Closed,
+                )
+
+            EditorIntent.Dialog.Close ->
+                editorStateHolder.updateDialog(dialogState = DialogState.Closed)
         }
     }
 
@@ -236,10 +274,10 @@ data class DisplayEditorData(
         EditorState.Edit(
             displayId = displayId,
             editorInfoState = editorInfoState,
-            editorImageState = editorImageState,
-            editorTextState = editorTextState,
-            editorBackgroundState = editorBackgroundState,
-            bottomBarState = bottomBarState,
+            displayImageState = editorImageState,
+            displayTextState = editorTextState,
+            displayBackgroundState = editorBackgroundState,
+            editingState = bottomBarState,
             dialogState = dialogState,
         )
 
