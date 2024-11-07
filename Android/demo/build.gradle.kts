@@ -29,17 +29,11 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // BuildConfig에 GOOGLE_OAUTH_CLIENT_ID 정의
-        buildConfigField("String", "GOOGLE_OAUTH_CLIENT_ID", "\"$googleClientId\"")
-    }
+        // 따옴표 이스케이프 처리 추가
+        buildConfigField("String", "GOOGLE_OAUTH_CLIENT_ID", "\"${googleClientId.replace("\"", "\\\"")}\"")
 
-    signingConfigs {
-        getByName("debug") {
-            storeFile = file("C:\\Users\\KDGKING\\.android\\debug.keystore") // 실제 키스토어 경로로 변경하세요
-            storePassword = "android" // 키스토어 비밀번호
-            keyAlias = "androiddebugkey" // 키 별칭
-            keyPassword = "android" // 키 비밀번호
-        }
+        // 웹 클라이언트 ID도 추가
+        manifestPlaceholders["GOOGLE_OAUTH_CLIENT_ID"] = googleClientId
     }
 
     buildFeatures {
@@ -47,15 +41,11 @@ android {
     }
 
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("debug") // 디버그 빌드에 signingConfig 추가
-        }
         release {
-            signingConfig = signingConfigs.getByName("debug") // 필요 시 다른 signingConfig 사용 가능
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -72,23 +62,26 @@ android {
 }
 
 dependencies {
-    implementation(project(":feat:login"))
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.play.services.auth)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation(libs.gms.play.services.auth.v2070)
+
+//
+//    implementation(libs.androidx.lifecycle.viewmodel.compose.v262)
+//    implementation(project(":feat:login"))
+//    implementation(libs.androidx.core.ktx)
+//    implementation(libs.androidx.lifecycle.runtime.ktx)
+//    implementation(libs.androidx.activity.compose)
+//    implementation(platform(libs.androidx.compose.bom))
+//    implementation(libs.androidx.compose.ui)
+//    implementation(libs.androidx.compose.ui.graphics)
+//    implementation(libs.androidx.compose.ui.tooling.preview)
+//    implementation(libs.androidx.compose.material3)
+//    implementation(libs.androidx.appcompat)
+//    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+//    testImplementation(libs.junit)
+//    androidTestImplementation(libs.androidx.junit)
+//    androidTestImplementation(libs.androidx.espresso.core)
+//    androidTestImplementation(platform(libs.androidx.compose.bom))
+//    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+//    debugImplementation(libs.androidx.compose.ui.tooling)
+//    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

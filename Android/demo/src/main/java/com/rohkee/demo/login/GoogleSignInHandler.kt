@@ -10,55 +10,91 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.rohkee.demo.BuildConfig
 
 // Google 로그인 관련 모든 작업을 관리하는 단일 클래스
 class GoogleSignInHandler(
     private val context: Context,
 ) : ActivityResultContract<Void?, Task<GoogleSignInAccount>?>() {
+    init {
+        Log.d("GoogleSignInHandler", "Initializing with package name: ${context.packageName}")
+    }
+
     private val googleSignInClient by lazy {
         val gso =
             GoogleSignInOptions
                 .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(BuildConfig.GOOGLE_OAUTH_CLIENT_ID)
                 .requestEmail()
+                .requestProfile()
+                .requestId()
                 .build()
-        GoogleSignIn.getClient(context, gso)
+
+        Log.d("GoogleSignInHandler", "GSO created with options: $gso")
+
+        GoogleSignIn.getClient(context, gso).apply {
+            signOut().addOnCompleteListener {
+                Log.d("GoogleSignInHandler", "Previous sign-in state cleared")
+            }
+        }
     }
 
     // 인텐트 생성
     override fun createIntent(
         context: Context,
         input: Void?,
-    ): Intent {
-        Log.d("GoogleSignInHandler", "Client ID: ${BuildConfig.GOOGLE_OAUTH_CLIENT_ID}")
-        val signInIntent =
-            googleSignInClient.signInIntent.apply {
-                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            }
-        Log.d("GoogleSignInHandler", "Sign-In Intent: $signInIntent")
-        return signInIntent
-    }
+    ): Intent =
+        try {
+            val signInIntent = googleSignInClient.signInIntent
+            signInIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            Log.d(
+                "GoogleSignInHandler",
+                "Created sign-in intent for package: ${context.packageName}",
+            )
+            signInIntent
+        } catch (e: Exception) {
+            Log.e("GoogleSignInHandler", "Error creating sign-in intent", e)
+            throw e
+        }
 
-    // 결과 처리
     override fun parseResult(
         resultCode: Int,
         intent: Intent?,
     ): Task<GoogleSignInAccount>? {
-        Log.d("GoogleSignInHandler", "Result Code: $resultCode")
-        return if (resultCode == Activity.RESULT_OK) {
-            try {
-                GoogleSignIn.getSignedInAccountFromIntent(intent)
-            } catch (e: ApiException) {
-                Log.e("GoogleSignInHandler", "Failed to get Google SignIn Account", e)
+        Log.d("GoogleSignInHandler", "Parsing result - Result Code: $resultCode")
+        Log.d("GoogleSignInHandler", "Intent: $intent")
+        Log.d("GoogleSignInHandler", "Intent extras: ${intent?.extras}")
+
+        return when (resultCode) {
+            Activity.RESULT_OK -> {
+                try {
+                    GoogleSignIn.getSignedInAccountFromIntent(intent).apply {
+                        addOnSuccessListener { account ->
+                            Log.d("GoogleSignInHandler", "Sign in successful: ${account.email}")
+                        }
+                        addOnFailureListener { e ->
+                            if (e is ApiException) {
+                                Log.e(
+                                    "GoogleSignInHandler",
+                                    "Sign in failed with status: ${e.statusCode}",
+                                )
+                                Log.e("GoogleSignInHandler", "Error message: ${e.message}")
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("GoogleSignInHandler", "Error parsing result", e)
+                    null
+                }
+            }
+
+            Activity.RESULT_CANCELED -> {
+                Log.d("GoogleSignInHandler", "Sign in cancelled by user")
                 null
             }
-        } else {
-            Log.e("GoogleSignInHandler", "Login canceled by user or failed to complete.")
-            null
+
+            else -> {
+                Log.e("GoogleSignInHandler", "Unknown result code: $resultCode")
+                null
+            }
         }
     }
-
-    // 로그인 시작 인텐트를 반환
-    fun getSignInIntent(): Intent = googleSignInClient.signInIntent
 }

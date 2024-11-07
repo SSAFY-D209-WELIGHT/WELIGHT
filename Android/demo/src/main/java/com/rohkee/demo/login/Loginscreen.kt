@@ -25,36 +25,6 @@ fun LoginScreen(
     onGoogleSignInSuccess: (GoogleSignInAccount) -> Unit,
     onGoogleLoginClick: () -> Unit,
 ) {
-    // GoogleSignInHandler 인스턴스 생성
-    val googleSignInHandler = GoogleSignInHandler(context = LocalContext.current)
-
-    // `googleSignInLauncher` 설정
-    val googleSignInLauncher =
-        rememberLauncherForActivityResult(
-            contract = googleSignInHandler,
-            onResult = { task ->
-                if (task == null) {
-                    Log.e(
-                        "LoginScreen",
-                        "Google sign-in task is null, indicating failure or cancellation.",
-                    )
-                    return@rememberLauncherForActivityResult
-                }
-
-                try {
-                    // Google 로그인 성공 시 계정 정보를 가져옴
-                    val account = task.getResult(ApiException::class.java)
-                    if (account != null) {
-                        Log.d("LoginScreen", "Google sign-in successful: ${account.displayName}")
-                        onGoogleSignInSuccess(account) // 계정 정보 전달
-                    }
-                } catch (e: ApiException) {
-                    // 로그인 실패 처리
-                    Log.e("LoginScreen", "Google sign-in failed", e)
-                }
-            },
-        )
-
     // UI 설정
     Surface(
         modifier = modifier.fillMaxSize(),
