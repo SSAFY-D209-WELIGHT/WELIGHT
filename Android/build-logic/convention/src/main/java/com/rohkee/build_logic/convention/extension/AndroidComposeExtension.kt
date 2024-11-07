@@ -34,6 +34,7 @@ internal fun Project.configureAndroidCompose(
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.test.manifest").get())
             add("androidTestImplementation", libs.findLibrary("androidx.compose.ui.test.junit4").get())
             add("implementation", libs.findLibrary("androidx.lifecycle.runtime.compose.android").get())
+            add("implementation", libs.findLibrary("kotlinx.collections.immutable").get())
         }
     }
 }

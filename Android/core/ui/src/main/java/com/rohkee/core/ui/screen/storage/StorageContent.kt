@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rohkee.core.ui.component.appbar.LogoAppBar
 import com.rohkee.core.ui.component.storage.CreateDisplayButton
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
@@ -29,6 +30,7 @@ fun StorageContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        LogoAppBar()
         when (state) {
             is StorageState.Loading -> {
                 LoadingContent(modifier = Modifier.weight(1f))
