@@ -8,5 +8,12 @@ android {
 }
 
 dependencies {
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+    // Google Oauth 관련
     implementation(libs.play.services.auth)
+
+    implementation(project(":core:datastore"))
+    implementation(project(":core:network"))
 }

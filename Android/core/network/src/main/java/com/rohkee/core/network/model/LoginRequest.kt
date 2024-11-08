@@ -12,5 +12,5 @@ data class LoginRequest(
     @SerialName("userProfileImg")
     val userProfileImg: String,
     @SerialName("userLogin")
-    val userLogin: String = "Google"
+    val userLogin: String
 )

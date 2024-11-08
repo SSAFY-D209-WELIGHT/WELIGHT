@@ -2,6 +2,8 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.module.android.application.compose)
+    alias(libs.plugins.module.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // local.properties에서 GOOGLE_OAUTH_CLIENT_ID를 가져오기

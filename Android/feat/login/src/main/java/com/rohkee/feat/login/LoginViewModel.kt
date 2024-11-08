@@ -5,13 +5,25 @@ import android.content.Context
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
+import com.rohkee.core.datastore.repository.DataStoreRepository
+import com.rohkee.core.network.api.UserApi
+import com.rohkee.core.network.model.LoginRequest
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // 로그인 관련 비즈니스 로직 처리
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val userApi: UserApi,
+    private val dataStoreRepository: DataStoreRepository,
+
+) : ViewModel() {
     private lateinit var googleSignInHandler: GoogleSignInHandler
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Void?>
 
@@ -50,10 +62,16 @@ class LoginViewModel : ViewModel() {
         task
             .addOnSuccessListener { account ->
                 Log.d("LoginViewModel", "Sign in successful")
-                Log.d("LoginViewModel", "Email: ${account.email}")
-                Log.d("LoginViewModel", "Id: ${account.id}")
-                Log.d("LoginViewModel", "PhotoUrl: ${account.photoUrl}")
                 onSuccess(account)
+                // 로그인 성공 시 loginUser 호출
+                loginUser(
+                    LoginRequest(
+                        userId = account.id ?: "",
+                        userNickname = account.displayName ?: "",
+                        userProfileImg = account.photoUrl.toString(),
+                        userLogin = "Google",
+                    ),
+                )
             }.addOnFailureListener { e ->
                 if (e is ApiException) {
                     Log.e("LoginViewModel", "Sign in failed with status: ${e.statusCode}")
@@ -71,6 +89,27 @@ class LoginViewModel : ViewModel() {
             Log.d("LoginViewModel", "Launching sign in")
         } catch (e: Exception) {
             Log.e("LoginViewModel", "Error launching sign in", e)
+        }
+    }
+
+    // 백엔드 통신
+    fun loginUser(loginRequest: LoginRequest) {
+        viewModelScope.launch {
+            Log.d("LoginViewModel", "viewModelScope launched for loginUser")
+            try {
+                val response = userApi.login(loginRequest)
+                Log.d("LoginViewModel", "Response code: ${response.code()}")  // 응답 코드 확인용 로그
+                if (response.isSuccessful) {
+                    response.body()?.data?.let { tokenHolder ->
+                        dataStoreRepository.saveAccessToken(tokenHolder.accessToken)
+                    }
+                    Log.e("LoginViewModel", "Login successful, response: ${response.body()}")
+                } else {
+                    Log.e("LoginViewModel", "Login failed with error body: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("LoginViewModel", "Login request failed due to exception", e)
+            }
         }
     }
 }

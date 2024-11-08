@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
@@ -16,7 +17,7 @@ fun LoginRoute() {
 
     MaterialTheme {
         // ViewModel 및 로그인 런처 초기화
-        val loginViewModel: LoginViewModel = viewModel()
+        val loginViewModel: LoginViewModel = hiltViewModel()
         val launcher =
             rememberLauncherForActivityResult(
                 contract = GoogleSignInHandler(context),

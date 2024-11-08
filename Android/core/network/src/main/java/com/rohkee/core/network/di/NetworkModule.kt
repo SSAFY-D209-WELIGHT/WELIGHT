@@ -1,5 +1,6 @@
 package com.rohkee.core.network.di
 
+import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.rohkee.core.network.BuildConfig
 import com.rohkee.core.network.interceptor.AccessTokenInterceptor
@@ -28,6 +29,7 @@ object NetworkModule {
                 ignoreUnknownKeys = true
                 coerceInputValues = true
             }
+        Log.d("NetworkModule", "Using BASE_URL: ${BuildConfig.BASE_URL}")
         return Retrofit
             .Builder()
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
@@ -41,7 +43,7 @@ object NetworkModule {
     fun provideOkHttpClient(accessTokenInterceptor: AccessTokenInterceptor) =
         OkHttpClient.Builder().run {
             addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            //addNetworkInterceptor(accessTokenInterceptor)
+            addNetworkInterceptor(accessTokenInterceptor)
             connectTimeout(20, TimeUnit.SECONDS)
             readTimeout(20, TimeUnit.SECONDS)
             writeTimeout(20, TimeUnit.SECONDS)
