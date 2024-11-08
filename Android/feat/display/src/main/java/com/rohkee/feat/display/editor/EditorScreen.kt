@@ -1,6 +1,7 @@
 package com.rohkee.feat.display.editor
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -35,6 +36,10 @@ fun EditorScreen(
             is EditorEvent.ShowSnackBar -> onShowSnackBar(event.message)
             EditorEvent.OpenPhotoGallery -> photoGalleryLauncher.launch("image/*")
         }
+    }
+
+    BackHandler {
+        editorViewModel.onIntent(EditorIntent.ExitPage)
     }
 
     LaunchedEffect(displayId) {
