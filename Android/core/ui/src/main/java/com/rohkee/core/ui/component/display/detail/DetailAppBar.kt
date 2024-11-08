@@ -29,16 +29,16 @@ sealed interface DetailAppBarState {
     data object View : DetailAppBarState
 
     sealed interface Editable : DetailAppBarState {
-        val favorite: Boolean
+        val isFavorite: Boolean
 
         @Immutable
         data class Default(
-            override val favorite: Boolean,
+            override val isFavorite: Boolean,
         ) : Editable
 
         @Immutable
         data class Shared(
-            override val favorite: Boolean,
+            override val isFavorite: Boolean,
         ) : Editable
     }
 }
@@ -82,7 +82,7 @@ fun DefaultDetailAppBar(
     onDeleteClick: () -> Unit = {},
 ) {
     val favorite =
-        remember { if (state.favorite) R.drawable.favorite_star else R.drawable.favorite_star_filled }
+        remember { if (state.isFavorite) R.drawable.favorite_star else R.drawable.favorite_star_filled }
 
     val (openDropdown, setOpenDropdown) = remember { mutableStateOf(false) }
 
@@ -183,5 +183,5 @@ fun DetailAppBarPreview() {
 @Preview
 @Composable
 fun DetailAppBarOptionsPreview() {
-    DetailAppBar(state = DetailAppBarState.Editable.Shared(favorite = true))
+    DetailAppBar(state = DetailAppBarState.Editable.Shared(isFavorite = true))
 }
