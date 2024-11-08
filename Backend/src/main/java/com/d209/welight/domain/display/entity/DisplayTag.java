@@ -1,5 +1,4 @@
 package com.d209.welight.domain.display.entity;
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,10 +21,10 @@ public class DisplayTag {
     @JoinColumn(name = "DISPLAY_UID")
     private Display display;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TAG_TEXT",nullable = false)
     private String displayTagText;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TAG_CREATED_AT", nullable = false)
     private LocalDateTime displayTagCreatedAt;
 
 }

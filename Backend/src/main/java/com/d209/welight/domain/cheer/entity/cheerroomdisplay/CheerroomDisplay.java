@@ -13,6 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @IdClass(CheerroomDisplayId.class)
+@Table(name = "CHEERROOM_DISPLAY")
 public class CheerroomDisplay {
 
     @Id

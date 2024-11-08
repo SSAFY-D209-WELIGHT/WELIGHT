@@ -29,19 +29,21 @@ import com.rohkee.core.ui.theme.AppColor
 fun ColorRow(
     modifier: Modifier = Modifier,
     selectedColor: CustomColor? = null,
+    additionalColors: List<CustomColor> = emptyList(),
     onColorSelected: (CustomColor) -> Unit = {},
     onSelectCustomColor: () -> Unit = {},
 ) {
     val options =
         remember {
-            listOf(
-                CustomColor.Single(Color.Red),
-                CustomColor.Single(Color.Yellow),
-                CustomColor.Single(Color.Green),
-                CustomColor.Single(Color.Blue),
-                CustomColor.Single(Color.Cyan),
-                CustomColor.Single(Color.Magenta),
-            )
+            additionalColors +
+                listOf(
+                    CustomColor.Single(Color.Red),
+                    CustomColor.Single(Color.Yellow),
+                    CustomColor.Single(Color.Green),
+                    CustomColor.Single(Color.Blue),
+                    CustomColor.Single(Color.Cyan),
+                    CustomColor.Single(Color.Magenta),
+                )
         }
 
     Row(
@@ -57,8 +59,8 @@ fun ColorRow(
             )
         }
         ColorChip(
-            color = selectedColor,
-            isSelected = selectedColor != null,
+            color = if (selectedColor is CustomColor.Single) null else selectedColor,
+            isSelected = selectedColor != null && options.contains(selectedColor).not(),
             onClick = { onSelectCustomColor() },
         )
     }
@@ -91,8 +93,24 @@ fun ColorChip(
                             shape = CircleShape,
                         )
                     } else {
-                        when(color) {
-                            is CustomColor.Single -> Modifier.background(color.color, shape = CircleShape)
+                        when (color) {
+                            is CustomColor.Single ->
+                                Modifier
+                                    .background(
+                                        color.color,
+                                        shape = CircleShape,
+                                    ).then(
+                                        if (color.color == Color.Transparent) {
+                                            Modifier.border(
+                                                width = 1.dp,
+                                                color = AppColor.Inactive,
+                                                shape = CircleShape,
+                                            )
+                                        } else {
+                                            Modifier
+                                        },
+                                    )
+
                             is CustomColor.Gradient -> {
                                 Modifier.background(brush = color.getBrush(), shape = CircleShape)
                             }

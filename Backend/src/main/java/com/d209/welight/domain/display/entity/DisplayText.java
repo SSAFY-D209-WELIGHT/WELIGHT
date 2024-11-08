@@ -13,28 +13,29 @@ import java.time.LocalDateTime;
 public class DisplayText {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "DISPLAY_TEXT_UID")
     private Long displayTextUid;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DISPLAY_UID")
     private Display display;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TEXT_DETAIL", nullable = false)
     private String displayTextDetail;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TEXT_COLOR", nullable = false)
     private String displayTextColor;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TEXT_FONT", nullable = false)
     private String displayTextFont;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TEXT_ROTATION", nullable = false)
     private Float displayTextRotation;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TEXT_POSITION", nullable = false)
     private String displayTextPosition;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_TEXT_CREATED_AT", nullable = false)
     private LocalDateTime displayTextCreatedAt = LocalDateTime.now();
 }

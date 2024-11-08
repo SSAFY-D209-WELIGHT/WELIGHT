@@ -1,0 +1,69 @@
+# 디스플레이 관련 기본 용어
+디스플레이, 모니터, 화면, display, monitor, screen
+
+# 패널 타입
+IPS, 아이피에스, IPS패널
+VA, 버티컬얼라인먼트, VA패널
+TN, TN패널
+OLED, 올레드, 유기발광다이오드
+QLED, 큐레드, 퀀텀닷
+
+# 해상도 관련
+FHD, Full HD, 풀HD, 1920x1080
+QHD, 쿼드HD, 2K, 2560x1440
+UHD, Ultra HD, 4K, 3840x2160
+8K, 7680x4320
+
+# 주사율 관련
+주사율, 리프레시레이트, refresh rate, hz, 헤르츠
+144hz, 144헤르츠
+165hz, 165헤르츠
+240hz, 240헤르츠
+
+# 게이밍 관련
+게이밍, gaming, 게임용
+프리싱크, freesync, AMD프리싱크
+지싱크, g-sync, gsync, 엔비디아지싱크
+
+# 크기 관련
+인치, inch, 인치모니터
+24인치, 24형, 24inch
+27인치, 27형, 27inch
+32인치, 32형, 32inch
+
+# 브랜드 관련
+삼성, samsung, 삼성전자
+엘지, lg, 엘지전자
+델, dell
+에이수스, asus
+에이서, acer
+벤큐, benq
+필립스, philips
+한성, 한성컴퓨터
+
+# 용도 관련
+사무용, office, 업무용
+게임용, gaming, 게이밍용
+전문가용, professional, 프로페셔널
+그래픽작업용, graphic, 디자인용
+방송용, broadcast, 스트리밍용
+
+# 특수 기능
+HDR, 에이치디알, 하이다이나믹레인지
+블루라이트차단, 블루라이트필터, blue light filter
+피벗, pivot, 회전기능
+스피커내장, built-in speaker
+USB허브, usb hub
+
+# 화면 특성
+평면, flat, 플랫
+커브드, curved, 곡면
+울트라와이드, ultrawide, 초광시야
+베젤리스, bezel-less, 베젤프리
+
+# 기술 용어
+응답속도, response time, 응답시간
+시야각, viewing angle
+명암비, contrast ratio
+색재현율, color gamut
+밝기, brightness, 휘도, nit, 니트

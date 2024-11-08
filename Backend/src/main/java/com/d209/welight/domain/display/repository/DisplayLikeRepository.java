@@ -3,12 +3,9 @@ package com.d209.welight.domain.display.repository;
 import com.d209.welight.domain.display.entity.Display;
 import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
 import com.d209.welight.domain.display.entity.displaylike.DisplayLikeId;
-import com.d209.welight.domain.display.entity.displaylike.DisplayLikeId;
 import com.d209.welight.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface DisplayLikeRepository extends JpaRepository<DisplayLike, DisplayLikeId> {

@@ -1,0 +1,22 @@
+{
+  "analysis": {
+    "analyzer": {
+      "korean_analyzer": {
+        "type": "custom",
+        "tokenizer": "nori_tokenizer",
+        "filter": [
+          "nori_readingform",
+          "lowercase",
+          "synonym_filter"
+        ]
+      }
+    },
+    "filter": {
+      "synonym_filter": {
+        "type": "synonym",
+        "synonyms_path": "synonyms.txt",
+        "lenient": true
+      }
+    }
+  }
+}

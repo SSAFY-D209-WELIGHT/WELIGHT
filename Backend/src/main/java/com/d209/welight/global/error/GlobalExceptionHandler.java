@@ -1,5 +1,6 @@
 package com.d209.welight.global.error;
 
+import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,14 @@ public class GlobalExceptionHandler {
         log.error("IllegalStateException", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(NoSearchResultException.class)
+    public ResponseEntity<String> handleNoSearchResultException(NoSearchResultException e) {
+        log.error("NoSearchResultException", e);
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(e.getMessage());
     }
 } 

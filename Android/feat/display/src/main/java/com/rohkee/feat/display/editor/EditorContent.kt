@@ -3,9 +3,12 @@ package com.rohkee.feat.display.editor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rohkee.core.ui.component.appbar.SavableAppBar
 import com.rohkee.core.ui.component.display.editor.BackgroundToolBar
@@ -17,8 +20,13 @@ import com.rohkee.core.ui.component.display.editor.EditorInfoState
 import com.rohkee.core.ui.component.display.editor.ImageToolBar
 import com.rohkee.core.ui.component.display.editor.InfoToolBar
 import com.rohkee.core.ui.component.display.editor.TextToolBar
+import com.rohkee.core.ui.dialog.AskingDialog
+import com.rohkee.core.ui.dialog.ColorPickerDialog
+import com.rohkee.core.ui.dialog.TextInputDialog
+import com.rohkee.core.ui.dialog.WarningDialog
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
+import com.rohkee.feat.display.R
 
 @Composable
 fun EditorContent(
@@ -59,29 +67,96 @@ private fun EditContent(
     state: EditorState.Edit,
     onIntent: (EditorIntent) -> Unit = {},
 ) {
-    Box(
+    when (state.dialogState) {
+        DialogState.Closed -> {}
+        is DialogState.ExitAsking ->
+            AskingDialog(
+                title = stringResource(R.string.dialog_exit_edit_title),
+                content = stringResource(R.string.dialog_exit_edit_content),
+                onConfirm = {
+                    onIntent(EditorIntent.Dialog.ExitPage)
+                },
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+            )
+
+        is DialogState.ColorPicker ->
+            ColorPickerDialog(
+                color = state.dialogState.color,
+                onConfirm = { onIntent(EditorIntent.Dialog.ColorPicked(it)) },
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+            )
+
+        DialogState.ImageDeleteWarning ->
+            WarningDialog(
+                title = stringResource(R.string.dialog_delete_image_title),
+                content = stringResource(R.string.dialog_delete_image_content),
+                onConfirm = { onIntent(EditorIntent.Dialog.DeleteImage) },
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+            )
+
+        DialogState.TextDeleteWarning ->
+            WarningDialog(
+                title = stringResource(R.string.dialog_delete_text_title),
+                content = stringResource(R.string.dialog_delete_text_content),
+                onConfirm = { onIntent(EditorIntent.Dialog.DeleteText) },
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+            )
+
+        DialogState.BackgroundDeleteWarning ->
+            WarningDialog(
+                title = stringResource(R.string.dialog_delete_background_title),
+                content = stringResource(R.string.dialog_delete_background_content),
+                onConfirm = { onIntent(EditorIntent.Dialog.DeleteBackground) },
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+            )
+
+        is DialogState.InfoEdit ->
+            InfoEditDialog(
+                title = state.editorInfoState.title,
+                tags = state.editorInfoState.tags,
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+                onConfirm = { title, tags -> onIntent(EditorIntent.Dialog.EditInfo(title, tags)) },
+            )
+
+        is DialogState.TextEdit ->
+            TextInputDialog(
+                hint = stringResource(R.string.dialog_text_input_hint),
+                onConfirm = { onIntent(EditorIntent.Dialog.EditText(it)) },
+                onDismiss = { onIntent(EditorIntent.Dialog.Close) },
+            )
+    }
+
+    Scaffold(
         modifier = modifier,
-    ) {
-        CustomDisplay(
-            modifier = Modifier.fillMaxSize(),
-            imageState = state.editorImageState,
-            textState = state.editorTextState,
-            backgroundState = state.editorBackgroundState,
-            onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
-            onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
-        )
-
-        SavableAppBar(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
-            onCloseClick = { onIntent(EditorIntent.ExitPage) },
-            onSaveClick = { onIntent(EditorIntent.Save) },
-        )
-
-        BottomBarContent(
-            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
-            state = state,
-            onIntent = onIntent,
-        )
+    ) { innerPadding ->
+        Box {
+            CustomDisplay(
+                modifier = Modifier.fillMaxSize(),
+                imageState = state.displayImageState,
+                textState = state.displayTextState,
+                backgroundState = state.displayBackgroundState,
+                onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
+                onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
+            )
+            SavableAppBar(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                        .padding(top = innerPadding.calculateTopPadding()),
+                onCloseClick = { onIntent(EditorIntent.AttemptExitPage) },
+                onSaveClick = { onIntent(EditorIntent.Save) },
+            )
+            BottomBarContent(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = innerPadding.calculateBottomPadding()),
+                state = state,
+                onIntent = onIntent,
+            )
+        }
     }
 }
 
@@ -91,7 +166,7 @@ private fun BottomBarContent(
     state: EditorState.Edit,
     onIntent: (EditorIntent) -> Unit = {},
 ) {
-    when (state.bottomBarState) {
+    when (state.editingState) {
         is EditingState.None -> {
             InfoToolBar(
                 modifier = modifier,
@@ -99,16 +174,16 @@ private fun BottomBarContent(
                 onTextEditClick = { onIntent(EditorIntent.InfoToolBar.EditText) },
                 onImageEditClick = { onIntent(EditorIntent.InfoToolBar.EditImage) },
                 onBackgroundEditClick = { onIntent(EditorIntent.InfoToolBar.EditBackground) },
-                onEditInfo = { onIntent(EditorIntent.InfoToolBar.EditText) },
+                onEditInfo = { onIntent(EditorIntent.InfoToolBar.EditInfo) },
             )
         }
 
         is EditingState.Text -> {
             TextToolBar(
                 modifier = modifier,
-                state = state.editorTextState,
+                state = state.displayTextState,
                 onSelectColor = { onIntent(EditorIntent.TextToolBar.SelectColor(it)) },
-                onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor(it)) },
+                onSelectCustomColor = { onIntent(EditorIntent.TextToolBar.SelectCustomColor) },
                 onSelectFont = { onIntent(EditorIntent.TextToolBar.SelectFont(it)) },
                 onDelete = { onIntent(EditorIntent.TextToolBar.Delete) },
                 onClose = { onIntent(EditorIntent.TextToolBar.Close) },
@@ -119,11 +194,11 @@ private fun BottomBarContent(
         is EditingState.Image -> {
             ImageToolBar(
                 modifier = modifier,
-                state = state.editorImageState,
+                state = state.displayImageState,
                 onDelete = { onIntent(EditorIntent.ImageToolBar.Delete) },
                 onClose = { onIntent(EditorIntent.ImageToolBar.Close) },
                 onSelectColor = { onIntent(EditorIntent.ImageToolBar.SelectColor(it)) },
-                onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor(it)) },
+                onSelectCustomColor = { onIntent(EditorIntent.ImageToolBar.SelectCustomColor) },
                 onChangeImage = { onIntent(EditorIntent.ImageToolBar.Change) },
             )
         }
@@ -131,7 +206,7 @@ private fun BottomBarContent(
         is EditingState.Background -> {
             BackgroundToolBar(
                 modifier = modifier,
-                state = state.editorBackgroundState,
+                state = state.displayBackgroundState,
                 onSelectColor = {
                     onIntent(
                         EditorIntent.BackgroundToolBar.SelectColor(
@@ -139,7 +214,7 @@ private fun BottomBarContent(
                         ),
                     )
                 },
-                onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor(it)) },
+                onSelectCustomColor = { onIntent(EditorIntent.BackgroundToolBar.SelectCustomColor) },
                 onChangeBrightness = {
                     onIntent(
                         EditorIntent.BackgroundToolBar.ChangeBrightness(
@@ -161,14 +236,16 @@ private fun ErrorContent(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun EditorContentPreview() {
-    EditorContent(
-        state =
-            EditorState.Edit(
-                bottomBarState = EditingState.None,
-                editorInfoState = EditorInfoState(),
-                editorTextState = DisplayTextState(),
-                editorImageState = DisplayImageState(),
-                editorBackgroundState = DisplayBackgroundState(),
-            ),
-    )
+    Scaffold { innerPadding ->
+        EditorContent(
+            state =
+                EditorState.Edit(
+                    editingState = EditingState.None,
+                    editorInfoState = EditorInfoState(),
+                    displayTextState = DisplayTextState(),
+                    displayImageState = DisplayImageState(),
+                    displayBackgroundState = DisplayBackgroundState(),
+                ),
+        )
+    }
 }

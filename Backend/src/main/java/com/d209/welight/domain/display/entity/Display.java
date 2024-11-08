@@ -2,6 +2,7 @@ package com.d209.welight.domain.display.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,24 +21,24 @@ public class Display {
     @Column(name = "CREATOR_UID", nullable = false)
     private Long creatorUid;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_NAME", nullable = false)
     private String displayName;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_THUMBNAIL_URL",nullable = false)
     private String displayThumbnailUrl;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_IS_POSTED", nullable = false)
     private Boolean displayIsPosted;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_CREATED_AT", nullable = false)
     @Builder.Default
     private LocalDateTime displayCreatedAt = LocalDateTime.now();
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_DOWNLOAD_COUNT", nullable = false)
     @Builder.Default
     private Long displayDownloadCount = 0L;
 
-    @Column(nullable = false)
+    @Column(name = "DISPLAY_LIKE_COUNT", nullable = false)
     @Builder.Default
     private Long displayLikeCount = 0L;
 

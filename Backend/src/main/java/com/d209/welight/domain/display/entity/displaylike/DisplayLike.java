@@ -1,7 +1,6 @@
 package com.d209.welight.domain.display.entity.displaylike;
 
 import com.d209.welight.domain.display.entity.Display;
-import com.d209.welight.domain.display.entity.displaystorage.DisplayStorageId;
 import com.d209.welight.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

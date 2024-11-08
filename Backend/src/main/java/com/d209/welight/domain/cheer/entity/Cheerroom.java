@@ -21,9 +21,9 @@ import lombok.*;
 @Entity
 @Getter
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "CHEERROOM")
 public class Cheerroom {
     @Id
@@ -55,5 +55,6 @@ public class Cheerroom {
     private List<CheerParticipation> participations = new ArrayList<>();
 
     @OneToMany(mappedBy = "cheerroom")
-    private List<CheerroomDisplay> displays;  // 응원방에서 사용된 디스플레이 목록
+    @Builder.Default
+    private List<CheerroomDisplay> displays  = new ArrayList<>();  // 응원방에서 사용된 디스플레이 목록
 }

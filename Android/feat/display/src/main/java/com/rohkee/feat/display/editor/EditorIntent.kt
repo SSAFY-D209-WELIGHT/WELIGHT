@@ -1,19 +1,24 @@
 package com.rohkee.feat.display.editor
 
+import android.net.Uri
 import androidx.compose.ui.text.font.FontFamily
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.model.CustomColor
 
 sealed interface EditorIntent {
-    data object ExitPage : EditorIntent
+    data class Load(
+        val displayId: Long,
+    ) : EditorIntent
+
+    data object CreateNew : EditorIntent
+
+    data object AttemptExitPage : EditorIntent
 
     data object Save : EditorIntent
 
     // Text Object
     sealed interface TextObject : EditorIntent {
-        data object Select : TextObject
-
         data class Transform(
             val textState: DisplayTextState,
         ) : TextObject
@@ -21,8 +26,6 @@ sealed interface EditorIntent {
 
     // Image Object
     sealed interface ImageObject : EditorIntent {
-        data object Select : ImageObject
-
         data class Transform(
             val imageState: DisplayImageState,
         ) : ImageObject
@@ -30,6 +33,8 @@ sealed interface EditorIntent {
 
     // Info ToolBar
     sealed interface InfoToolBar : EditorIntent {
+        data object EditInfo : InfoToolBar
+
         data object EditText : InfoToolBar
 
         data object EditImage : InfoToolBar
@@ -43,9 +48,7 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : TextToolBar
 
-        data class SelectCustomColor(
-            val currentColor: CustomColor,
-        ) : TextToolBar
+        data object SelectCustomColor : TextToolBar
 
         data class SelectFont(
             val font: FontFamily,
@@ -64,9 +67,7 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : ImageToolBar
 
-        data class SelectCustomColor(
-            val currentColor: CustomColor,
-        ) : ImageToolBar
+        data object SelectCustomColor : ImageToolBar
 
         data object Change : ImageToolBar
 
@@ -81,9 +82,7 @@ sealed interface EditorIntent {
             val color: CustomColor,
         ) : BackgroundToolBar
 
-        data class SelectCustomColor(
-            val currentColor: CustomColor,
-        ) : BackgroundToolBar
+        data object SelectCustomColor : BackgroundToolBar
 
         data class ChangeBrightness(
             val brightness: Float,
@@ -96,6 +95,8 @@ sealed interface EditorIntent {
 
     // Dialog
     sealed interface Dialog : EditorIntent {
+        data object Close : Dialog
+
         data class ColorPicked(
             val color: CustomColor,
         ) : Dialog
@@ -110,6 +111,15 @@ sealed interface EditorIntent {
 
         data class EditText(
             val text: String,
+        ) : Dialog
+
+        data class EditInfo(
+            val title: String,
+            val tags: List<String>,
+        ) : Dialog
+
+        data class PickedImage(
+            val image: Uri,
         ) : Dialog
     }
 }

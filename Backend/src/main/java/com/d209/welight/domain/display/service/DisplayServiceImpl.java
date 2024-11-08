@@ -13,6 +13,7 @@ import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.entity.*;
 import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
 import com.d209.welight.domain.display.entity.displaystorage.DisplayStorage;
+import com.d209.welight.domain.elasticsearch.event.DisplayEvent;
 import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
@@ -22,6 +23,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -50,6 +52,8 @@ public class DisplayServiceImpl implements DisplayService {
     private final UserRepository userRepository;
     private final S3Service s3Service;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     /**
      * 새로운 디스플레이를 생성합니다.
      * @param request 생성할 디스플레이 정보
@@ -72,6 +76,9 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 1. 디스플레이 기본 정보 저장
             Display savedDisplay = displayRepository.save(display);
+
+            // 이벤트 발행
+            eventPublisher.publishEvent(new DisplayEvent("CREATE", display));
 
             // 2. 태그 정보 저장
             if (request.getTags() != null && !request.getTags().isEmpty()) {
@@ -488,6 +495,8 @@ public class DisplayServiceImpl implements DisplayService {
             // 수정된(새로운) 디스플레이 저장
             Display savedDisplay = displayRepository.save(newDisplay);
 
+            eventPublisher.publishEvent(new DisplayEvent("CREATE",savedDisplay));
+
             // 3. 컨텐츠 복사 또는 업데이트
             // 3-1. 태그 처리
             List<String> newTags = request.getTags() != null ? request.getTags() :
@@ -678,6 +687,7 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 5. 디스플레이 삭제
             displayRepository.delete(display);
+            eventPublisher.publishEvent(new DisplayEvent("DELETE", display));
 
         } catch (Exception e) {
             throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다: " + e.getMessage());

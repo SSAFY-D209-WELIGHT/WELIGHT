@@ -210,4 +210,16 @@ public class CheerController {
         return ResponseEntity.ok(detail);
     }
 
+    @PutMapping("/{cheerId}/{displayId}")
+    @Operation(summary = "응원방 디스플레이 설정", description = "응원방에 사용할 디스플레이를 설정합니다.")
+    public ResponseEntity<?> updateCheerroomDisplay(
+            @PathVariable Long cheerId,
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String userId = userDetails.getUsername();
+        CheerHistoryResponse response = cheerService.useDisplayForCheer(cheerId, userId, displayId);
+        return ResponseEntity.ok(response);
+    }
+
 }
