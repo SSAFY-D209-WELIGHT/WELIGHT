@@ -9,11 +9,13 @@ import com.rohkee.core.network.repository.UserRepository
 import com.rohkee.core.network.util.simplify
 import javax.inject.Inject
 
-
 class UserRepositoryImpl @Inject constructor(
     private val userApi: UserApi,
-): UserRepository {
-    override suspend fun login(provider: String, accessToken: String): ApiResponse<TokenHolder> {
+) : UserRepository {
+    override suspend fun login(
+        provider: String,
+        accessToken: String,
+    ): ApiResponse<TokenHolder> {
         val response =
             apiHandler {
                 userApi.login(LoginRequest(provider, accessToken))

@@ -9,6 +9,7 @@ services:
       - /home/ubuntu/jenkins-backup:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
+      - /usr/local/bin/docker-compose:/usr/local/bin/docker-compose
     environment:
       TZ: "Asia/Seoul"
 
@@ -24,6 +25,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
 
   redis:
     image: redis
@@ -43,8 +45,10 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - /home/ubuntu/properties:/app/properties
-      - /home/ubuntu/env:/app/env
+      - /home/ubuntu/configure:/app/configure
+    environment:
+      SPRING_PROFILES_ACTIVE: "s3,db,security"  # 프로파일 활성화 추가
+      SPRING_CONFIG_LOCATION: "/app/configure/"
     depends_on:
       - mysql
       - redis
@@ -58,8 +62,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /home/ubuntu/properties:/app/properties
-      - /home/ubuntu/env:/app/env
+      - /home/ubuntu/configure:/app/configure
+    environment:
+      ENV_FILE_PATH: "/app/configure/.env"
     depends_on:
       - mysql
       - redis

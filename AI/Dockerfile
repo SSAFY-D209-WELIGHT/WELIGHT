@@ -1,5 +1,5 @@
 # 1. 베이스 이미지로 Python 3.9 사용 (FastAPI 및 rembg 호환)
-FROM python:3.9
+FROM python:3.10
 
 # 2. 작업 디렉토리 설정
 WORKDIR /app
