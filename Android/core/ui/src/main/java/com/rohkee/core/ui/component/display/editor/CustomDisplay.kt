@@ -46,7 +46,7 @@ data class DisplayTextState(
 
 @Immutable
 data class DisplayBackgroundState(
-    val color: CustomColor = CustomColor.Single(color = Color.Black),
+    val color: CustomColor = CustomColor.Single(color = Color.White),
     val brightness: Float = 1f,
 )
 

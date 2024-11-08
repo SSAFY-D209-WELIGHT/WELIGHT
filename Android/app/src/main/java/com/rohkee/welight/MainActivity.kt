@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.rohkee.core.ui.theme.WeLightTheme
 import com.rohkee.welight.navigation.MainNavigation
-import com.rohkee.welight.ui.theme.WeLightTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
