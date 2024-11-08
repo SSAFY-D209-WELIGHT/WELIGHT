@@ -1,5 +1,6 @@
 package com.d209.welight.domain.user.service;
 
+import com.d209.welight.domain.elasticsearch.event.UserEvent;
 import com.d209.welight.domain.user.dto.request.FormSignUpRequestDTO;
 import com.d209.welight.domain.user.dto.request.SocialSignUpRequestDTO;
 import com.d209.welight.domain.user.entity.User;
@@ -8,6 +9,7 @@ import com.d209.welight.global.exception.user.UserCreationException;
 import com.d209.welight.global.service.s3.S3Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,6 +33,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final S3Service s3Service;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
@@ -61,6 +64,7 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
             User newUser = (User) user;
 
             userRepository.save(newUser);
+            eventPublisher.publishEvent(new UserEvent("CREATE", newUser));
         } catch (DataIntegrityViolationException e) {
             throw new UserCreationException("사용자를 데이터베이스에 저장하는 중 오류가 발생했습니다.", e);
         } catch (Exception e) {
@@ -108,7 +112,12 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     @Override
     @Transactional
     public void deleteUser(String userName) {
+
+        User user = userRepository.findByUserId(userName)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 회원을 찾을 수 없습니다."));
         userRepository.deleteByUserId(userName);
+        eventPublisher.publishEvent(new UserEvent("DELETE", user));
+
     }
 
     @Override
@@ -121,6 +130,8 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
                             // user가 가진 권한들 중 하나라도 "ROLE_ADMIN"이라는 권한이 있으면 true를 반환
                             .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
                     userRepository.save(existingUser);
+                    eventPublisher.publishEvent(new UserEvent("UPDATE", existingUser));
+
                 });
     }
 
