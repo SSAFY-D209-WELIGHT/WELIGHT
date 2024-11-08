@@ -1,6 +1,6 @@
 [versions]
 agp = "8.7.1"
-kotlin = "2.0.0"
+kotlin = "2.0.20"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -8,7 +8,7 @@ espressoCore = "3.5.1"
 jetbrainsKotlinJvm = "2.0.0"
 
 # ksp
-ksp = "2.0.21-1.0.25"
+ksp = "2.0.20-1.0.25"
 
 # kotlin
 kotlinStdlib = "2.0.21"
@@ -36,7 +36,7 @@ kotlinx-serialization = "1.6.0"
 kotlinx-serialization-converter = "1.0.0"
 
 # hilt
-hilt = "2.49"
+hilt = "2.52"
 hilt-navigation-compose = "1.2.0"
 appcompat = "1.7.0"
 material = "1.12.0"

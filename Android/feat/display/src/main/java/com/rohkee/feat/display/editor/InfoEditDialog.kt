@@ -29,6 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.rohkee.core.ui.component.appbar.ConfirmAppBar
 import com.rohkee.core.ui.component.common.RoundedTextInput
 import com.rohkee.core.ui.theme.AppColor
@@ -78,71 +80,76 @@ fun InfoEditDialog(
         setTagText("")
     }
 
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .background(color = AppColor.BackgroundTransparent)
-                .imePadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
-        ConfirmAppBar(
-            modifier = Modifier.fillMaxWidth(),
-            onCloseClick = onDismiss,
-            onConfirmClick = {
-                if (hasEdited && titleText.isNotBlank()) {
-                    onConfirm(titleText, tagList)
-                } else {
-                    setHasEdited(true)
-                }
-            },
-        )
-        RoundedTextInput(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            autofocus = true,
-            value = titleText,
-            hint = stringResource(R.string.dialog_info_title_hint),
-            isError = (hasEdited && titleText.isBlank()) || titleSizeError,
-            errorMessage = stringResource(R.string.dialog_info_title_error),
-            onValueChange = { inputTitle(it) },
-        )
-        RoundedTextInput(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            autofocus = true,
-            value = tagText,
-            hint = stringResource(R.string.dialog_info_tag_hint),
-            isError = tagSizeError,
-            errorMessage = stringResource(R.string.dialog_info_title_error),
-            onValueChange = { inputTag(it) },
-            trailingContent = {
-                Box(
-                    modifier =
-                        Modifier
-                            .padding(end = 8.dp)
-                            .background(color = AppColor.Convex, shape = RoundedCornerShape(4.dp))
-                            .padding(8.dp),
-                ) {
-                    Text(
-                        modifier = Modifier.clickable { addToTagList(tagText) },
-                        text = stringResource(R.string.dialog_info_tag_add),
-                        style = Pretendard.SemiBold16,
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .background(color = AppColor.BackgroundTransparent)
+                    .imePadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            ConfirmAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                onCloseClick = onDismiss,
+                onConfirmClick = {
+                    if (hasEdited && titleText.isNotBlank()) {
+                        onConfirm(titleText, tagList)
+                    } else {
+                        setHasEdited(true)
+                    }
+                },
+            )
+            RoundedTextInput(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                autofocus = true,
+                value = titleText,
+                hint = stringResource(R.string.dialog_info_title_hint),
+                isError = (hasEdited && titleText.isBlank()) || titleSizeError,
+                errorMessage = stringResource(R.string.dialog_info_title_error),
+                onValueChange = { inputTitle(it) },
+            )
+            RoundedTextInput(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                autofocus = true,
+                value = tagText,
+                hint = stringResource(R.string.dialog_info_tag_hint),
+                isError = tagSizeError,
+                errorMessage = stringResource(R.string.dialog_info_title_error),
+                onValueChange = { inputTag(it) },
+                trailingContent = {
+                    Box(
+                        modifier =
+                            Modifier
+                                .padding(end = 8.dp)
+                                .background(color = AppColor.Convex, shape = RoundedCornerShape(4.dp))
+                                .padding(8.dp),
+                    ) {
+                        Text(
+                            modifier = Modifier.clickable { addToTagList(tagText) },
+                            text = stringResource(R.string.dialog_info_tag_add),
+                            style = Pretendard.SemiBold16,
+                        )
+                    }
+                },
+            )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                for (tag in tagList) {
+                    TagChip(
+                        tag = tag,
+                        onDelete = { setTagList(tagList - tag) },
                     )
                 }
-            },
-        )
-        FlowRow(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            for (tag in tagList) {
-                TagChip(
-                    tag = tag,
-                    onDelete = { setTagList(tagList - tag) },
-                )
             }
+            Spacer(modifier = Modifier.weight(1f))
         }
-        Spacer(modifier = Modifier.weight(1f))
     }
 }
 

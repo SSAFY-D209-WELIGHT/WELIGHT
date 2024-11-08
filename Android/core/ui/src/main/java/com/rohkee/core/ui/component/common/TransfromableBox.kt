@@ -1,7 +1,6 @@
 package com.rohkee.core.ui.component.common
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
@@ -15,17 +14,15 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rohkee.core.ui.theme.AppColor
-import com.rohkee.core.ui.util.dashedBorder
 
 /**
  * 스케일, 회전, 이동이 가능한 Box
@@ -33,20 +30,20 @@ import com.rohkee.core.ui.util.dashedBorder
  *
  * @param scale : 스케일 ( 1.0f = 100% 크기 )
  * @param rotation : 회전 각도 ( -360 ~ 360 )
- * @param offset : 화면 크기 비례 이동량 ( 0.0(제자리) 0.5f(화면 중앙) ~ 1.0f(화면끝) )
+ * @param offset : 화면 크기 비례 이동량 ( 0.0(화면 중앙) ~ 0.5f(화면끝) )
  */
 @Composable
 fun TransformableBox(
     modifier: Modifier = Modifier,
-    selected: Boolean,
-    onSelect: () -> Unit = {},
     scale: Float,
     rotation: Float,
     offset: Offset,
     onTransfrm: (scale: Float, rotation: Float, offset: Offset) -> Unit = { _, _, _ -> },
     content: @Composable () -> Unit,
 ) {
-    BoxWithConstraints {
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize(),
+    ) {
         val density = LocalDensity.current
         val width = with(density) { maxWidth.toPx() }
         val height = with(density) { maxHeight.toPx() }
@@ -66,26 +63,14 @@ fun TransformableBox(
 
         Box(
             modifier
+                .align(Alignment.Center)
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
                     rotationZ = rotation,
                     translationX = (offset.x * width),
                     translationY = (offset.y * height),
-                ).then(
-                    if (selected) {
-                        Modifier
-                            .transformable(state = state)
-                            .dashedBorder(
-                                shape = RectangleShape,
-                                width = 2.dp,
-                                color = AppColor.Active,
-                            )
-                    } else {
-                        Modifier
-                    },
-                )
-                .clickable { onSelect() },
+                ).transformable(state = state)
         ) {
             content()
         }
@@ -98,23 +83,21 @@ private fun TransformableBoxPreview() {
     var scale by remember { mutableFloatStateOf(1f) }
     var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    var selected by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf(true) }
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         TransformableBox(
             scale = scale,
             rotation = rotation,
             offset = offset,
-            selected = selected,
-            onSelect = { selected = !selected },
             onTransfrm = { s, r, o ->
                 scale = s
                 rotation = r
                 offset = o
             },
-        ) {
+        ) { 
             Text(
-                modifier = Modifier.background(color = Color.Cyan),
+                modifier = Modifier.align(Alignment.Center).background(color = Color.Cyan),
                 text = "$scale $rotation $offset",
                 fontSize = 40.sp,
             )

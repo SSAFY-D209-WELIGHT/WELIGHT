@@ -1,97 +1,70 @@
 package com.rohkee.feat.display.editor
 
+import android.net.Uri
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.rohkee.core.ui.dialog.AskingDialog
-import com.rohkee.core.ui.dialog.ColorPickerDialog
-import com.rohkee.core.ui.dialog.TextInputDialog
-import com.rohkee.core.ui.dialog.WarningDialog
+import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.collectWithLifecycle
-import com.rohkee.feat.display.R
 
 @Composable
 fun EditorScreen(
     modifier: Modifier = Modifier,
+    displayId: Long? = null,
     editorViewModel: EditorViewModel = hiltViewModel(),
     onNavigateToDisplayDetail: (Long) -> Unit,
     onPopBackStack: () -> Unit,
+    onShowSnackBar: (String) -> Unit = {},
 ) {
+    val context = LocalContext.current as ComponentActivity
     val editorUIState by editorViewModel.editorState.collectAsStateWithLifecycle()
 
-    var isExitAskingDialogOpen by remember { mutableStateOf(false) }
-    var isColorPickerOpen by remember { mutableStateOf(false) }
-    var isTextDeleteWarningDialogOpen by remember { mutableStateOf(false) }
-    var isImageDeleteWarningDialogOpen by remember { mutableStateOf(false) }
-    var isBackgroundDeleteWarningDialogOpen by remember { mutableStateOf(false) }
-    var isTextEditDialogOpen by remember { mutableStateOf(false) }
+    val photoGalleryLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+        ) { uri: Uri? ->
+            uri?.let { editorViewModel.onIntent(EditorIntent.Dialog.PickedImage(uri)) }
+        }
 
     editorViewModel.editorEvent.collectWithLifecycle { event ->
         when (event) {
             is EditorEvent.ExitPage -> onPopBackStack()
-            is EditorEvent.Open.ColorPicker -> {
-                isColorPickerOpen = true
-            }
-            is EditorEvent.SaveDisplay -> onNavigateToDisplayDetail(event.displayId)
-
-            else -> {}
+            is EditorEvent.ShowSnackBar -> onShowSnackBar(event.message)
+            EditorEvent.OpenPhotoGallery -> photoGalleryLauncher.launch("image/*")
         }
     }
 
-    if (isExitAskingDialogOpen) {
-        AskingDialog(
-            title = stringResource(R.string.dialog_exit_edit_title),
-            content = stringResource(R.string.dialog_exit_edit_content),
-            onConfirm = { editorViewModel.onIntent(EditorIntent.ExitPage) },
-            onDismiss = { isExitAskingDialogOpen = false },
-        )
+    BackHandler {
+        editorViewModel.onIntent(EditorIntent.AttemptExitPage)
     }
-    if (isColorPickerOpen) {
-        ColorPickerDialog(
-            onConfirm = { editorViewModel.onIntent(EditorIntent.Dialog.ColorPicked(it)) },
-            onDismiss = { isColorPickerOpen = false },
-        )
+
+    LaunchedEffect(displayId) {
+        if (displayId == null) {
+            editorViewModel.onIntent(EditorIntent.CreateNew)
+        } else {
+            editorViewModel.onIntent(EditorIntent.Load(displayId))
+        }
     }
-    if (isTextDeleteWarningDialogOpen) {
-        WarningDialog(
-            title = stringResource(R.string.dialog_delete_text_title),
-            content = stringResource(R.string.dialog_delete_text_content),
-            onConfirm = {},
-            onDismiss = { isTextDeleteWarningDialogOpen = false },
-        )
-    }
-    if (isImageDeleteWarningDialogOpen) {
-        WarningDialog(
-            title = stringResource(R.string.dialog_delete_text_title),
-            content = stringResource(R.string.dialog_delete_text_content),
-            onConfirm = {},
-            onDismiss = { isImageDeleteWarningDialogOpen = false },
-        )
-    }
-    if (isBackgroundDeleteWarningDialogOpen) {
-        WarningDialog(
-            title = stringResource(R.string.dialog_delete_text_title),
-            content = stringResource(R.string.dialog_delete_text_content),
-            onConfirm = {},
-            onDismiss = { isBackgroundDeleteWarningDialogOpen = false },
-        )
-    }
-    if (isTextEditDialogOpen) {
-        TextInputDialog(
-            hint = stringResource(R.string.dialog_text_input_hint),
-            onDismiss = { isTextEditDialogOpen = false },
-            onConfirm = { editorViewModel.onIntent(EditorIntent.Dialog.EditText(it)) },
+
+    LaunchedEffect(Unit) {
+        context.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+            navigationBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
         )
     }
 
     EditorContent(
-        modifier = modifier,
         state = editorUIState,
         onIntent = editorViewModel::onIntent,
     )

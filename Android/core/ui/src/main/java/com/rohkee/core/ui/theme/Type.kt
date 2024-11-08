@@ -1,5 +1,6 @@
 package com.rohkee.core.ui.theme
 
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -9,7 +10,7 @@ import com.rohkee.core.ui.R
 
 internal val pretendardFamily = FontFamily(Font(R.font.pretendard))
 
-object Pretendard{
+object Pretendard {
     val SemiBold24 =
         TextStyle(
             fontSize = 24.sp,
@@ -74,4 +75,8 @@ object Pretendard{
         )
 }
 
-
+val Typography =
+    Typography(
+        titleLarge = Pretendard.SemiBold24,
+        bodyLarge = Pretendard.Medium16,
+    )
