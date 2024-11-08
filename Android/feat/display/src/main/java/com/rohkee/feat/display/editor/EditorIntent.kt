@@ -13,7 +13,7 @@ sealed interface EditorIntent {
 
     data object CreateNew : EditorIntent
 
-    data object ExitPage : EditorIntent
+    data object AttemptExitPage : EditorIntent
 
     data object Save : EditorIntent
 

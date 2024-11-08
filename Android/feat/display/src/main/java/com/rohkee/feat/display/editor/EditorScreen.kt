@@ -46,7 +46,7 @@ fun EditorScreen(
     }
 
     BackHandler {
-        editorViewModel.onIntent(EditorIntent.ExitPage)
+        editorViewModel.onIntent(EditorIntent.AttemptExitPage)
     }
 
     LaunchedEffect(displayId) {

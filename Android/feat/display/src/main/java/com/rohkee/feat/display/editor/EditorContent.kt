@@ -74,7 +74,7 @@ private fun EditContent(
                 title = stringResource(R.string.dialog_exit_edit_title),
                 content = stringResource(R.string.dialog_exit_edit_content),
                 onConfirm = {
-                    onIntent(EditorIntent.ExitPage)
+                    onIntent(EditorIntent.Dialog.ExitPage)
                 },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )
@@ -144,7 +144,7 @@ private fun EditContent(
                         .fillMaxWidth()
                         .align(Alignment.TopCenter)
                         .padding(top = innerPadding.calculateTopPadding()),
-                onCloseClick = { onIntent(EditorIntent.Dialog.ExitPage) },
+                onCloseClick = { onIntent(EditorIntent.AttemptExitPage) },
                 onSaveClick = { onIntent(EditorIntent.Save) },
             )
             BottomBarContent(

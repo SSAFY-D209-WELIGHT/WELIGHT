@@ -46,7 +46,9 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
             is EditorIntent.Load -> loadData(intent.displayId)
 
-            is EditorIntent.ExitPage -> emitEvent(EditorEvent.ExitPage)
+            is EditorIntent.AttemptExitPage -> {
+                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+            }
 
             EditorIntent.Save -> {
                 // TODO : Save Display
@@ -137,8 +139,10 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                 )
 
             // Dialog
-            is EditorIntent.Dialog.ExitPage ->
-                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+            is EditorIntent.Dialog.ExitPage -> {
+                editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+                emitEvent(EditorEvent.ExitPage)
+            }
 
             is EditorIntent.Dialog.ColorPicked -> {
                 when (editorStateHolder.value.bottomBarState) {
