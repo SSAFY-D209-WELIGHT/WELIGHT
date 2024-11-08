@@ -4,7 +4,6 @@ import android.util.Log
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
-import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.Upload
 import com.rohkee.core.network.repository.UploadRepository
@@ -25,7 +24,7 @@ class UploadRepositoryImpl @Inject constructor(
     ): Flow<ApiResponse<Upload>> =
         flow {
             val uploadObserver =
-                transferUtility.upload(key, file, CannedAccessControlList.PublicRead)
+                transferUtility.upload(key, file)
 
             val context = currentCoroutineContext()
             val scope = CoroutineScope(context)

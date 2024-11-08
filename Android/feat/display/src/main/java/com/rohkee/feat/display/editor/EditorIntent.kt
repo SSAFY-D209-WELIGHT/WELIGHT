@@ -1,5 +1,6 @@
 package com.rohkee.feat.display.editor
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.ui.text.font.FontFamily
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
@@ -119,6 +120,7 @@ sealed interface EditorIntent {
         ) : Dialog
 
         data class PickedImage(
+            val context: Context,
             val image: Uri,
         ) : Dialog
     }

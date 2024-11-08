@@ -1,9 +1,15 @@
 package com.rohkee.feat.display.editor
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rohkee.core.network.ApiResponse
+import com.rohkee.core.network.repository.UploadRepository
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
@@ -15,15 +21,21 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
-class EditorViewModel @Inject constructor() : ViewModel() {
+class EditorViewModel @Inject constructor(
+    private val uploadRepository: UploadRepository,
+) : ViewModel() {
     private val editorStateHolder = MutableStateFlow<DisplayEditorData>(DisplayEditorData())
 
     val editorState: StateFlow<EditorState> =
@@ -205,11 +217,27 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                     dialogState = DialogState.Closed,
                 )
 
-            is EditorIntent.Dialog.PickedImage ->
+            is EditorIntent.Dialog.PickedImage -> {
+                getFileFromUri(intent.context, intent.image)?.let {
+                    viewModelScope.launch {
+                        uploadRepository.upload("test_image.jpg", it).collectLatest { response ->
+                            when (response) {
+                                is ApiResponse.Error -> {
+                                    Log.d("TAG", "upload: ${response.errorMessage}")
+                                }
+
+                                is ApiResponse.Success -> {
+                                    Log.d("TAG", "upload: ${response.body}")
+                                }
+                            }
+                        }
+                    }
+                }
                 editorStateHolder.updateState(
                     displayImageState = editorStateHolder.value.editorImageState.copy(imageSource = intent.image),
                     dialogState = DialogState.Closed,
                 )
+            }
 
             EditorIntent.Dialog.Close ->
                 editorStateHolder.updateState(
@@ -265,6 +293,44 @@ class EditorViewModel @Inject constructor() : ViewModel() {
         } else {
             editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Image) }
         }
+    }
+
+    private fun getFileFromUri(
+        context: Context,
+        uri: Uri,
+    ): File? {
+        val fileName = getFileName(context, uri) ?: return null
+        val cacheDir = context.cacheDir
+        val file = File(cacheDir, fileName)
+
+        try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(file).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            return file
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return null
+    }
+
+    private fun getFileName(
+        context: Context,
+        uri: Uri,
+    ): String? {
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (displayNameIndex != -1) {
+                    return it.getString(displayNameIndex)
+                }
+            }
+        }
+        return null
     }
 }
 
