@@ -2,6 +2,7 @@ package com.rohkee.core.ui.component.display.editor
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -14,6 +15,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.rohkee.core.ui.component.common.TransformableBox
 import com.rohkee.core.ui.model.CustomColor
@@ -88,6 +91,7 @@ fun CustomDisplay(
             )
         }
         TransformableBox(
+            modifier = Modifier.padding(16.dp),
             scale = textState.scale,
             rotation = textState.rotationDegree,
             offset = Offset(textState.offsetPercentX, textState.offsetPercentY),
@@ -118,7 +122,7 @@ fun DisplayImage(
 ) {
     AsyncImage(
         modifier =
-            modifier,
+        modifier,
         model = state.imageSource,
         contentScale = ContentScale.Inside,
         contentDescription = "image",
@@ -140,11 +144,11 @@ fun DisplayText(
     editorTextState: DisplayTextState,
 ) {
     Text(
-        modifier =
-            modifier,
+        modifier = modifier,
         text = editorTextState.text,
         fontFamily = editorTextState.font,
-        color = editorTextState.color.primary
+        fontSize = 32.sp,
+        color = editorTextState.color.primary,
     )
 }
 
