@@ -56,15 +56,15 @@ class EditorViewModel @Inject constructor() : ViewModel() {
             // ImageObject
             is EditorIntent.ImageObject.Transform ->
                 editorStateHolder.updateState(
-                    editorImageState = intent.imageState,
-                    bottomBarState = EditingState.Image,
+                    displayImageState = intent.imageState,
+                    editingState = EditingState.Image,
                 )
 
             // TextObject
             is EditorIntent.TextObject.Transform ->
                 editorStateHolder.updateState(
-                    editorTextState = intent.textState,
-                    bottomBarState = EditingState.Text,
+                    displayTextState = intent.textState,
+                    editingState = EditingState.Text,
                 )
 
             // InfoToolBar
@@ -73,7 +73,7 @@ class EditorViewModel @Inject constructor() : ViewModel() {
             EditorIntent.InfoToolBar.EditImage -> tryEditImage()
 
             EditorIntent.InfoToolBar.EditBackground ->
-                editorStateHolder.updateBottomBar(bottomBarState = EditingState.Background)
+                editorStateHolder.updateBottomBar(editingState = EditingState.Background)
 
             EditorIntent.InfoToolBar.EditInfo ->
                 editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorStateHolder.value.editorInfoState))
@@ -99,7 +99,7 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
             // ImageToolBar
             EditorIntent.ImageToolBar.Close ->
-                editorStateHolder.updateBottomBar(bottomBarState = EditingState.None)
+                editorStateHolder.updateBottomBar(editingState = EditingState.None)
 
             EditorIntent.ImageToolBar.Delete ->
                 editorStateHolder.updateDialog(dialogState = DialogState.ImageDeleteWarning)
@@ -144,19 +144,19 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                 when (editorStateHolder.value.bottomBarState) {
                     EditingState.Text ->
                         editorStateHolder.updateState(
-                            editorTextState = editorStateHolder.value.editorTextState.copy(color = intent.color),
+                            displayTextState = editorStateHolder.value.editorTextState.copy(color = intent.color),
                             dialogState = DialogState.Closed,
                         )
 
                     EditingState.Image ->
                         editorStateHolder.updateState(
-                            editorImageState = editorStateHolder.value.editorImageState.copy(color = intent.color),
+                            displayImageState = editorStateHolder.value.editorImageState.copy(color = intent.color),
                             dialogState = DialogState.Closed,
                         )
 
                     EditingState.Background ->
                         editorStateHolder.updateState(
-                            editorBackgroundState =
+                            displayBackgroundState =
                                 editorStateHolder.value.editorBackgroundState.copy(
                                     color = intent.color,
                                 ),
@@ -169,25 +169,25 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
             EditorIntent.Dialog.DeleteText ->
                 editorStateHolder.updateState(
-                    bottomBarState = EditingState.None,
-                    editorTextState = DisplayTextState(),
+                    editingState = EditingState.None,
+                    displayTextState = DisplayTextState(),
                 )
 
             EditorIntent.Dialog.DeleteImage ->
                 editorStateHolder.updateState(
-                    bottomBarState = EditingState.None,
-                    editorImageState = DisplayImageState(),
+                    editingState = EditingState.None,
+                    displayImageState = DisplayImageState(),
                 )
 
             EditorIntent.Dialog.DeleteBackground ->
                 editorStateHolder.updateState(
-                    bottomBarState = EditingState.None,
-                    editorBackgroundState = DisplayBackgroundState(),
+                    editingState = EditingState.None,
+                    displayBackgroundState = DisplayBackgroundState(),
                 )
 
             is EditorIntent.Dialog.EditText ->
                 editorStateHolder.updateState(
-                    editorTextState = editorStateHolder.value.editorTextState.copy(text = intent.text),
+                    displayTextState = editorStateHolder.value.editorTextState.copy(text = intent.text),
                     dialogState = DialogState.Closed,
                 )
 
@@ -203,12 +203,15 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
             is EditorIntent.Dialog.PickedImage ->
                 editorStateHolder.updateState(
-                    editorImageState = editorStateHolder.value.editorImageState.copy(imageSource = intent.image),
+                    displayImageState = editorStateHolder.value.editorImageState.copy(imageSource = intent.image),
                     dialogState = DialogState.Closed,
                 )
 
             EditorIntent.Dialog.Close ->
-                editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+                editorStateHolder.updateState(
+                    editingState = EditingState.None,
+                    dialogState = DialogState.Closed
+                )
         }
     }
 
@@ -247,7 +250,7 @@ class EditorViewModel @Inject constructor() : ViewModel() {
                 )
             }
         } else {
-            editorStateHolder.updateBottomBar(bottomBarState = EditingState.Text)
+            editorStateHolder.updateBottomBar(editingState = EditingState.Text)
         }
     }
 
@@ -340,19 +343,19 @@ data class DisplayEditorData(
 private fun MutableStateFlow<DisplayEditorData>.updateState(
     displayId: Long? = this.value.displayId,
     editorInfoState: EditorInfoState = this.value.editorInfoState,
-    editorImageState: DisplayImageState = this.value.editorImageState,
-    editorTextState: DisplayTextState = this.value.editorTextState,
-    editorBackgroundState: DisplayBackgroundState = this.value.editorBackgroundState,
-    bottomBarState: EditingState = this.value.bottomBarState,
+    displayImageState: DisplayImageState = this.value.editorImageState,
+    displayTextState: DisplayTextState = this.value.editorTextState,
+    displayBackgroundState: DisplayBackgroundState = this.value.editorBackgroundState,
+    editingState: EditingState = this.value.bottomBarState,
     dialogState: DialogState = this.value.dialogState,
 ) = update {
     DisplayEditorData(
         displayId = displayId,
         editorInfoState = editorInfoState,
-        editorImageState = editorImageState,
-        editorTextState = editorTextState,
-        editorBackgroundState = editorBackgroundState,
-        bottomBarState = bottomBarState,
+        editorImageState = displayImageState,
+        editorTextState = displayTextState,
+        editorBackgroundState = displayBackgroundState,
+        bottomBarState = editingState,
         dialogState = dialogState,
     )
 }
@@ -415,8 +418,8 @@ private fun MutableStateFlow<DisplayEditorData>.updateImage(
 private fun MutableStateFlow<DisplayEditorData>.resetBackground() =
     update { this.value.copy(editorBackgroundState = DisplayBackgroundState()) }
 
-private fun MutableStateFlow<DisplayEditorData>.updateBackground(editorBackgroundState: DisplayBackgroundState) =
-    update { this.value.copy(editorBackgroundState = editorBackgroundState) }
+private fun MutableStateFlow<DisplayEditorData>.updateBackground(displayBackgroundState: DisplayBackgroundState) =
+    update { this.value.copy(editorBackgroundState = displayBackgroundState) }
 
 private fun MutableStateFlow<DisplayEditorData>.updateBackground(
     color: CustomColor = this.value.editorBackgroundState.color,
@@ -431,8 +434,8 @@ private fun MutableStateFlow<DisplayEditorData>.updateBackground(
 private fun MutableStateFlow<DisplayEditorData>.updateDialog(dialogState: DialogState) =
     update { this.value.copy(dialogState = dialogState) }
 
-private fun MutableStateFlow<DisplayEditorData>.updateBottomBar(bottomBarState: EditingState) =
-    update { this.value.copy(bottomBarState = bottomBarState) }
+private fun MutableStateFlow<DisplayEditorData>.updateBottomBar(editingState: EditingState) =
+    update { this.value.copy(bottomBarState = editingState) }
 
 private fun MutableStateFlow<DisplayEditorData>.selectTextObject() =
     update {
