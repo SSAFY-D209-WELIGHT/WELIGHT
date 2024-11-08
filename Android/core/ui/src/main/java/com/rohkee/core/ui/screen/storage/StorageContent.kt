@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,40 +26,42 @@ fun StorageContent(
     state: StorageState,
     onIntent: (StorageIntent) -> Unit = {},
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        LogoAppBar()
-        when (state) {
-            is StorageState.Loading -> {
-                LoadingContent(modifier = Modifier.weight(1f))
-            }
+    Scaffold { innerPadding ->
+        Column(
+            modifier = modifier.padding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            LogoAppBar()
+            when (state) {
+                is StorageState.Loading -> {
+                    LoadingContent(modifier = Modifier.weight(1f))
+                }
 
-            is StorageState.Loaded -> {
-                LoadedContent(
-                    modifier = Modifier.weight(1f),
-                    state = state,
-                    onIntent = onIntent,
-                )
-            }
+                is StorageState.Loaded -> {
+                    LoadedContent(
+                        modifier = Modifier.weight(1f),
+                        state = state,
+                        onIntent = onIntent,
+                    )
+                }
 
-            is StorageState.NoData -> {
-                NoContent(modifier = Modifier.weight(1f))
-            }
+                is StorageState.NoData -> {
+                    NoContent(modifier = Modifier.weight(1f))
+                }
 
-            is StorageState.Error -> {
-                LoadingContent(modifier = Modifier.weight(1f))
+                is StorageState.Error -> {
+                    LoadingContent(modifier = Modifier.weight(1f))
+                }
             }
+            CreateDisplayButton(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+            )
         }
-        CreateDisplayButton(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            onClick = { onIntent(StorageIntent.CreateNewDisplay) },
-        )
     }
 }
 

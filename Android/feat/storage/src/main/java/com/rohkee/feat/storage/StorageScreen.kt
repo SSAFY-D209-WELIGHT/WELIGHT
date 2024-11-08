@@ -1,11 +1,18 @@
 package com.rohkee.feat.storage
 
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rohkee.core.ui.screen.storage.StorageContent
+import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.collectWithLifecycle
 
 @Composable
@@ -15,6 +22,7 @@ fun StorageScreen(
     onNavigateToDisplayDetail: (Long) -> Unit,
     onNavigateToCreateNewDisplay: () -> Unit,
 ) {
+    val context = LocalContext.current as ComponentActivity
     val storageUIState by storageViewModel.storageState.collectAsStateWithLifecycle()
 
     storageViewModel.storageEvent.collectWithLifecycle {
@@ -23,6 +31,13 @@ fun StorageScreen(
             is StorageEvent.CreateNewDisplay -> onNavigateToCreateNewDisplay()
             else -> {}
         }
+    }
+
+    LaunchedEffect(Unit) {
+        context.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(AppColor.Background.toArgb()),
+            navigationBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+        )
     }
 
     StorageContent(
