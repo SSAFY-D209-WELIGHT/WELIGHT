@@ -86,8 +86,8 @@ private fun EditContent(
 
         DialogState.ImageDeleteWarning ->
             WarningDialog(
-                title = stringResource(R.string.dialog_delete_text_title),
-                content = stringResource(R.string.dialog_delete_text_content),
+                title = stringResource(R.string.dialog_delete_image_title),
+                content = stringResource(R.string.dialog_delete_image_content),
                 onConfirm = { onIntent(EditorIntent.Dialog.DeleteImage) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )
@@ -102,8 +102,8 @@ private fun EditContent(
 
         DialogState.BackgroundDeleteWarning ->
             WarningDialog(
-                title = stringResource(R.string.dialog_delete_text_title),
-                content = stringResource(R.string.dialog_delete_text_content),
+                title = stringResource(R.string.dialog_delete_background_title),
+                content = stringResource(R.string.dialog_delete_background_content),
                 onConfirm = { onIntent(EditorIntent.Dialog.DeleteBackground) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )
