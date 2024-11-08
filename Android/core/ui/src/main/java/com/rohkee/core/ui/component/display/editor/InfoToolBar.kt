@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,22 +12,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.R
+import com.rohkee.core.ui.component.display.TagRow
+import com.rohkee.core.ui.component.display.TitleRow
 import com.rohkee.core.ui.theme.AppColor
-import com.rohkee.core.ui.theme.Pretendard
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -86,78 +81,6 @@ fun InfoToolBar(
         )
         Spacer(modifier = Modifier.height(16.dp))
     }
-}
-
-@Composable
-private fun TitleRow(
-    modifier: Modifier = Modifier,
-    title: String,
-    onEditClick: () -> Unit = {},
-) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = title.ifEmpty { "이름을 입력해주세요." },
-            style = Pretendard.Medium24,
-            color = if (title.isNotEmpty()) AppColor.OnSurface else AppColor.OnBackgroundTransparent,
-            modifier = Modifier.weight(1f),
-        )
-        Icon(
-            modifier = Modifier.clickable { onEditClick() },
-            imageVector = Icons.Rounded.Edit,
-            tint = AppColor.OnSurface,
-            contentDescription = "Edit",
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TagRow(
-    modifier: Modifier = Modifier,
-    tags: List<String>,
-) {
-    if (tags.isNotEmpty()) {
-        FlowRow(
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            for (tag in tags) {
-                Tag(tag = tag)
-            }
-        }
-    } else {
-        Text(
-            modifier =
-                modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-            text = "#태그를_입력해주세요.",
-            style = Pretendard.SemiBold16,
-            color = AppColor.OnBackgroundTransparent,
-        )
-    }
-}
-
-@Composable
-private fun Tag(
-    modifier: Modifier = Modifier,
-    tag: String,
-) {
-    Text(
-        modifier = modifier,
-        text = "#$tag",
-        style = Pretendard.SemiBold16,
-        color = AppColor.Convex,
-    )
 }
 
 @Composable
