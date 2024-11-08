@@ -1,11 +1,19 @@
 package com.rohkee.core.network.di
 
+import android.content.Context
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferNetworkLossHandler
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3Client
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.rohkee.core.network.BuildConfig
 import com.rohkee.core.network.interceptor.AccessTokenInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -47,4 +55,23 @@ object NetworkModule {
             writeTimeout(20, TimeUnit.SECONDS)
             build()
         }
+
+    @Singleton
+    @Provides
+    fun provideTransferUtility(
+        @ApplicationContext context: Context,
+    ): TransferUtility {
+        val credentials = BasicAWSCredentials(BuildConfig.AWS_ACCESS_KEY, BuildConfig.AWS_SECRET_KEY)
+        val region = Region.getRegion(Regions.AP_NORTHEAST_2)
+        val awsClient = AmazonS3Client(credentials, region)
+
+        TransferNetworkLossHandler.getInstance(context)
+
+        return TransferUtility
+            .builder()
+            .context(context)
+            .defaultBucket(BuildConfig.BUCKET_NAME)
+            .s3Client(awsClient)
+            .build()
+    }
 }
