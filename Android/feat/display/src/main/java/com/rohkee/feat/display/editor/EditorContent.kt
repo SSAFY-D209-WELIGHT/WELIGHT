@@ -3,6 +3,8 @@ package com.rohkee.feat.display.editor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -124,29 +126,37 @@ private fun EditContent(
             )
     }
 
-    Box(
+    Scaffold(
         modifier = modifier,
-    ) {
-        CustomDisplay(
-            modifier = Modifier.fillMaxSize(),
-            imageState = state.displayImageState,
-            textState = state.displayTextState,
-            backgroundState = state.displayBackgroundState,
-            onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
-            onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
-        )
-
-        SavableAppBar(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
-            onCloseClick = { onIntent(EditorIntent.Dialog.ExitPage) },
-            onSaveClick = { onIntent(EditorIntent.Save) },
-        )
-
-        BottomBarContent(
-            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
-            state = state,
-            onIntent = onIntent,
-        )
+    ) { innerPadding ->
+        Box {
+            CustomDisplay(
+                modifier = Modifier.fillMaxSize(),
+                imageState = state.displayImageState,
+                textState = state.displayTextState,
+                backgroundState = state.displayBackgroundState,
+                onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
+                onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
+            )
+            SavableAppBar(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                        .padding(top = innerPadding.calculateTopPadding()),
+                onCloseClick = { onIntent(EditorIntent.Dialog.ExitPage) },
+                onSaveClick = { onIntent(EditorIntent.Save) },
+            )
+            BottomBarContent(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = innerPadding.calculateBottomPadding()),
+                state = state,
+                onIntent = onIntent,
+            )
+        }
     }
 }
 
@@ -226,14 +236,16 @@ private fun ErrorContent(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun EditorContentPreview() {
-    EditorContent(
-        state =
-            EditorState.Edit(
-                editingState = EditingState.None,
-                editorInfoState = EditorInfoState(),
-                displayTextState = DisplayTextState(),
-                displayImageState = DisplayImageState(),
-                displayBackgroundState = DisplayBackgroundState(),
-            ),
-    )
+    Scaffold { innerPadding ->
+        EditorContent(
+            state =
+                EditorState.Edit(
+                    editingState = EditingState.None,
+                    editorInfoState = EditorInfoState(),
+                    displayTextState = DisplayTextState(),
+                    displayImageState = DisplayImageState(),
+                    displayBackgroundState = DisplayBackgroundState(),
+                ),
+        )
+    }
 }
