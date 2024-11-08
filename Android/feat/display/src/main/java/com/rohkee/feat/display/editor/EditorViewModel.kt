@@ -214,7 +214,7 @@ class EditorViewModel @Inject constructor() : ViewModel() {
             EditorIntent.Dialog.Close ->
                 editorStateHolder.updateState(
                     editingState = EditingState.None,
-                    dialogState = DialogState.Closed
+                    dialogState = DialogState.Closed,
                 )
         }
     }
@@ -226,6 +226,7 @@ class EditorViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun createData() {
+        if (editorState.value is EditorState.Edit) return
         editorStateHolder.update {
             DisplayEditorData(
                 displayId = null,
