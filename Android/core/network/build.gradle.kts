@@ -24,5 +24,6 @@ android {
 dependencies {
     implementation(libs.bundles.network)
     implementation(libs.bundles.serialization)
+    implementation(libs.androidx.paging.runtime)
     implementation(project(":core:datastore"))
 }

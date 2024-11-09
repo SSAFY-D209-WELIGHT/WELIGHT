@@ -47,6 +47,7 @@ interface DisplayApi {
     // /display/search
     @GET("/display/search")
     fun searchDisplayList(
+        @Query("keyword") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
