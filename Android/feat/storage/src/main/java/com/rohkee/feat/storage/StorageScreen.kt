@@ -40,6 +40,7 @@ fun StorageScreen(
     }
 
     StorageContent(
+        modifier = modifier,
         state = storageUIState,
         onIntent = storageViewModel::onIntent,
     )
