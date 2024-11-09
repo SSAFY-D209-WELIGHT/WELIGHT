@@ -1,29 +1,33 @@
 package com.rohkee.core.network.repositoryImpl
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.api.DisplayApi
 import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
+import com.rohkee.core.network.paging.DisplayMyListPagingSource
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class DisplayRepositoryImpl @Inject constructor(
     private val displayApi: DisplayApi,
 ) : DisplayRepository {
     override suspend fun getMyDisplayList(
-        page: Int,
-        size: Int,
         sort: SortType,
-    ): ApiResponse<List<DisplayResponse.Short>> =
-        apiHandler {
-            displayApi.getMyDisplayList(
-                page = page,
-                size = size,
-                sort = sort.name,
-            )
-        }
+    ): Flow<PagingData<DisplayResponse.Short>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2,
+                ),
+            pagingSourceFactory = { DisplayMyListPagingSource(displayApi, sortType = sort) },
+        ).flow
 
     override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> =
         apiHandler {

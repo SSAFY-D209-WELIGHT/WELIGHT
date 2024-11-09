@@ -1,8 +1,10 @@
 package com.rohkee.core.network.repository
 
+import androidx.paging.PagingData
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
+import kotlinx.coroutines.flow.Flow
 
 enum class SortType {
     LATEST,
@@ -12,10 +14,8 @@ enum class SortType {
 
 interface DisplayRepository {
     suspend fun getMyDisplayList(
-        page: Int,
-        size: Int,
         sort: SortType,
-    ): ApiResponse<List<DisplayResponse.Short>>
+    ): Flow<PagingData<DisplayResponse.Short>>
 
     suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail>
 
