@@ -6,16 +6,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingState
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.rohkee.core.ui.component.appbar.LogoAppBar
 import com.rohkee.core.ui.component.storage.CreateDisplayButton
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
 import com.rohkee.core.ui.component.storage.InfiniteHorizontalPager
 import com.rohkee.core.ui.component.storage.NoContentCard
+import kotlinx.coroutines.flow.flow
 
 /**
  * 보관함 화면
@@ -81,14 +87,18 @@ private fun LoadedContent(
     state: StorageState.Loaded,
     onIntent: (StorageIntent) -> Unit = {},
 ) {
+    val displayList = state.displayListFlow.collectAsLazyPagingItems()
+
     InfiniteHorizontalPager(
         modifier = modifier,
-        pageCount = 3,
+        pageCount = displayList.itemCount,
     ) { index ->
-        DisplayCard(
-            state = state.displayList[index],
-            onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = state.displayList[index].cardId)) },
-        )
+        displayList[index]?.let { item ->
+            DisplayCard(
+                state = item,
+                onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
+            )
+        }
     }
 }
 
@@ -112,4 +122,48 @@ private fun StorageContentPreview() {
 @Composable
 private fun StorageNoContentPreview() {
     StorageContent(state = StorageState.NoData)
+}
+
+@Preview
+@Composable
+private fun StorageLoadedPreview() {
+    val pager =
+        remember {
+            Pager(
+                PagingConfig(
+                    pageSize = 10,
+                    enablePlaceholders = true,
+                    maxSize = 200,
+                ),
+            ) {
+                object : androidx.paging.PagingSource<Int, DisplayCardState>() {
+                    override fun getRefreshKey(state: PagingState<Int, DisplayCardState>): Int? {
+                        return state.anchorPosition
+                    }
+
+                    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DisplayCardState> {
+                        val currentPage = params.key ?: 1
+
+                        return LoadResult.Page(
+                            data =
+                                List(10) { index ->
+                                    DisplayCardState(
+                                        cardId = index.toLong(),
+                                        imageSource = null,
+                                    )
+                                },
+                            prevKey = if (currentPage == 1) null else currentPage - 1,
+                            nextKey = currentPage + 1,
+                        )
+                    }
+                }
+            }
+        }
+
+    StorageContent(
+        state =
+            StorageState.Loaded(
+                displayListFlow = pager.flow,
+            ),
+    )
 }
