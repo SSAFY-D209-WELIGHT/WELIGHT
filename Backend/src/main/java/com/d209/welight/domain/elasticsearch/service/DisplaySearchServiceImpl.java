@@ -1,7 +1,7 @@
 package com.d209.welight.domain.elasticsearch.service;
 
-import com.d209.welight.domain.elasticsearch.Document.DisplayDocument;
-import com.d209.welight.domain.elasticsearch.Document.UserDocument;
+import com.d209.welight.domain.elasticsearch.document.DisplayDocument;
+import com.d209.welight.domain.elasticsearch.document.UserDocument;
 import com.d209.welight.domain.elasticsearch.repository.DisplaySearchRepository;
 import com.d209.welight.domain.elasticsearch.repository.UserSearchRepository;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;

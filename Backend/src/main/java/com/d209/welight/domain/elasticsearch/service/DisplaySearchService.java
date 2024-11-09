@@ -1,6 +1,6 @@
 package com.d209.welight.domain.elasticsearch.service;
 
-import com.d209.welight.domain.elasticsearch.Document.DisplayDocument;
+import com.d209.welight.domain.elasticsearch.document.DisplayDocument;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface DisplayBackgroundRepository extends JpaRepository<DisplayBackground, Long> {
     Optional<DisplayBackground> findByDisplay(Display display);
+    void deleteByDisplay(Display display);
 }

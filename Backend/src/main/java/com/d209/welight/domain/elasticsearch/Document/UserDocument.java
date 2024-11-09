@@ -1,4 +1,4 @@
-package com.d209.welight.domain.elasticsearch.Document;
+package com.d209.welight.domain.elasticsearch.document;
 
 import org.springframework.data.annotation.Id;
 import lombok.*;

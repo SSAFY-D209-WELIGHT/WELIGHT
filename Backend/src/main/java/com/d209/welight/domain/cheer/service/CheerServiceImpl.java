@@ -250,7 +250,7 @@ public class CheerServiceImpl implements CheerService {
                     log.error("응원방을 찾을 수 없음 - 응원방ID={}", roomId);
                     return new EntityNotFoundException("존재하지 않는 응원방입니다.");
                 });
-        CheerParticipation participation = cheerParticipationRepository
+                cheerParticipationRepository
                 .findByUserAndCheerroomId(user, roomId)
                 .orElseThrow(() -> {
                     log.error("참여 정보를 찾을 수 없음 - 사용자ID={}, 응원방ID={}",
@@ -449,7 +449,7 @@ public class CheerServiceImpl implements CheerService {
                 .display(display)
                 .build();
 
-        CheerroomDisplay savedDisplay = cheerroomDisplayRepository.save(cheerroomDisplay);
+        cheerroomDisplayRepository.save(cheerroomDisplay);
 
         // 최신 디스플레이 목록 조회
         List<CheerroomDisplay> displays = cheerroomDisplayRepository.findByCheerroom(cheerroom);

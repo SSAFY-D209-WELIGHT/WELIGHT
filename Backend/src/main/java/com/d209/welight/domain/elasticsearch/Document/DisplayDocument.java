@@ -1,4 +1,4 @@
-package com.d209.welight.domain.elasticsearch.Document;
+package com.d209.welight.domain.elasticsearch.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

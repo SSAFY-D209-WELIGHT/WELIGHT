@@ -3,7 +3,6 @@ package com.d209.welight.domain.display.service;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
-import com.d209.welight.domain.display.dto.DisplayColorDto;
 import com.d209.welight.domain.display.dto.DisplayImageDto;
 import com.d209.welight.domain.display.dto.DisplayTextDto;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
@@ -45,7 +44,6 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayImageRepository displayImageRepository;
     private final DisplayTextRepository displayTextRepository;
     private final DisplayBackgroundRepository displayBackgroundRepository;
-    private final DisplayColorRepository displayColorRepository;
     private final DisplayStorageRepository displayStorageRepository;
     private final DisplayLikeRepository displayLikeRepository;
     private final DisplayCommentRepository displayCommentRepository;
@@ -54,11 +52,6 @@ public class DisplayServiceImpl implements DisplayService {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    /**
-     * 새로운 디스플레이를 생성합니다.
-     * @param request 생성할 디스플레이 정보
-     * @return DispalayCreateReponse
-     */
     @Override
     @Transactional
     public DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request) {
@@ -101,11 +94,16 @@ public class DisplayServiceImpl implements DisplayService {
                         DisplayImage image = new DisplayImage();
                         image.setDisplay(savedDisplay);
                         image.setDisplayImgUrl(imageDto.getDisplayImgUrl());
-                        image.setDisplayImgPosition(imageDto.getDisplayImgPosition());
+                        image.setDisplayImgColor(imageDto.getDisplayImgColor());
+                        image.setDisplayImgScale(imageDto.getDisplayImgScale());
+                        image.setDisplayImgRotation(imageDto.getDisplayImgRotation());
+                        image.setDisplayImgOffsetx(imageDto.getDisplayImgOffsetx());
+                        image.setDisplayImgOffsety(imageDto.getDisplayImgOffsety());
                         image.setDisplayImgCreatedAt(LocalDateTime.now());
                         return image;
                     })
                     .collect(Collectors.toList());
+
                 displayImageRepository.saveAll(images);
                 savedDisplay.setImages(images);
             }
@@ -118,13 +116,16 @@ public class DisplayServiceImpl implements DisplayService {
                         text.setDisplay(savedDisplay);
                         text.setDisplayTextDetail(textDto.getDisplayTextDetail());
                         text.setDisplayTextColor(textDto.getDisplayTextColor());
-                        text.setDisplayTextPosition(textDto.getDisplayTextPosition());
-                        text.setDisplayTextRotation(textDto.getDisplayTextRotation());
                         text.setDisplayTextFont(textDto.getDisplayTextFont());
+                        text.setDisplayTextRotation(textDto.getDisplayTextRotation());
+                        text.setDisplayTextScale(textDto.getDisplayTextScale());
+                        text.setDisplayTextOffsetx(textDto.getDisplayTextOffsetx());
+                        text.setDisplayTextOffsety(textDto.getDisplayTextOffsety());
                         text.setDisplayTextCreatedAt(LocalDateTime.now());
                         return text;
                     })
                     .collect(Collectors.toList());
+
                 displayTextRepository.saveAll(texts);
                 savedDisplay.setTexts(texts);
             }
@@ -132,23 +133,15 @@ public class DisplayServiceImpl implements DisplayService {
             // 5. 배경 정보 저장
             if (request.getBackground() != null) {
                 DisplayBackground background = new DisplayBackground();
-                DisplayColor color = new DisplayColor();
                 background.setDisplay(savedDisplay);
                 background.setDisplayBackgroundBrightness(request.getBackground().getDisplayBackgroundBrightness());
+                background.setDisplayColorSolid(request.getBackground().getDisplayColorSolid());
+                background.setDisplayBackgroundGradationColor1(request.getBackground().getDisplayBackgroundGradationColor1());
+                background.setDisplayBackgroundGradationColor2(request.getBackground().getDisplayBackgroundGradationColor2());
+                background.setDisplayBackgroundGradationType(request.getBackground().getDisplayBackgroundGradationType());
                 background.setDisplayBackgroundCreatedAt(LocalDateTime.now());
 
-                // 배경 색상 정보 저장
-                if (request.getBackground().getColor() != null) {
-
-                    color.setDisplayBackground(background);
-                    color.setDisplayColorSolid(request.getBackground().getColor().getDisplayColorSolid());
-                    color.setDisplayBackgroundGradationColor1(request.getBackground().getColor().getDisplayBackgroundGradationColor1());
-                    color.setDisplayBackgroundGradationColor2(request.getBackground().getColor().getDisplayBackgroundGradationColor2());
-                    color.setDisplayBackgroundGradationType(request.getBackground().getColor().getDisplayBackgroundGradationType());
-                }
-
                 displayBackgroundRepository.save(background);
-                displayColorRepository.save(color);
                 savedDisplay.setBackground(background);
 
             }
@@ -312,10 +305,13 @@ public class DisplayServiceImpl implements DisplayService {
                 DisplayText newText = DisplayText.builder()
                         .display(newDisplay)
                         .displayTextDetail(text.getDisplayTextDetail())
-                        .displayTextFont(text.getDisplayTextFont())
                         .displayTextColor(text.getDisplayTextColor())
-                        .displayTextPosition(text.getDisplayTextPosition())
+                        .displayTextFont(text.getDisplayTextFont())
                         .displayTextRotation(text.getDisplayTextRotation())
+                        .displayTextScale(text.getDisplayTextScale())
+                        .displayTextOffsetx(text.getDisplayTextOffsetx())
+                        .displayTextOffsety(text.getDisplayTextOffsety())
+                        .displayTextCreatedAt(LocalDateTime.now())
                         .build();
 
                 // 디스플레이 텍스트 저장
@@ -342,7 +338,11 @@ public class DisplayServiceImpl implements DisplayService {
                         DisplayImage newImage = DisplayImage.builder()
                             .display(newDisplay)
                             .displayImgUrl(newImgUrl)
-                            .displayImgPosition(image.getDisplayImgPosition())
+                            .displayImgColor(image.getDisplayImgColor())
+                            .displayImgScale(image.getDisplayImgScale())
+                            .displayImgRotation(image.getDisplayImgRotation())
+                            .displayImgOffsetx(image.getDisplayImgOffsetx())
+                            .displayImgOffsety(image.getDisplayImgOffsety())
                             .displayImgCreatedAt(LocalDateTime.now())
                             .build();
 
@@ -364,29 +364,14 @@ public class DisplayServiceImpl implements DisplayService {
             DisplayBackground newBackground = DisplayBackground.builder()
                     .display(newDisplay)
                     .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                    .displayColorSolid(originalBackground.getDisplayColorSolid())
+                    .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
+                    .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
+                    .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
                     .build();
 
             // 디스플레이 배경 저장
-            DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
-
-            // 원본 배경의 색상 정보 조회
-            DisplayColor originalColor =  displayColorRepository.findByDisplayBackground(originalBackground)
-                    .orElse(null);
-
-            // 배경 색상 복제
-            if (originalColor != null) {
-                DisplayColor newColor = DisplayColor.builder()
-                        .displayBackground(savedBackground)
-                        .displayColorSolid(originalColor.getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(originalColor.getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(originalColor.getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(originalColor.getDisplayBackgroundGradationType())
-                        .build();
-
-
-                // 배경 색상 저장
-                displayColorRepository.save(newColor);
-            }
+            displayBackgroundRepository.save(newBackground);
         }
     }
 
@@ -413,7 +398,11 @@ public class DisplayServiceImpl implements DisplayService {
             List<DisplayImageDto> images = display.getImages().stream()
                     .map(image -> DisplayImageDto.builder()
                             .displayImgUrl(image.getDisplayImgUrl())
-                            .displayImgPosition(image.getDisplayImgPosition())
+                            .displayImgColor(image.getDisplayImgColor())
+                            .displayImgScale(image.getDisplayImgScale())
+                            .displayImgRotation(image.getDisplayImgRotation())
+                            .displayImgOffsetx(image.getDisplayImgOffsetx())
+                            .displayImgOffsety(image.getDisplayImgOffsety())
                             .build())
                     .collect(Collectors.toList());
 
@@ -422,37 +411,25 @@ public class DisplayServiceImpl implements DisplayService {
                     .map(text -> DisplayTextDto.builder()
                             .displayTextDetail(text.getDisplayTextDetail())
                             .displayTextColor(text.getDisplayTextColor())
-                            .displayTextPosition(text.getDisplayTextPosition())
-                            .displayTextRotation(text.getDisplayTextRotation())
                             .displayTextFont(text.getDisplayTextFont())
+                            .displayTextRotation(text.getDisplayTextRotation())
+                            .displayTextScale(text.getDisplayTextScale())
+                            .displayTextOffsetx(text.getDisplayTextOffsetx())
+                            .displayTextOffsety(text.getDisplayTextOffsety())
                             .build())
                     .collect(Collectors.toList());
 
-            // 배경 정보 변환
-            DisplayBackgroundDto background = null;
-            if (display.getBackground() != null) {
-                DisplayColor color = displayColorRepository.findByDisplayBackground(display.getBackground())
-                        .orElse(null);
 
-                DisplayColorDto colorDto = null;
-                if (color != null) {
-                    colorDto = DisplayColorDto.builder()
-                            .displayColorSolid(color.getDisplayColorSolid())
-                            .displayBackgroundGradationColor1(color.getDisplayBackgroundGradationColor1())
-                            .displayBackgroundGradationColor2(color.getDisplayBackgroundGradationColor2())
-                            .displayBackgroundGradationType(color.getDisplayBackgroundGradationType())
-                            .build();
-                }
-
-                background = DisplayBackgroundDto.builder()
-                        .displayBackgroundBrightness(display.getBackground().getDisplayBackgroundBrightness())
-                        .color(colorDto)
-                        .build();
-            }
+            DisplayBackgroundDto background = DisplayBackgroundDto.builder()
+                    .displayBackgroundBrightness(display.getBackground().getDisplayBackgroundBrightness())
+                    .displayColorSolid(display.getBackground().getDisplayColorSolid())
+                    .displayBackgroundGradationColor1(display.getBackground().getDisplayBackgroundGradationColor1())
+                    .displayBackgroundGradationColor2(display.getBackground().getDisplayBackgroundGradationColor2())
+                    .displayBackgroundGradationType(display.getBackground().getDisplayBackgroundGradationType())
+                    .build();
 
             // DisplayCreateRequest 생성 및 반환
             return DisplayCreateRequest.builder()
-//                    .creatorUid(display.getCreatorUid())
                     .displayName(display.getDisplayName())
                     .displayThumbnailUrl(display.getDisplayThumbnailUrl())
                     .displayIsPosted(display.getDisplayIsPosted())
@@ -522,7 +499,11 @@ public class DisplayServiceImpl implements DisplayService {
                         .map(imageDto -> DisplayImage.builder()
                                 .display(savedDisplay)
                                 .displayImgUrl(imageDto.getDisplayImgUrl())
-                                .displayImgPosition(imageDto.getDisplayImgPosition())
+                                .displayImgColor(imageDto.getDisplayImgColor())
+                                .displayImgScale(imageDto.getDisplayImgScale())
+                                .displayImgRotation(imageDto.getDisplayImgRotation())
+                                .displayImgOffsetx(imageDto.getDisplayImgOffsetx())
+                                .displayImgOffsety(imageDto.getDisplayImgOffsety())
                                 .displayImgCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -531,7 +512,11 @@ public class DisplayServiceImpl implements DisplayService {
                         .map(image -> DisplayImage.builder()
                                 .display(savedDisplay)
                                 .displayImgUrl(image.getDisplayImgUrl())
-                                .displayImgPosition(image.getDisplayImgPosition())
+                                .displayImgColor(image.getDisplayImgColor())
+                                .displayImgScale(image.getDisplayImgScale())
+                                .displayImgRotation(image.getDisplayImgRotation())
+                                .displayImgOffsetx(image.getDisplayImgOffsetx())
+                                .displayImgOffsety(image.getDisplayImgOffsety())
                                 .displayImgCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -548,9 +533,11 @@ public class DisplayServiceImpl implements DisplayService {
                                 .display(savedDisplay)
                                 .displayTextDetail(textDto.getDisplayTextDetail())
                                 .displayTextColor(textDto.getDisplayTextColor())
-                                .displayTextPosition(textDto.getDisplayTextPosition())
-                                .displayTextRotation(textDto.getDisplayTextRotation())
                                 .displayTextFont(textDto.getDisplayTextFont())
+                                .displayTextRotation(textDto.getDisplayTextRotation())
+                                .displayTextScale(textDto.getDisplayTextScale())
+                                .displayTextOffsetx(textDto.getDisplayTextOffsetx())
+                                .displayTextOffsety(textDto.getDisplayTextOffsety())
                                 .displayTextCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -560,9 +547,11 @@ public class DisplayServiceImpl implements DisplayService {
                                 .display(savedDisplay)
                                 .displayTextDetail(text.getDisplayTextDetail())
                                 .displayTextColor(text.getDisplayTextColor())
-                                .displayTextPosition(text.getDisplayTextPosition())
-                                .displayTextRotation(text.getDisplayTextRotation())
                                 .displayTextFont(text.getDisplayTextFont())
+                                .displayTextRotation(text.getDisplayTextRotation())
+                                .displayTextScale(text.getDisplayTextScale())
+                                .displayTextOffsetx(text.getDisplayTextOffsetx())
+                                .displayTextOffsety(text.getDisplayTextOffsety())
                                 .displayTextCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -577,6 +566,10 @@ public class DisplayServiceImpl implements DisplayService {
                 newBackground = DisplayBackground.builder()
                         .display(savedDisplay)
                         .displayBackgroundBrightness(request.getBackground().getDisplayBackgroundBrightness())
+                        .displayColorSolid(request.getBackground().getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(request.getBackground().getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(request.getBackground().getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(request.getBackground().getDisplayBackgroundGradationType())
                         .displayBackgroundCreatedAt(LocalDateTime.now())
                         .build();
             } else {
@@ -584,41 +577,17 @@ public class DisplayServiceImpl implements DisplayService {
                 newBackground = DisplayBackground.builder()
                         .display(savedDisplay)
                         .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                        .displayColorSolid(originalBackground.getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
                         .displayBackgroundCreatedAt(LocalDateTime.now())
                         .build();
             }
             
             // 수정된 배경 저장
-            DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
+            displayBackgroundRepository.save(newBackground);
 
-            // 색상 처리
-            DisplayColor originalColor = displayColorRepository.findByDisplayBackground(originalDisplay.getBackground()).orElse(null);
-            DisplayColor newColor;
-            if (request.getBackground() != null && request.getBackground().getColor() != null) {
-                newColor = DisplayColor.builder()
-                        .displayBackground(savedBackground)
-                        .displayColorSolid(request.getBackground().getColor().getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(request.getBackground().getColor().getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(request.getBackground().getColor().getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(request.getBackground().getColor().getDisplayBackgroundGradationType())
-                        .build();
-            } else if (originalColor != null) {
-                newColor = DisplayColor.builder()
-                        .displayBackground(savedBackground)
-                        .displayColorSolid(originalColor.getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(originalColor.getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(originalColor.getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(originalColor.getDisplayBackgroundGradationType())
-                        .build();
-            } else {
-                newColor = null;
-            }
-
-            if (newColor != null) {
-
-                // 수정된 배경 색상 저장
-                displayColorRepository.save(newColor);
-            }
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -681,9 +650,7 @@ public class DisplayServiceImpl implements DisplayService {
             displayTextRepository.deleteByDisplay(display);
 
             // 배경 색상 삭제
-            DisplayBackground background = display.getBackground();
-            displayColorRepository.deleteByDisplayBackground(background);
-            displayBackgroundRepository.findByDisplay(display);
+            displayBackgroundRepository.deleteByDisplay(display);
 
             // 5. 디스플레이 삭제
             displayRepository.delete(display);

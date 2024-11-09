@@ -1,6 +1,6 @@
 package com.d209.welight.domain.elasticsearch.listener;
 
-import com.d209.welight.domain.elasticsearch.Document.UserDocument;
+import com.d209.welight.domain.elasticsearch.document.UserDocument;
 import com.d209.welight.domain.elasticsearch.repository.UserSearchRepository;
 import com.d209.welight.domain.elasticsearch.event.UserEvent;
 import com.d209.welight.domain.user.entity.User;

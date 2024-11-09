@@ -6,7 +6,7 @@ import com.d209.welight.domain.display.entity.DisplayText;
 import com.d209.welight.domain.elasticsearch.event.DisplayEvent;
 import com.d209.welight.domain.display.repository.DisplayTagRepository;
 import com.d209.welight.domain.display.repository.DisplayTextRepository;
-import com.d209.welight.domain.elasticsearch.Document.DisplayDocument;
+import com.d209.welight.domain.elasticsearch.document.DisplayDocument;
 import com.d209.welight.domain.elasticsearch.repository.DisplaySearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
