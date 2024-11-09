@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.screen.storage
+package com.rohkee.feat.storage
 
 import com.rohkee.core.ui.component.storage.DisplayCardState
 

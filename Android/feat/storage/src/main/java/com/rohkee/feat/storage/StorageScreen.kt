@@ -11,7 +11,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.rohkee.core.ui.screen.storage.StorageContent
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.collectWithLifecycle
 

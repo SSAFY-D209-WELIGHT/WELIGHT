@@ -1,4 +1,4 @@
-package com.rohkee.core.ui.screen.storage
+package com.rohkee.feat.storage
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
