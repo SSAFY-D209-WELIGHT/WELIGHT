@@ -169,10 +169,15 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 현재 사용자의 userId를 userUid로 변환하여 비교
             boolean isOwner = false;
+            boolean isFavorite = false;
+
             if (request.getUserId() != null) {
                 Optional<User> currentUser = userRepository.findByUserId(request.getUserId());
                 if (currentUser.isPresent()) {
                     isOwner = display.getCreatorUid().equals(currentUser.get().getUserUid());
+
+                    // 즐겨찾기 여부 확인
+                    isFavorite = displayStorageRepository.existsByUserAndDisplay(currentUser, display);
                 }
             }
 
@@ -186,6 +191,10 @@ public class DisplayServiceImpl implements DisplayService {
                             .map(DisplayTag::getDisplayTagText)
                             .collect(Collectors.toList()))
                     .isOwner(isOwner)
+                    .isFavourite(isFavorite)
+                    .likeCount(display.getDisplayLikeCount())
+                    .downloadCount(display.getDisplayDownloadCount())
+                    .commentCount(displayCommentRepository.countByDisplay(display))
                     .build();
 
         } catch (Exception e) {
