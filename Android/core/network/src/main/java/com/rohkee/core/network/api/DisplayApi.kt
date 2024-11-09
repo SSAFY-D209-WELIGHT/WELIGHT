@@ -27,7 +27,7 @@ interface DisplayApi {
     // /display/{displayId}
     @GET("/display/{displayId}")
     fun getDisplayDetail(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
     ): Response<DisplayResponse.Detail>
 
     // /display
@@ -41,7 +41,7 @@ interface DisplayApi {
     // /display/{displayId}/edit
     @GET("/display/{displayId}/edit")
     fun getDisplayEdit(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
     ): Response<DisplayResponse.Editable>
 
     // /display/search
@@ -64,13 +64,13 @@ interface DisplayApi {
     // /display/{displayId}/duplicate
     @POST("/display/{displayId}/duplicate")
     fun duplicateDisplay(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
     ): Response<DisplayResponse.Posted>
 
     // /display/{displayId}/edit
     @POST("/display/{displayId}/edit")
     fun editDisplay(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
         @Body request: DisplayRequest,
     ): Response<DisplayResponse.Posted>
 
@@ -81,7 +81,7 @@ interface DisplayApi {
     // /display/{displayId}/like
     @POST("/display/{displayId}/like")
     fun likeDisplay(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
     ): Response<String>
 
     // PATCH
@@ -90,14 +90,14 @@ interface DisplayApi {
     // /display/{displayId}/favorite
     @PATCH("/display/{displayId}/favorite")
     fun favoriteDisplay(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
     ): Response<String>
 
     // DELETE
     // /display/{displayId}/storage
     @DELETE("/display/{displayId}/storage")
-    fun deleteDisplayStorage(
-        @Path("displayId") displayId: String,
+    fun deleteDisplayFromStorage(
+        @Path("displayId") displayId: Long,
     ): Response<String>
 
     // /display/{displayId} <- not needed
@@ -107,6 +107,6 @@ interface DisplayApi {
     // /display/{displayId}/like
     @DELETE("/display/{displayId}/like")
     fun unlikeDisplay(
-        @Path("displayId") displayId: String,
+        @Path("displayId") displayId: Long,
     ): Response<String>
 }
