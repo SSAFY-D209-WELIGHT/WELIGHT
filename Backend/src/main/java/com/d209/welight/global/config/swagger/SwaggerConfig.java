@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-    public static final String URL = "https://k11d209.p.ssafy.io:8080";
+    public static final String URL = "http://k11d209.p.ssafy.io:8080";
 
     @Bean
     public OpenAPI openAPI() {
