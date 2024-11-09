@@ -22,6 +22,6 @@ class UserRepositoryImpl @Inject constructor(
             apiHandler {
                 userApi.login(LoginRequest(userId, userNickname, userProfileImg, userLogin))
             }
-        return response.simplify()
+        return response
     }
 }

@@ -95,20 +95,33 @@ class LoginViewModel @Inject constructor(
     // 백엔드 통신
     fun loginUser(loginRequest: LoginRequest) {
         viewModelScope.launch {
-            Log.d("LoginViewModel", "viewModelScope launched for loginUser")
+            Log.d("LoginViewModel", "Attempting login with request: $loginRequest")
             try {
+                // api 호출
                 val response = userApi.login(loginRequest)
-                Log.d("LoginViewModel", "Response code: ${response.code()}")  // 응답 코드 확인용 로그
-                if (response.isSuccessful) {
-                    response.body()?.data?.let { tokenHolder ->
-                        dataStoreRepository.saveAccessToken(tokenHolder.accessToken)
+                Log.d("LoginViewModel", "Raw response: $response")
+
+                when {
+                    response.isSuccessful -> {
+                        val tokenHolder = response.body()
+                        Log.d("LoginViewModel", "TokenHolder received: $tokenHolder")
+
+                        if (tokenHolder != null) {
+                            dataStoreRepository.saveAccessToken(tokenHolder.accessToken)
+                            Log.d("LoginViewModel", "Access token saved successfully")
+                        } else {
+                            Log.e("LoginViewModel", "TokenHolder is null")
+                        }
                     }
-                    Log.e("LoginViewModel", "Login successful, response: ${response.body()}")
-                } else {
-                    Log.e("LoginViewModel", "Login failed with error body: ${response.errorBody()?.string()}")
+                    else -> {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("LoginViewModel", "Login failed. Code: ${response.code()}")
+                        Log.e("LoginViewModel", "Error body: $errorBody")
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("LoginViewModel", "Login request failed due to exception", e)
+                Log.e("LoginViewModel", "Login request failed", e)
+                e.printStackTrace()
             }
         }
     }

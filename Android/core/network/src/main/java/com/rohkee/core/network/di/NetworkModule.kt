@@ -40,13 +40,31 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(accessTokenInterceptor: AccessTokenInterceptor) =
-        OkHttpClient.Builder().run {
-            addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            addNetworkInterceptor(accessTokenInterceptor)
-            connectTimeout(20, TimeUnit.SECONDS)
-            readTimeout(20, TimeUnit.SECONDS)
-            writeTimeout(20, TimeUnit.SECONDS)
-            build()
+    fun provideOkHttpClient(): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            Log.d("OkHttp", message)
+        }.apply {
+            level = HttpLoggingInterceptor.Level.BODY
         }
+
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor { chain ->
+                val original = chain.request()
+                Log.d("OkHttp", "Sending request: ${original.url}")
+
+                val request = original.newBuilder()
+                    .header("Content-Type", "application/json")
+                    .method(original.method, original.body)
+                    .build()
+
+                chain.proceed(request)
+            }
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build().also {
+                Log.d("NetworkModule", "OkHttpClient created with logging")
+            }
+    }
 }
