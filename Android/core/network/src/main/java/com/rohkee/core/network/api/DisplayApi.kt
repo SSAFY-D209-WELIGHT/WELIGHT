@@ -75,7 +75,11 @@ interface DisplayApi {
         @Body request: DisplayRequest,
     ): Response<DisplayResponse.Posted>
 
-    // TODO : /display/{displayId}/storage
+    // /display/{displayId}/storage
+    @POST("/display/{displayId}/storage")
+    fun importDisplayToMyStorage(
+        @Path("displayId") displayId: Long,
+    ): Response<String>
 
     // TODO : /display/{displayId}/comment
 

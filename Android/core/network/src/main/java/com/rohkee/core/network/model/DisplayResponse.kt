@@ -28,6 +28,14 @@ sealed interface DisplayResponse {
         val tags: List<String> = emptyList(),
         @SerialName("owner")
         val isOwner: Boolean,
+        @SerialName("likeCount")
+        val likes: Int,
+        @SerialName("downloadCount")
+        val downloads: Int,
+        @SerialName("commentCount")
+        val comments: Int,
+        @SerialName("favorite")
+        val favorite: Boolean,
     ) : DisplayResponse
 
     @Serializable

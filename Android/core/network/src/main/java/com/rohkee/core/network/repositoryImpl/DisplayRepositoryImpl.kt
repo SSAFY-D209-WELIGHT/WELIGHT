@@ -33,10 +33,7 @@ class DisplayRepositoryImpl @Inject constructor(
             },
         ).flow
 
-    override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> =
-        apiHandler {
-            displayApi.getDisplayDetail(id)
-        }
+    override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> = apiHandler { displayApi.getDisplayDetail(id) }
 
     override suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
         Pager(
@@ -53,10 +50,9 @@ class DisplayRepositoryImpl @Inject constructor(
             },
         ).flow
 
-    override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> =
-        apiHandler {
-            displayApi.getDisplayEdit(id)
-        }
+    override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> = apiHandler { displayApi.getDisplayEdit(id) }
+
+    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<String> = apiHandler { displayApi.importDisplayToMyStorage(id) }
 
     override suspend fun searchDisplayList(
         keyword: String,
@@ -78,14 +74,9 @@ class DisplayRepositoryImpl @Inject constructor(
         ).flow
 
     override suspend fun createDisplay(display: DisplayRequest): ApiResponse<DisplayResponse.Posted> =
-        apiHandler {
-            displayApi.createDisplay(display)
-        }
+        apiHandler { displayApi.createDisplay(display) }
 
-    override suspend fun duplicateDisplay(id: Long): ApiResponse<DisplayResponse.Posted> =
-        apiHandler {
-            displayApi.duplicateDisplay(id)
-        }
+    override suspend fun duplicateDisplay(id: Long): ApiResponse<DisplayResponse.Posted> = apiHandler { displayApi.duplicateDisplay(id) }
 
     override suspend fun editDisplay(
         id: Long,
