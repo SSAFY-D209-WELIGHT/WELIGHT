@@ -13,25 +13,18 @@ enum class SortType {
 }
 
 interface DisplayRepository {
-    suspend fun getMyDisplayList(
-        sort: SortType,
-    ): Flow<PagingData<DisplayResponse.Short>>
+    suspend fun getMyDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>>
 
     suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail>
 
-    suspend fun getDisplayList(
-        page: Int,
-        size: Int,
-        sort: SortType,
-    ): ApiResponse<List<DisplayResponse.Short>>
+    suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>>
 
     suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable>
 
     suspend fun searchDisplayList(
-        page: Int,
-        size: Int,
+        keyword: String,
         sort: SortType,
-    ): ApiResponse<List<DisplayResponse.Short>>
+    ): Flow<PagingData<DisplayResponse.Short>>
 
     suspend fun createDisplay(display: DisplayRequest): ApiResponse<DisplayResponse.Posted>
 

@@ -8,7 +8,8 @@ import com.rohkee.core.network.api.DisplayApi
 import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
-import com.rohkee.core.network.paging.DisplayMyListPagingSource
+import com.rohkee.core.network.paging.DisplayListPagingSource
+import com.rohkee.core.network.paging.DisplaySearchPagingSource
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +18,48 @@ import javax.inject.Inject
 class DisplayRepositoryImpl @Inject constructor(
     private val displayApi: DisplayApi,
 ) : DisplayRepository {
-    override suspend fun getMyDisplayList(
+    override suspend fun getMyDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2,
+                ),
+            pagingSourceFactory = {
+                DisplayListPagingSource(
+                    displayApi::getMyDisplayList,
+                    sortType = sort,
+                )
+            },
+        ).flow
+
+    override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> =
+        apiHandler {
+            displayApi.getDisplayDetail(id)
+        }
+
+    override suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2,
+                ),
+            pagingSourceFactory = {
+                DisplayListPagingSource(
+                    displayApi::getDisplayList,
+                    sortType = sort,
+                )
+            },
+        ).flow
+
+    override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> =
+        apiHandler {
+            displayApi.getDisplayEdit(id)
+        }
+
+    override suspend fun searchDisplayList(
+        keyword: String,
         sort: SortType,
     ): Flow<PagingData<DisplayResponse.Short>> =
         Pager(
@@ -26,44 +68,14 @@ class DisplayRepositoryImpl @Inject constructor(
                     pageSize = 10,
                     prefetchDistance = 2,
                 ),
-            pagingSourceFactory = { DisplayMyListPagingSource(displayApi, sortType = sort) },
+            pagingSourceFactory = {
+                DisplaySearchPagingSource(
+                    displayApi::searchDisplayList,
+                    keyword,
+                    sortType = sort,
+                )
+            },
         ).flow
-
-    override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> =
-        apiHandler {
-            displayApi.getDisplayDetail(id)
-        }
-
-    override suspend fun getDisplayList(
-        page: Int,
-        size: Int,
-        sort: SortType,
-    ): ApiResponse<List<DisplayResponse.Short>> =
-        apiHandler {
-            displayApi.getDisplayList(
-                page = page,
-                size = size,
-                sort = sort.name,
-            )
-        }
-
-    override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> =
-        apiHandler {
-            displayApi.getDisplayEdit(id)
-        }
-
-    override suspend fun searchDisplayList(
-        page: Int,
-        size: Int,
-        sort: SortType,
-    ): ApiResponse<List<DisplayResponse.Short>> =
-        apiHandler {
-            displayApi.searchDisplayList(
-                page = page,
-                size = size,
-                sort = sort.name,
-            )
-        }
 
     override suspend fun createDisplay(display: DisplayRequest): ApiResponse<DisplayResponse.Posted> =
         apiHandler {
