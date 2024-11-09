@@ -226,11 +226,19 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 사용자의 디스플레이 목록 조회
             List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()
-                .map(display -> DisplayListResponse.DisplayInfo.builder()
-                    .displayUid(display.getDisplayUid())
-                    .displayThumbnail(display.getDisplayThumbnailUrl())
-                    .build())
-                .collect(Collectors.toList());
+                    .map(display -> {
+                        // DisplayStorage에서 즐겨찾기 여부 확인
+                        boolean isFavorite = displayStorageRepository.findByUserAndDisplay(user.get(), display)
+                                .map(DisplayStorage::getIsFavorites)
+                                .orElse(false);
+
+                        return DisplayListResponse.DisplayInfo.builder()
+                                .displayUid(display.getDisplayUid())
+                                .displayThumbnail(display.getDisplayThumbnailUrl())
+                                .isFavorite(isFavorite)  // 즐겨찾기 여부 추가
+                                .build();
+                    })
+                    .collect(Collectors.toList());
 
             return DisplayListResponse.builder()
                 .currentPage(pageable.getPageNumber())
