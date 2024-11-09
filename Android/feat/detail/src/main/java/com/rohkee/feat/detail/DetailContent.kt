@@ -6,6 +6,8 @@ import androidx.compose.ui.Modifier
 @Composable
 fun DetailContent(
     modifier: Modifier = Modifier,
+    state: DetailState,
+    onIntent: (DetailIntent) -> Unit
 ) {
 
 }
