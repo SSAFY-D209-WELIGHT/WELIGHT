@@ -16,3 +16,18 @@ fun <T : ResponseBody<R>, R : Any> ApiResponse<T>.simplify(): ApiResponse<R> =
             )
         }
     }
+
+suspend fun <T> ApiResponse<T>.handle(
+    onSuccess: suspend (T?) -> Unit,
+    onError: suspend (errorCode: Int?, message: String?) -> Unit,
+) {
+    when (this) {
+        is ApiResponse.Success -> {
+            onSuccess(this.body)
+        }
+
+        is ApiResponse.Error -> {
+            onError(this.errorCode, this.errorMessage)
+        }
+    }
+}
