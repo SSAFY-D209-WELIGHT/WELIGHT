@@ -29,7 +29,7 @@ public interface DisplayService {
     DisplayListResponse getMyDisplayList(String userId, Pageable pageable);
 
     // 디스플레이 복제
-    Long duplicateDisplay(Long displayId, String userId);
+    DisplayCreateResponse duplicateDisplay(Long displayId, String userId);
     void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay);
     void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId);
     void duplicateBackground(DisplayBackground originalBackground, Display newDisplay);

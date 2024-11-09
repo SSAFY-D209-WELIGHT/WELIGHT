@@ -260,7 +260,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
-    public Long duplicateDisplay(Long displayId, String userId) {
+    public DisplayCreateResponse duplicateDisplay(Long displayId, String userId) {
         // 원본 디스플레이 조회
         Display originalDisplay = displayRepository.findById(displayId)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
@@ -299,7 +299,6 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 디스플레이 정보 저장
         Display savedDisplay = displayRepository.save(newDisplay);
-        Long newDisplayId = savedDisplay.getDisplayUid();
 
         // 배경 복제
         duplicateBackground(originalDisplay.getBackground(), savedDisplay);
@@ -310,7 +309,12 @@ public class DisplayServiceImpl implements DisplayService {
         // 이미지 복제
         duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
 
-        return newDisplayId;
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(savedDisplay.getDisplayUid())
+                .displayName(savedDisplay.getDisplayName())
+                .message("디스플레이가 성공적으로 복제되었습니다.")
+                .build();
     }
 
     @Override

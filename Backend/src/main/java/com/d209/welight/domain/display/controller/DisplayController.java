@@ -134,17 +134,17 @@ public class DisplayController {
 
     @PostMapping("/{displayId}/duplicate")
     @Operation(summary = "디스플레이 복제", description = "선택한 디스플레이를 복제합니다.")
-    public ResponseEntity<String> duplicateDisplay(
+    public ResponseEntity<?> duplicateDisplay(
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
             String userId = userDetails.getUsername();
-            Long newDisplayId = displayService.duplicateDisplay(displayId, userId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(String.format("디스플레이 복제에 성공했습니다!\n복제된 디스플레이 Uid: %d", newDisplayId));
+            DisplayCreateResponse response = displayService.duplicateDisplay(displayId, userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (EntityNotFoundException e) {
             log.error("디스플레이 복제 중 엔티티를 찾을 수 없음: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("디스플레이 복제 중 예상치 못한 오류 발생: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
