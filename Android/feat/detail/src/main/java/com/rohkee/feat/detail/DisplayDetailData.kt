@@ -10,8 +10,9 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
-class DisplayDetailData(
+data class DisplayDetailData(
     val displayId: Long = 0,
+    val thumbnailUrl: String = "",
     val isAuthor: Boolean = false,
     val isPublished: Boolean = false,
     val isFavorite: Boolean = false,
@@ -29,6 +30,7 @@ class DisplayDetailData(
     fun toState(): DetailState =
         DetailState.Loaded(
             displayId = displayId,
+            thumbnailUrl = thumbnailUrl,
             detailInfoState =
                 if (isPublished) {
                     DetailInfoState.Loaded.Shared(

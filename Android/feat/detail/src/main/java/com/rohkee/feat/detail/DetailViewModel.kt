@@ -5,7 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rohkee.core.network.repository.DisplayRepository
+import com.rohkee.core.network.util.handle
+import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
+import com.rohkee.core.ui.component.display.editor.DisplayImageState
+import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,7 +34,7 @@ class DetailViewModel @Inject constructor(
     val detailState: StateFlow<DetailState> =
         detailStateHolder
             .onStart {
-                // TODO : init
+                loadData()
             }.map { data ->
                 data.toState()
             }.stateIn(
@@ -39,10 +46,143 @@ class DetailViewModel @Inject constructor(
     val detailEvent = MutableSharedFlow<DetailEvent>()
 
     fun onIntent(intent: DetailIntent) {
-
+        when (intent) {
+            DetailIntent.Comment -> openComments()
+            DetailIntent.Delete -> deleteDisplay()
+            DetailIntent.Download -> download()
+            DetailIntent.Duplicate -> duplicateDisplay()
+            DetailIntent.Edit -> editDisplay()
+            DetailIntent.Post -> postToBoard()
+            DetailIntent.ToggleFavorite -> toggleFavorite()
+            DetailIntent.ToggleLike -> toggleLike()
+            DetailIntent.ToggleUI -> TODO()
+            DetailIntent.ExitPage -> TODO()
+        }
     }
 
     private suspend fun loadData() {
+        displayRepository.getDisplayDetail(id = id).handle(
+            onSuccess = { response ->
+                response?.let { data ->
+                    detailStateHolder.emit(
+                        DisplayDetailData(
+                            displayId = id,
+                            thumbnailUrl = data.thumbnailUrl,
+                            isAuthor = data.isOwner,
+                            isPublished = data.posted,
+                            isFavorite = data.favorite,
+                            title = data.title,
+                            tags = data.tags.toPersistentList(),
+                            author = "", // TODO : author name
+                            liked = false, // TODO : liked,
+                            like = data.likes,
+                            download = data.downloads,
+                            comment = data.comments,
+                            displayImageState = DisplayImageState(),
+                            displayTextState = DisplayTextState(),
+                            displayBackgroundState = DisplayBackgroundState(),
+                        ),
+                    )
+                }
+            },
+            onError = { _, _ -> },
+        )
+    }
 
+    private fun toggleFavorite() {
+        viewModelScope.launch {
+            displayRepository.favoriteDisplay(id).handle(
+                onSuccess = {
+                    detailStateHolder.emit(
+                        detailStateHolder.value.copy(
+                            isFavorite = !detailStateHolder.value.isFavorite,
+                        ),
+                    )
+                },
+                onError = { _, _ -> },
+            )
+        }
+    }
+
+    private fun toggleLike() {
+        viewModelScope.launch {
+            if (detailStateHolder.value.liked) {
+                displayRepository.unlikeDisplay(id).handle(
+                    onSuccess = {
+                        detailStateHolder.update {
+                            it.copy(
+                                liked = false,
+                                like = it.like - 1,
+                            )
+                        }
+                    },
+                    onError = { _, _ -> },
+                )
+            } else {
+                displayRepository.likeDisplay(id).handle(
+                    onSuccess = {
+                        detailStateHolder.update {
+                            it.copy(
+                                liked = true,
+                                like = it.like + 1,
+                            )
+                        }
+                    },
+                    onError = { _, _ -> },
+                )
+            }
+        }
+    }
+
+    private fun download() {
+        viewModelScope.launch {
+            displayRepository.importDisplayToMyStorage(id).handle(
+                onSuccess = {
+                    detailStateHolder.update {
+                        it.copy(download = it.download + 1)
+                    }
+                    detailEvent.emit(DetailEvent.Download.Success)
+                },
+                onError = { _, _ -> detailEvent.emit(DetailEvent.Download.Error) },
+            )
+        }
+    }
+
+    private fun openComments() {
+        // TODO : open comments
+    }
+
+    private fun postToBoard() {
+        viewModelScope.launch {
+            // TODO : post to board
+        }
+    }
+
+    private fun editDisplay() {
+        viewModelScope.launch {
+            detailEvent.emit(DetailEvent.EditDisplay(displayId = id))
+        }
+    }
+
+    private fun duplicateDisplay() {
+        viewModelScope.launch {
+            displayRepository.duplicateDisplay(id).handle(
+                onSuccess = {
+                    detailEvent.emit(DetailEvent.Duplicate.Success(displayId = id))
+                },
+                onError = { _, _ -> detailEvent.emit(DetailEvent.Duplicate.Error) },
+            )
+        }
+    }
+
+    private fun deleteDisplay() {
+        viewModelScope.launch {
+            displayRepository.deleteDisplayFromStorage(id).handle(
+                onSuccess = {
+                    detailEvent.emit(DetailEvent.Delete.Success)
+                },
+                onError = { _, _ -> detailEvent.emit(DetailEvent.Delete.Error) },
+            )
+        }
     }
 }

@@ -17,7 +17,13 @@ fun DetailScreen(
     detailViewModel.detailEvent.collectWithLifecycle { event ->
         when (event) {
             DetailEvent.ExitPage -> TODO()
-            is DetailEvent.ShowSnackBar -> TODO()
+            DetailEvent.Download.Success -> TODO()
+            DetailEvent.Download.Error -> TODO()
+            DetailEvent.Delete.Error -> TODO()
+            DetailEvent.Delete.Success -> TODO()
+            DetailEvent.Duplicate.Error -> TODO()
+            is DetailEvent.Duplicate.Success -> TODO()
+            is DetailEvent.EditDisplay -> TODO()
         }
     }
 

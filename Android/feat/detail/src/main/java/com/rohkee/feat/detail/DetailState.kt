@@ -14,6 +14,7 @@ sealed interface DetailState {
     @Immutable
     data class Loaded(
         val displayId: Long,
+        val thumbnailUrl: String,
         val detailAppBarState: DetailAppBarState,
         val detailInfoState: DetailInfoState,
         val displayImageState: DisplayImageState,
