@@ -749,7 +749,9 @@ public class DisplayServiceImpl implements DisplayService {
         }
 
         // 3. 저장소에서 삭제
-        displayStorageRepository.deleteByUserAndDisplay(user, display);
+        DisplayStorage storedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
+                .orElseThrow(() -> new EntityNotFoundException("저장한 디스플레이가 아닙니다."));
+        displayStorageRepository.delete(storedDisplay);
 
         // 4. Display의 Display_download_count 횟수 -1
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
@@ -812,7 +814,9 @@ public class DisplayServiceImpl implements DisplayService {
         }
 
         // 3. displayLike 삭제
-        displayLikeRepository.deleteByUserAndDisplay(user, display);
+        DisplayLike displayLike = displayLikeRepository.findByUserAndDisplay(user, display)
+                .orElseThrow(() -> new EntityNotFoundException("좋아요한 디스플레이가 아닙니다."));
+        displayLikeRepository.delete(displayLike);
 
         // 4. Display의 Display_like_count 횟수 -1
         display.setDisplayLikeCount(display.getDisplayLikeCount() - 1);
