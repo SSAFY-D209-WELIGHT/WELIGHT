@@ -15,7 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Setting(settingPath = "/elasticsearch/settings/display-settings.json")
 public class DisplayDocument {
     @Id
     @Field(name = "display_uid", type = FieldType.Long)
@@ -26,7 +25,7 @@ public class DisplayDocument {
     private Long creatorUid;
 
     // 디스플레이 기본 정보
-    @Field(name = "display_name", type = FieldType.Text, analyzer = "korean_analyzer")
+    @Field(name = "display_name", type = FieldType.Text)
     private String displayName;
 
     @Field(name = "display_thumbnail_url", type = FieldType.Keyword)
@@ -46,10 +45,10 @@ public class DisplayDocument {
     private Long displayLikeCount;
 
     // 검색용 텍스트 정보
-    @Field(name = "tags", type = FieldType.Text, analyzer = "korean_analyzer")
+    @Field(name = "tags", type = FieldType.Text)
     private List<String> tags;
 
-    @Field(name = "display_texts", type = FieldType.Text, analyzer = "korean_analyzer")
+    @Field(name = "display_texts", type = FieldType.Text)
     private List<String> displayTexts;
 
 

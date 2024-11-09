@@ -34,7 +34,9 @@ spring:
           enabled: true
         properties:
           index:
-            setting-path: classpath:elasticsearch/settings/ # 세팅 파일 위치
+            create: true
+            setting-path: classpath:elasticsearch/settings/
+            mapping-path: classpath:elasticsearch/mappings/
 
 
 server:
