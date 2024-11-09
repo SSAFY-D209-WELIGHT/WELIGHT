@@ -89,6 +89,8 @@ private fun LoadedContent(
 ) {
     val displayList = state.displayListFlow.collectAsLazyPagingItems()
 
+    if (displayList.itemCount == 0) return NoContent(modifier = modifier)
+
     InfiniteHorizontalPager(
         modifier = modifier,
         pageCount = displayList.itemCount,
@@ -137,9 +139,7 @@ private fun StorageLoadedPreview() {
                 ),
             ) {
                 object : androidx.paging.PagingSource<Int, DisplayCardState>() {
-                    override fun getRefreshKey(state: PagingState<Int, DisplayCardState>): Int? {
-                        return state.anchorPosition
-                    }
+                    override fun getRefreshKey(state: PagingState<Int, DisplayCardState>): Int? = state.anchorPosition
 
                     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, DisplayCardState> {
                         val currentPage = params.key ?: 1
