@@ -1,6 +1,8 @@
 package com.rohkee.core.network.di
 
+import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.UserRepository
+import com.rohkee.core.network.repositoryImpl.DisplayRepositoryImpl
 import com.rohkee.core.network.repositoryImpl.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -14,4 +16,8 @@ interface RepositoryModule {
     @Binds
     @Singleton
     fun provideUserRepository(userRepositoryImpl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    fun provideDisplayRepository(displayRepositoryImpl: DisplayRepositoryImpl): DisplayRepository
 }
