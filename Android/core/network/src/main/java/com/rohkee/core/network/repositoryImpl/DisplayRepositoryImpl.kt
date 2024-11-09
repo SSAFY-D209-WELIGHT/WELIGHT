@@ -6,6 +6,7 @@ import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 import com.rohkee.core.network.repository.DisplayRepository
+import com.rohkee.core.network.repository.SortType
 import javax.inject.Inject
 
 class DisplayRepositoryImpl @Inject constructor(
@@ -14,13 +15,13 @@ class DisplayRepositoryImpl @Inject constructor(
     override suspend fun getMyDisplayList(
         page: Int,
         size: Int,
-        sort: String,
+        sort: SortType,
     ): ApiResponse<List<DisplayResponse.Short>> =
         apiHandler {
             displayApi.getMyDisplayList(
                 page = page,
                 size = size,
-                sort = sort,
+                sort = sort.name,
             )
         }
 
@@ -32,13 +33,13 @@ class DisplayRepositoryImpl @Inject constructor(
     override suspend fun getDisplayList(
         page: Int,
         size: Int,
-        sort: String,
+        sort: SortType,
     ): ApiResponse<List<DisplayResponse.Short>> =
         apiHandler {
             displayApi.getDisplayList(
                 page = page,
                 size = size,
-                sort = sort,
+                sort = sort.name,
             )
         }
 
@@ -50,13 +51,13 @@ class DisplayRepositoryImpl @Inject constructor(
     override suspend fun searchDisplayList(
         page: Int,
         size: Int,
-        sort: String,
+        sort: SortType,
     ): ApiResponse<List<DisplayResponse.Short>> =
         apiHandler {
             displayApi.searchDisplayList(
                 page = page,
                 size = size,
-                sort = sort,
+                sort = sort.name,
             )
         }
 

@@ -4,11 +4,17 @@ import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 
+enum class SortType {
+    LATEST,
+    LIKES,
+    DOWNLOADS,
+}
+
 interface DisplayRepository {
     suspend fun getMyDisplayList(
         page: Int,
         size: Int,
-        sort: String,
+        sort: SortType,
     ): ApiResponse<List<DisplayResponse.Short>>
 
     suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail>
@@ -16,7 +22,7 @@ interface DisplayRepository {
     suspend fun getDisplayList(
         page: Int,
         size: Int,
-        sort: String,
+        sort: SortType,
     ): ApiResponse<List<DisplayResponse.Short>>
 
     suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable>
@@ -24,7 +30,7 @@ interface DisplayRepository {
     suspend fun searchDisplayList(
         page: Int,
         size: Int,
-        sort: String,
+        sort: SortType,
     ): ApiResponse<List<DisplayResponse.Short>>
 
     suspend fun createDisplay(display: DisplayRequest): ApiResponse<DisplayResponse.Posted>
