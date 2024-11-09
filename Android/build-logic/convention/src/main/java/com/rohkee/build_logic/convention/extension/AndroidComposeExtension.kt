@@ -2,20 +2,18 @@ package com.rohkee.build_logic.convention.extension
 
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.dependencies
 
-internal fun Project.configureAndroidCompose(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
-) {
+internal fun Project.configureAndroidCompose(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
-        with(pluginManager){
-            apply(libs.findPlugin("kotlin.compose").get().get().pluginId)
-        }
+        apply(plugin = "org.jetbrains.kotlin.plugin.compose")
+        apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
 
-        buildFeatures{
+        buildFeatures {
             compose = true
         }
-        composeOptions{
+        composeOptions {
             kotlinCompilerExtensionVersion = "1.5.1"
         }
 
@@ -32,9 +30,19 @@ internal fun Project.configureAndroidCompose(
             add("implementation", libs.findLibrary("androidx.lifecycle.viewmodel").get())
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.test.manifest").get())
-            add("androidTestImplementation", libs.findLibrary("androidx.compose.ui.test.junit4").get())
-            add("implementation", libs.findLibrary("androidx.lifecycle.runtime.compose.android").get())
+            add(
+                "androidTestImplementation",
+                libs.findLibrary("androidx.compose.ui.test.junit4").get(),
+            )
+            add(
+                "implementation",
+                libs.findLibrary("androidx.lifecycle.runtime.compose.android").get(),
+            )
             add("implementation", libs.findLibrary("kotlinx.collections.immutable").get())
+
+            // compose navigation
+            add("implementation", libs.findLibrary("kotlinx.serialization.core").get())
+            add("implementation", libs.findLibrary("androidx.navigation.compose").get())
         }
     }
 }
