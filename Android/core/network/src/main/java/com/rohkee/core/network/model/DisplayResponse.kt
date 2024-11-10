@@ -73,8 +73,16 @@ sealed interface DisplayResponse {
 data class DisplayImage(
     @SerialName("displayImgUrl")
     val url: String,
-    @SerialName("displayImgPosition") // TODO : change needed
-    val position: String,
+    @SerialName("displayImgRotation")
+    val rotation: Float,
+    @SerialName("displayImgScale")
+    val scale: Float,
+    @SerialName("displayImgOffsetx")
+    val offsetX: Float,
+    @SerialName("displayImgOffsety")
+    val offsetY: Float,
+    @SerialName("displayImgColor")
+    val color: String,
 )
 
 @Serializable
@@ -87,8 +95,12 @@ data class DisplayText(
     val font: String,
     @SerialName("displayTextRotation")
     val rotation: Float,
-    @SerialName("displayTextPosition") // TODO : change needed
-    val position: String,
+    @SerialName("displayTextScale")
+    val scale: Float,
+    @SerialName("displayTextOffsetx")
+    val offsetX: Float,
+    @SerialName("displayTextOffsety")
+    val offsetY: Float,
 )
 
 @Serializable

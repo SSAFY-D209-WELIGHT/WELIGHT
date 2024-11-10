@@ -2,6 +2,7 @@ package com.rohkee.core.network.api
 
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
+import com.rohkee.core.network.model.PageResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -17,75 +18,75 @@ interface DisplayApi {
      * /display/mylist
      * @param sort LATEST, LIKES, DOWNLOADS
      */
-    @GET("/display/mylist")
-    fun getMyDisplayList(
+    @GET("display/mylist")
+    suspend fun getMyDisplayList(
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<List<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.Short>>
 
     // /display/{displayId}
-    @GET("/display/{displayId}")
-    fun getDisplayDetail(
+    @GET("display/{displayId}")
+    suspend fun getDisplayDetail(
         @Path("displayId") displayId: Long,
     ): Response<DisplayResponse.Detail>
 
     // /display
-    @GET("/display")
-    fun getDisplayList(
+    @GET("display")
+    suspend fun getDisplayList(
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<List<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.Short>>
 
     // /display/{displayId}/edit
-    @GET("/display/{displayId}/edit")
-    fun getDisplayEdit(
+    @GET("display/{displayId}/edit")
+    suspend fun getDisplayEdit(
         @Path("displayId") displayId: Long,
     ): Response<DisplayResponse.Editable>
 
     // /display/search
-    @GET("/display/search")
-    fun searchDisplayList(
+    @GET("display/search")
+    suspend fun searchDisplayList(
         @Query("keyword") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<List<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.Short>>
 
     // TODO : /display/{displayId}/comment
 
     // POST
     // /display
-    @POST("/display")
-    fun createDisplay(
+    @POST("display")
+    suspend fun createDisplay(
         @Body request: DisplayRequest,
     ): Response<DisplayResponse.Posted>
 
     // /display/{displayId}/duplicate
-    @POST("/display/{displayId}/duplicate")
-    fun duplicateDisplay(
+    @POST("display/{displayId}/duplicate")
+    suspend fun duplicateDisplay(
         @Path("displayId") displayId: Long,
     ): Response<DisplayResponse.Posted>
 
     // /display/{displayId}/edit
-    @POST("/display/{displayId}/edit")
-    fun editDisplay(
+    @POST("display/{displayId}/edit")
+    suspend fun editDisplay(
         @Path("displayId") displayId: Long,
         @Body request: DisplayRequest,
     ): Response<DisplayResponse.Posted>
 
     // /display/{displayId}/storage
-    @POST("/display/{displayId}/storage")
-    fun importDisplayToMyStorage(
+    @POST("display/{displayId}/storage")
+    suspend fun importDisplayToMyStorage(
         @Path("displayId") displayId: Long,
     ): Response<String>
 
     // TODO : /display/{displayId}/comment
 
     // /display/{displayId}/like
-    @POST("/display/{displayId}/like")
-    fun likeDisplay(
+    @POST("display/{displayId}/like")
+    suspend fun likeDisplay(
         @Path("displayId") displayId: Long,
     ): Response<String>
 
@@ -93,15 +94,15 @@ interface DisplayApi {
     // TODO : /display/{displayId}/comment
 
     // /display/{displayId}/favorite
-    @PATCH("/display/{displayId}/favorite")
-    fun favoriteDisplay(
+    @PATCH("display/{displayId}/favorite")
+    suspend fun favoriteDisplay(
         @Path("displayId") displayId: Long,
     ): Response<String>
 
     // DELETE
     // /display/{displayId}/storage
-    @DELETE("/display/{displayId}/storage")
-    fun deleteDisplayFromStorage(
+    @DELETE("display/{displayId}/storage")
+    suspend fun deleteDisplayFromStorage(
         @Path("displayId") displayId: Long,
     ): Response<String>
 
@@ -110,8 +111,8 @@ interface DisplayApi {
     // TODO : /display/{displayId}/comment
 
     // /display/{displayId}/like
-    @DELETE("/display/{displayId}/like")
-    fun unlikeDisplay(
+    @DELETE("display/{displayId}/like")
+    suspend fun unlikeDisplay(
         @Path("displayId") displayId: Long,
     ): Response<String>
 }

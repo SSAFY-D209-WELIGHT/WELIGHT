@@ -1,5 +1,6 @@
 package com.rohkee.core.network.repositoryImpl
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -13,6 +14,7 @@ import com.rohkee.core.network.paging.DisplaySearchPagingSource
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DisplayRepositoryImpl @Inject constructor(
@@ -26,12 +28,13 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                DisplayListPagingSource(
+                DisplayListPagingSource<DisplayResponse.Short>(
                     displayApi::getMyDisplayList,
                     sortType = sort,
                 )
             },
         ).flow
+
 
     override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> = apiHandler { displayApi.getDisplayDetail(id) }
 
@@ -43,7 +46,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                DisplayListPagingSource(
+                DisplayListPagingSource<DisplayResponse.Short>(
                     displayApi::getDisplayList,
                     sortType = sort,
                 )
@@ -65,7 +68,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                DisplaySearchPagingSource(
+                DisplaySearchPagingSource<DisplayResponse.Short>(
                     displayApi::searchDisplayList,
                     keyword,
                     sortType = sort,
