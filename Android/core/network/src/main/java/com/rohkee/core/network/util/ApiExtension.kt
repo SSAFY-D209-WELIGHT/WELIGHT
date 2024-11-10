@@ -31,3 +31,17 @@ suspend fun <T> ApiResponse<T>.handle(
         }
     }
 }
+
+suspend fun <T, R> ApiResponse<T>.process(
+    onSuccess: suspend (T?) -> R,
+    onError: suspend (errorCode: Int?, message: String?) -> R,
+): R =
+    when (this) {
+        is ApiResponse.Success -> {
+            onSuccess(this.body)
+        }
+
+        is ApiResponse.Error -> {
+            onError(this.errorCode, this.errorMessage)
+        }
+    }
