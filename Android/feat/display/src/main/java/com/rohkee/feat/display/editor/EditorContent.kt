@@ -1,15 +1,26 @@
 package com.rohkee.feat.display.editor
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.rohkee.core.ui.component.appbar.SavableAppBar
 import com.rohkee.core.ui.component.display.editor.BackgroundToolBar
 import com.rohkee.core.ui.component.display.editor.CustomDisplay
@@ -61,6 +72,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
     )
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun EditContent(
     modifier: Modifier = Modifier,
@@ -126,18 +138,44 @@ private fun EditContent(
             )
     }
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val graphicsLayer = rememberGraphicsLayer()
+
+    val writeStorageAccessState = rememberMultiplePermissionsState(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            emptyList()
+        } else {
+            listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+    )
+
     Scaffold(
         modifier = modifier,
     ) { innerPadding ->
-        Box {
-            CustomDisplay(
-                modifier = Modifier.fillMaxSize(),
-                imageState = state.displayImageState,
-                textState = state.displayTextState,
-                backgroundState = state.displayBackgroundState,
-                onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
-                onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier =
+                    Modifier.fillMaxSize().drawWithCache {
+                        onDrawWithContent {
+                            graphicsLayer.record {
+                                this@onDrawWithContent.drawContent()
+                            }
+                            drawLayer(graphicsLayer)
+                        }
+                    },
+            ) {
+                CustomDisplay(
+                    modifier = Modifier.fillMaxSize(),
+                    imageState = state.displayImageState,
+                    textState = state.displayTextState,
+                    backgroundState = state.displayBackgroundState,
+                    onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
+                    onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
+                )
+            }
+
             SavableAppBar(
                 modifier =
                     Modifier
@@ -145,7 +183,7 @@ private fun EditContent(
                         .align(Alignment.TopCenter)
                         .padding(top = innerPadding.calculateTopPadding()),
                 onCloseClick = { onIntent(EditorIntent.AttemptExitPage) },
-                onSaveClick = { onIntent(EditorIntent.Save) },
+                onSaveClick = { onIntent(EditorIntent.Save(context, graphicsLayer)) },
             )
             BottomBarContent(
                 modifier =

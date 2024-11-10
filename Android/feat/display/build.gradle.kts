@@ -14,4 +14,7 @@ dependencies {
 
     //serialization
     implementation(libs.kotlinx.serialization.core)
+
+    // permissions
+    implementation(libs.accompanist.permissions)
 }

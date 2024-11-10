@@ -1,6 +1,8 @@
 package com.rohkee.feat.display.editor
 
+import android.content.Context
 import android.net.Uri
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
@@ -9,7 +11,10 @@ import com.rohkee.core.ui.model.CustomColor
 sealed interface EditorIntent {
     data object AttemptExitPage : EditorIntent
 
-    data object Save : EditorIntent
+    data class Save(
+        val context: Context,
+        val bitmap: GraphicsLayer,
+    ) : EditorIntent
 
     // Text Object
     sealed interface TextObject : EditorIntent {

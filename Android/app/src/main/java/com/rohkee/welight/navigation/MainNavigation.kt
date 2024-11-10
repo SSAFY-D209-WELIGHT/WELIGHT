@@ -6,8 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.rohkee.feat.display.editor.EditorScreen
+import com.rohkee.feat.display.editor.navigation.EditorRoute
 
 @Composable
 fun MainNavigation(
@@ -25,15 +25,14 @@ fun MainNavigation(
         composable<Home> {
             BottomTabSubNavigation(
                 onNavigateToDisplayDetail = { id -> },
-                onNavigateToCreateNewDisplay = { navController.navigate(DisplayEditor()) },
+                onNavigateToCreateNewDisplay = { navController.navigate(EditorRoute(null)) },
             )
         }
 
         composable<DisplayDetail> {
         }
 
-        composable<DisplayEditor> {
-            val displayId = it.toRoute<DisplayEditor>().displayId
+        composable<EditorRoute> {
             EditorScreen(
                 onNavigateToDisplayDetail = { id -> },
                 onPopBackStack = { navController.popBackStack() },

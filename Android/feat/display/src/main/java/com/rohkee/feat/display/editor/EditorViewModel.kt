@@ -1,16 +1,18 @@
 package com.rohkee.feat.display.editor
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.media.MediaScannerConnection
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.rohkee.core.network.model.DisplayBackground
-import com.rohkee.core.network.model.DisplayColor
-import com.rohkee.core.network.model.DisplayImage
-import com.rohkee.core.network.model.DisplayRequest
-import com.rohkee.core.network.model.DisplayText
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.util.handle
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
@@ -21,8 +23,6 @@ import com.rohkee.core.ui.model.ColorType
 import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.util.toComposeColor
 import com.rohkee.core.ui.util.toFontFamily
-import com.rohkee.core.ui.util.toFontName
-import com.rohkee.core.ui.util.toHexString
 import com.rohkee.feat.display.editor.navigation.EditorRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
@@ -36,7 +36,10 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.File
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 @HiltViewModel
 class EditorViewModel @Inject constructor(
@@ -67,9 +70,9 @@ class EditorViewModel @Inject constructor(
                 editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
             }
 
-            EditorIntent.Save -> {
-                // TODO : Save Display
-                emitEvent(EditorEvent.ExitPage)
+            is EditorIntent.Save -> {
+                saveDisplay(intent.context, intent.bitmap)
+                //emitEvent(EditorEvent.ExitPage)
             }
 
             // ImageObject
@@ -124,9 +127,7 @@ class EditorViewModel @Inject constructor(
                 editorStateHolder.updateDialog(dialogState = DialogState.ImageDeleteWarning)
 
             EditorIntent.ImageToolBar.Change -> {
-                // TODO load image
-                val imageSource = null
-                editorStateHolder.updateImage(imageSource = imageSource)
+                emitEvent(EditorEvent.OpenPhotoGallery)
             }
 
             is EditorIntent.ImageToolBar.SelectColor ->
@@ -341,6 +342,71 @@ class EditorViewModel @Inject constructor(
             editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Image) }
         }
     }
+
+    private fun saveDisplay(context: Context, bitmap: GraphicsLayer) {
+        viewModelScope.launch {
+            val bitmap = bitmap.toImageBitmap()
+            val uri = bitmap.asAndroidBitmap().saveToDisk(context)
+
+            editorStateHolder.updateImage(imageSource = uri)
+//            editorStateHolder.value.let { data ->
+//                displayRepository.createDisplay(
+//                    display =
+//                        DisplayRequest(
+//                            title = data.editorInfoState.title,
+//                            tags = data.editorInfoState.tags.toList(),
+//                            thumbnailUrl = TODO(),
+//                            posted = false,
+//                            images =
+//                                listOf(
+//                                    DisplayImage(
+//                                        url = data.editorImageState.imageSource.toString(),
+//                                        color =
+//                                            data.editorImageState.color.primary
+//                                                .toHexString(),
+//                                        scale = data.editorImageState.scale,
+//                                        rotation = data.editorImageState.rotationDegree,
+//                                        offsetX = data.editorImageState.offsetPercentX,
+//                                        offsetY = data.editorImageState.offsetPercentY,
+//                                    ),
+//                                ),
+//                            texts =
+//                                listOf(
+//                                    DisplayText(
+//                                        text = data.editorTextState.text,
+//                                        color =
+//                                            data.editorTextState.color.primary
+//                                                .toHexString(),
+//                                        font = data.editorTextState.font.toFontName(),
+//                                        rotation = data.editorTextState.rotationDegree,
+//                                        scale = data.editorImageState.scale,
+//                                        offsetX = data.editorTextState.offsetPercentX,
+//                                        offsetY = data.editorTextState.offsetPercentY,
+//                                    ),
+//                                ),
+//                            background = DisplayBackground(
+//                                brightness = data.editorBackgroundState.brightness,
+//                                color =
+//                                when(data.editorBackgroundState.color){
+//                                    is CustomColor.Single -> DisplayColor(
+//                                        isSingle = true,
+//                                        color1 = data.editorBackgroundState.color.primary.toHexString(),
+//                                        color2 = data.editorBackgroundState.color.primary.toHexString(),
+//                                        type = ColorType.Radial.name,
+//                                    )
+//                                    is CustomColor.Gradient -> DisplayColor(
+//                                        isSingle = data.editorBackgroundState.color is CustomColor.Single,
+//                                        color1 = data.editorImageState.color.primary.toHexString(),
+//                                        color2 = data.editorImageState.color.primary.toHexString(),
+//                                        type = TODO()
+//                                    )
+//                                }
+//                            ),
+//                        ),
+//                )
+//            }
+        }
+    }
 }
 
 @Immutable
@@ -540,3 +606,42 @@ private fun MutableStateFlow<DisplayEditorData>.deselectObject() =
             .copyWithText(isSelected = false)
             .copyWithImage(isSelected = false)
     }
+
+
+private suspend fun Bitmap.saveToDisk(context: Context): Uri {
+    val file = File(
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+        "screenshot-${System.currentTimeMillis()}.png"
+    )
+
+    file.writeBitmap(this, Bitmap.CompressFormat.PNG, 100)
+
+    return scanFilePath(context, file.path) ?: throw Exception("File could not be saved")
+}
+
+/**
+ * We call [MediaScannerConnection] to index the newly created image inside MediaStore to be visible
+ * for other apps, as well as returning its [MediaStore] Uri
+ */
+private suspend fun scanFilePath(context: Context, filePath: String): Uri? {
+    return suspendCancellableCoroutine { continuation ->
+        MediaScannerConnection.scanFile(
+            context,
+            arrayOf(filePath),
+            arrayOf("image/png")
+        ) { _, scannedUri ->
+            if (scannedUri == null) {
+                continuation.cancel(Exception("File $filePath could not be scanned"))
+            } else {
+                continuation.resume(scannedUri)
+            }
+        }
+    }
+}
+
+private fun File.writeBitmap(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int) {
+    outputStream().use { out ->
+        bitmap.compress(format, quality, out)
+        out.flush()
+    }
+}

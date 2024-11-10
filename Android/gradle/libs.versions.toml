@@ -24,6 +24,7 @@ viewmodel-compose = "2.8.6"
 navigation-compose = "2.8.3"
 lifecycleRuntimeComposeAndroid = "2.8.6"
 pagingCommonAndroid = "3.3.2"
+accompanist = "0.34.0"
 
 # datastore
 androidxDataStore = "1.1.1"
@@ -87,6 +88,9 @@ androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
 androidx-paging-common-android = { group = "androidx.paging", name = "paging-common-android", version.ref = "pagingCommonAndroid" }
+
+# permission
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 
 # datastore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
