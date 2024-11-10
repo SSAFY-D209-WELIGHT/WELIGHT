@@ -21,7 +21,6 @@ import com.rohkee.core.ui.util.collectWithLifecycle
 @Composable
 fun EditorScreen(
     modifier: Modifier = Modifier,
-    displayId: Long? = null,
     editorViewModel: EditorViewModel = hiltViewModel(),
     onNavigateToDisplayDetail: (Long) -> Unit,
     onPopBackStack: () -> Unit,
@@ -47,14 +46,6 @@ fun EditorScreen(
 
     BackHandler {
         editorViewModel.onIntent(EditorIntent.AttemptExitPage)
-    }
-
-    LaunchedEffect(displayId) {
-        if (displayId == null) {
-            editorViewModel.onIntent(EditorIntent.CreateNew)
-        } else {
-            editorViewModel.onIntent(EditorIntent.Load(displayId))
-        }
     }
 
     LaunchedEffect(Unit) {

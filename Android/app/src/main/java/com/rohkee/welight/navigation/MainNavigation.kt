@@ -35,7 +35,6 @@ fun MainNavigation(
         composable<DisplayEditor> {
             val displayId = it.toRoute<DisplayEditor>().displayId
             EditorScreen(
-                displayId = displayId,
                 onNavigateToDisplayDetail = { id -> },
                 onPopBackStack = { navController.popBackStack() },
             )

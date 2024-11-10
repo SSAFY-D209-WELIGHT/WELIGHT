@@ -7,12 +7,6 @@ import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.model.CustomColor
 
 sealed interface EditorIntent {
-    data class Load(
-        val displayId: Long,
-    ) : EditorIntent
-
-    data object CreateNew : EditorIntent
-
     data object AttemptExitPage : EditorIntent
 
     data object Save : EditorIntent

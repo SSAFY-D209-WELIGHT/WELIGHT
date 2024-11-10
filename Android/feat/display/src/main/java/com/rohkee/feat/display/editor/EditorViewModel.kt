@@ -2,14 +2,30 @@ package com.rohkee.feat.display.editor
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.font.FontFamily
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.rohkee.core.network.model.DisplayBackground
+import com.rohkee.core.network.model.DisplayColor
+import com.rohkee.core.network.model.DisplayImage
+import com.rohkee.core.network.model.DisplayRequest
+import com.rohkee.core.network.model.DisplayText
+import com.rohkee.core.network.repository.DisplayRepository
+import com.rohkee.core.network.util.handle
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.component.display.editor.EditorInfoState
+import com.rohkee.core.ui.model.ColorType
 import com.rohkee.core.ui.model.CustomColor
+import com.rohkee.core.ui.util.toComposeColor
+import com.rohkee.core.ui.util.toFontFamily
+import com.rohkee.core.ui.util.toFontName
+import com.rohkee.core.ui.util.toHexString
+import com.rohkee.feat.display.editor.navigation.EditorRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,13 +39,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class EditorViewModel @Inject constructor() : ViewModel() {
+class EditorViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val displayRepository: DisplayRepository,
+) : ViewModel() {
+    private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().id
+
     private val editorStateHolder = MutableStateFlow<DisplayEditorData>(DisplayEditorData())
 
     val editorState: StateFlow<EditorState> =
         editorStateHolder
             .onStart {
-                // TODO : init
+                loadData()
             }.map { data ->
                 data.toState()
             }.stateIn(
@@ -42,10 +63,6 @@ class EditorViewModel @Inject constructor() : ViewModel() {
 
     fun onIntent(intent: EditorIntent) {
         when (intent) {
-            is EditorIntent.CreateNew -> createData()
-
-            is EditorIntent.Load -> loadData(intent.displayId)
-
             is EditorIntent.AttemptExitPage -> {
                 editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
             }
@@ -238,9 +255,67 @@ class EditorViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun loadData(displayId: Long) {
-        viewModelScope.launch {
-            // TODO : load from api
+    private suspend fun loadData() {
+        if (displayId != null && editorState.value !is EditorState.Edit) {
+            displayRepository.getDisplayEdit(displayId).handle(
+                onSuccess = { display ->
+                    display?.let {
+                        editorStateHolder.update {
+                            DisplayEditorData(
+                                displayId = display.id,
+                                editorInfoState =
+                                    EditorInfoState(
+                                        title = display.title,
+                                        tags = display.tags.toPersistentList(),
+                                    ),
+                                editorImageState =
+                                    display.images.firstOrNull()?.let { image ->
+                                        DisplayImageState(
+                                            imageSource = image.url,
+                                            color = CustomColor.Single(color = image.color.toComposeColor()),
+                                            scale = image.scale,
+                                            rotationDegree = image.rotation,
+                                            offsetPercentX = image.offsetX,
+                                            offsetPercentY = image.offsetY,
+                                        )
+                                    } ?: DisplayImageState(),
+                                editorTextState =
+                                    display.texts.firstOrNull()?.let { text ->
+                                        DisplayTextState(
+                                            text = text.text,
+                                            color = CustomColor.Single(color = text.color.toComposeColor()),
+                                            font = text.font.toFontFamily(),
+                                            scale = text.scale,
+                                            rotationDegree = text.rotation,
+                                            offsetPercentX = text.offsetX,
+                                            offsetPercentY = text.offsetY,
+                                        )
+                                    } ?: DisplayTextState(),
+                                editorBackgroundState =
+                                    DisplayBackgroundState(
+                                        color =
+                                            display.background.color.let {
+                                                if (it.isSingle) {
+                                                    CustomColor.Single(color = it.color1.toComposeColor())
+                                                } else {
+                                                    CustomColor.Gradient(
+                                                        colors =
+                                                            persistentListOf(
+                                                                it.color1.toComposeColor(),
+                                                                it.color2.toComposeColor(),
+                                                            ),
+                                                        type = ColorType.valueOf(it.type),
+                                                    )
+                                                }
+                                            },
+                                        brightness = display.background.brightness,
+                                    ),
+                            )
+                        }
+                    }
+                },
+                onError = { _, _ -> },
+            )
         }
     }
 
