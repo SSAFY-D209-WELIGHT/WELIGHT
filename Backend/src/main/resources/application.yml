@@ -26,8 +26,6 @@ spring:
 
   elasticsearch:
     uris: k11d209.p.ssafy.io:9200
-#    username: elastic      # 필요한 경우
-#    password: yourpassword # 필요한 경우
     data:
       elasticsearch:
         repositories:
@@ -37,6 +35,7 @@ spring:
             create: true
             setting-path: classpath:elasticsearch/settings/
             mapping-path: classpath:elasticsearch/mappings/
+
 
 server:
   port: 8080

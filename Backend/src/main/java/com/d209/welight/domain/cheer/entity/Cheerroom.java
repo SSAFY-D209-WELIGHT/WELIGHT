@@ -34,6 +34,9 @@ public class Cheerroom {
     @Column(name = "CHEERROOM_NAME", nullable = false, length = 100)
     private String name;
 
+    @Column(name = "CHEERROOM_DESCRIPTION")
+    private String description;
+
     @Column(name = "CHEERROOM_LATITUDE")
     @DecimalMin(value = "-90.0", message = "위도는 -90도 보다 커야 합니다")
     @DecimalMax(value = "90.0", message = "위도는 90도 보다 작아야 합니다")

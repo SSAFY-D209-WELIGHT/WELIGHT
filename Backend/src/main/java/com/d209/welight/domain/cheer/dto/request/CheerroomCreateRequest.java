@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CheerroomCreateRequest {
     private String cheerroomName;
+    private String cheerroomDescription;
     private Double latitude;
     private Double longitude;
 }

@@ -28,13 +28,13 @@ public class DisplayBackground {
     private LocalDateTime displayBackgroundCreatedAt = LocalDateTime.now();
 
     // DisplayColor의 속성들을 DisplayBackground로 통합
-    @Column(name = "DISPLAY_COLOR_SOLID", length = 7, nullable = true)
+    @Column(name = "DISPLAY_COLOR_SOLID", length = 9, nullable = true)
     private String displayColorSolid;
 
-    @Column(name = "DISPLAY_BACKGROUND_GRADATION_COLOR1", length = 7, nullable = true)
+    @Column(name = "DISPLAY_BACKGROUND_GRADATION_COLOR1", length = 9, nullable = true)
     private String displayBackgroundGradationColor1;
 
-    @Column(name = "DISPLAY_BACKGROUND_GRADATION_COLOR2", length = 7, nullable = true)
+    @Column(name = "DISPLAY_BACKGROUND_GRADATION_COLOR2", length = 9, nullable = true)
     private String displayBackgroundGradationColor2;
 
     @Column(name = "DISPLAY_BACKGROUND_GRADATION_TYPE", length = 50, nullable = true)
