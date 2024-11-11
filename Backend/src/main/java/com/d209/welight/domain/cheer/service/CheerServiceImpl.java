@@ -116,7 +116,7 @@ public class CheerServiceImpl implements CheerService {
 
         cheerParticipationRepository.save(participation);
         log.info("방장 참여 정보 생성 완료 - userUid: {}, cheerroomId: {}", userUid, savedCheerroom.getId());
-        return CheerroomResponse.from(savedCheerroom);
+        return CheerroomResponse.from(savedCheerroom, 1);
     }
 
     @Override
@@ -132,8 +132,17 @@ public class CheerServiceImpl implements CheerService {
         );
 
         log.info("위치 기반 응원방 조회 완료 - 조회된 응원방 개수={}", cheerrooms.size());
+//        return cheerrooms.stream()
+//                .map(CheerroomResponse::from)
+//                .collect(Collectors.toList());
         return cheerrooms.stream()
-                .map(CheerroomResponse::from)
+                .map(cheerroom -> {
+                    // 참가자 수 조회
+                    int participantCount = cheerParticipationRepository
+                            .countParticipantsByCheerroomId(cheerroom.getId());
+                    // CheerroomResponse 생성
+                    return CheerroomResponse.from(cheerroom, participantCount);
+                })
                 .collect(Collectors.toList());
     }
 
