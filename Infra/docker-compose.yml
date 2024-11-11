@@ -53,6 +53,18 @@ services:
     networks:
       - welight-network
 
+  fastapi:
+    build:
+      context: ./fastapi
+    container_name: fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      TZ: 'Asia/Seoul'
+    networks:
+      - welight-network
+
   nginx:
     image: nginx:latest
     container_name: nginx
