@@ -48,7 +48,7 @@ public interface DisplayService {
     void downloadDisplay(User user, long displayUid);
     void deleteStoredDisplay(User user, long displayUid);
 
-    // 디스플레이 즐겨찾기 (저장소에서)
+    // 디스플레이 즐겨찾기 (저장소에서 & 내가 제작)
     void updateDisplayFavorite(User user, long displayUid);
 
     // 디스플레이 좋아요

@@ -25,6 +25,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -799,20 +800,32 @@ public class DisplayServiceImpl implements DisplayService {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
-        // 2. 저장된 디스플레이가 존재하는지 확인
-        DisplayStorage storagedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
-                .orElseThrow(() -> new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다."));
 
-        // 3. 현재 상태의 반대로 변경
-        boolean newFavoriteStatus = !storagedDisplay.getIsFavorites();
-        storagedDisplay.setIsFavorites(newFavoriteStatus);
+        // 2-1. 내가 제작한 디스플레이인지 확인
+        boolean isCreator = display.getCreatorUid().equals(user.getUserUid());
+        // 2-2. 내가 저장한 디스플레이인지 확인
+        Optional<DisplayStorage> optionalStoragedDisplay = displayStorageRepository.findByUserAndDisplay(user, display);
 
-        // 3-1. false -> true로 변경될 때만 시간 업데이트
-        if (newFavoriteStatus) {
-            storagedDisplay.setFavoritesAt(LocalDateTime.now());
+        // 3. 내가 제작한 디스플레이이거나 저장한 디스플레이라면 상태 업데이트 진행
+        if (isCreator || optionalStoragedDisplay.isPresent()) {
+            DisplayStorage storagedDisplay = optionalStoragedDisplay.orElseThrow(
+                    () -> new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.")
+            );
+
+            // 4. 현재 상태의 반대로 변경
+            boolean newFavoriteStatus = !storagedDisplay.getIsFavorites();
+            storagedDisplay.setIsFavorites(newFavoriteStatus);
+
+            // 4-1. false -> true로 변경될 때만 시간 업데이트
+            if (newFavoriteStatus) {
+                storagedDisplay.setFavoritesAt(LocalDateTime.now());
+            }
+
+            // 5. 저장
+            displayStorageRepository.save(storagedDisplay);
+        } else {
+            throw new AccessDeniedException("해당 디스플레이에 대한 권한이 없습니다.");
         }
-
-        displayStorageRepository.save(storagedDisplay);
     }
 
     @Override
