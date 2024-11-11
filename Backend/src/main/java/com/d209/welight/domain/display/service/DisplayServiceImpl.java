@@ -6,9 +6,7 @@ import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
 import com.d209.welight.domain.display.dto.DisplayImageDto;
 import com.d209.welight.domain.display.dto.DisplayTextDto;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
-import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
-import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
-import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
+import com.d209.welight.domain.display.dto.response.*;
 import com.d209.welight.domain.display.entity.*;
 import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
 import com.d209.welight.domain.display.entity.displaystorage.DisplayStorage;
@@ -35,7 +33,6 @@ import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +73,7 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 1. 디스플레이 기본 정보 저장
             Display savedDisplay = displayRepository.save(display);
+
 
             // 이벤트 발행
             eventPublisher.publishEvent(new DisplayEvent("CREATE", display));
@@ -152,6 +150,14 @@ public class DisplayServiceImpl implements DisplayService {
                 savedDisplay.setBackground(background);
 
             }
+
+            DisplayStorage displayStorage = DisplayStorage.builder()
+                    .user(user.get())
+                    .display(display)
+                    .downloadAt(LocalDateTime.now())
+                    .isFavorites(false)
+                    .build();
+            displayStorageRepository.save(displayStorage);
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -273,62 +279,104 @@ public class DisplayServiceImpl implements DisplayService {
     @Override
     @Transactional
     public DisplayCreateResponse duplicateDisplay(Long displayId, String userId) {
-        // 원본 디스플레이 조회
-        Display originalDisplay = displayRepository.findById(displayId)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+        log.info("디스플레이 복제 시작 - displayId: {}, userId: {}", displayId, userId);
 
-        // userUid로 userId 조회
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-        Long userUid = user.getUserUid();
-
-        // 새로운 디스플레이 생성
-        Display newDisplay = Display.builder()
-                .creatorUid(userUid)
-                .displayName(originalDisplay.getDisplayName() + "_복제")
-                .displayIsPosted(false)
-                .build();
-
-        // 썸네일 복제
         try {
-            String originalThumbnailUrl = originalDisplay.getDisplayThumbnailUrl();
-            if (originalThumbnailUrl != null && !originalThumbnailUrl.isEmpty()) {
-                // 새로운 썸네일 파일명 생성
-                String newThumbnailName = generateFileName(userId, "thumbnails", originalThumbnailUrl);
+            // 1. 사용자 조회
+            log.debug("사용자 조회 시도 - userId: {}", userId);
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> {
+                        log.error("사용자를 찾을 수 없음 - userId: {}", userId);
+                        return new EntityNotFoundException("사용자를 찾을 수 없습니다.");
+                    });
+            log.debug("사용자 조회 성공 - userUid: {}", user.getUserUid());
 
-                // S3에 썸네일 복사
-                String newThumbnailUrl = s3Service.copyS3(
-                        originalThumbnailUrl,
-                        newThumbnailName
-                );
+            // 2. 원본 디스플레이 조회
+            log.debug("원본 디스플레이 조회 시도 - displayId: {}", displayId);
+            Display originalDisplay = displayRepository.findById(displayId)
+                    .orElseThrow(() -> {
+                        log.error("디스플레이를 찾을 수 없음 - displayId: {}", displayId);
+                        return new EntityNotFoundException("디스플레이를 찾을 수 없습니다.");
+                    });
+            log.debug("원본 디스플레이 조회 성공");
 
-                // 새로운 디스플레이에 썸네일 URL 설정
-                newDisplay.setDisplayThumbnailUrl(newThumbnailUrl);
+            // 3. 새로운 디스플레이 생성
+            log.debug("새로운 디스플레이 생성 시작");
+            Display newDisplay = Display.builder()
+                    .creatorUid(user.getUserUid())
+                    .displayName(originalDisplay.getDisplayName() + "_복제")
+                    .displayIsPosted(false)
+                    .displayCreatedAt(LocalDateTime.now())
+                    .displayDownloadCount(0L)
+                    .displayLikeCount(0L)
+                    .displayThumbnailUrl(originalDisplay.getDisplayThumbnailUrl())
+                    .build();
+
+            // 4. 썸네일 복제
+            if (originalDisplay.getDisplayThumbnailUrl() != null && !originalDisplay.getDisplayThumbnailUrl().isEmpty()) {
+                try {
+                    log.debug("썸네일 복제 시도");
+                    String newThumbnailName = generateFileName(userId, "thumbnails", originalDisplay.getDisplayThumbnailUrl());
+                    String newThumbnailUrl = s3Service.copyS3(originalDisplay.getDisplayThumbnailUrl(), newThumbnailName);
+                    newDisplay.setDisplayThumbnailUrl(newThumbnailUrl);
+                    log.debug("썸네일 복제 성공 - newUrl: {}", newThumbnailUrl);
+                } catch (Exception e) {
+                    log.warn("썸네일 복제 실패 - 기존 URL 유지: {}", e.getMessage());
+                }
             }
+
+            // 5. 디스플레이 저장
+            log.debug("새로운 디스플레이 저장 시도");
+            Display savedDisplay = displayRepository.save(newDisplay);
+            log.debug("새로운 디스플레이 저장 성공 - displayUid: {}", savedDisplay.getDisplayUid());
+
+            // 6. 이벤트 발행
+            log.debug("디스플레이 생성 이벤트 발행");
+            eventPublisher.publishEvent(new DisplayEvent("CREATE", savedDisplay));
+
+            // 7. 연관 데이터 복제
+            try {
+                log.debug("연관 데이터 복제 시작");
+                duplicateBackground(originalDisplay.getBackground(), savedDisplay);
+                duplicateTexts(originalDisplay.getTexts(), savedDisplay);
+                duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
+                log.debug("연관 데이터 복제 완료");
+            } catch (Exception e) {
+                log.error("연관 데이터 복제 실패: ", e);
+                throw new RuntimeException("연관 데이터 복제 중 오류가 발생했습니다: " + e.getMessage());
+            }
+
+            // 8. 저장소 생성
+            try {
+                log.debug("저장소 생성 시도");
+                DisplayStorage displayStorage = DisplayStorage.builder()
+                        .user(user)
+                        .display(savedDisplay)
+                        .downloadAt(LocalDateTime.now())
+                        .isFavorites(false)
+                        .favoritesAt(null)
+                        .build();
+                displayStorageRepository.save(displayStorage);
+                log.debug("저장소 생성 성공");
+            } catch (Exception e) {
+                log.error("저장소 생성 실패: ", e);
+                throw new RuntimeException("저장소 생성 중 오류가 발생했습니다: " + e.getMessage());
+            }
+
+            log.info("디스플레이 복제 완료 - newDisplayUid: {}", savedDisplay.getDisplayUid());
+            return DisplayCreateResponse.builder()
+                    .displayUid(savedDisplay.getDisplayUid())
+                    .displayName(savedDisplay.getDisplayName())
+                    .message("디스플레이가 성공적으로 복제되었습니다.")
+                    .build();
+
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException("디스플레이를 찾을 수 없습니다.");
+            log.error("엔티티 조회 실패: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 복제 중 오류가 발생했습니다.");
+            log.error("디스플레이 복제 중 예기치 않은 오류: ", e);
+            throw new RuntimeException("디스플레이 복제 중 오류가 발생했습니다: " + e.getMessage());
         }
-
-        // 디스플레이 정보 저장
-        Display savedDisplay = displayRepository.save(newDisplay);
-
-        // 배경 복제
-        duplicateBackground(originalDisplay.getBackground(), savedDisplay);
-
-        // 텍스트 복제
-        duplicateTexts(originalDisplay.getTexts(), savedDisplay);
-
-        // 이미지 복제
-        duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
-
-        // 응답 객체 생성 및 반환
-        return DisplayCreateResponse.builder()
-                .displayUid(savedDisplay.getDisplayUid())
-                .displayName(savedDisplay.getDisplayName())
-                .message("디스플레이가 성공적으로 복제되었습니다.")
-                .build();
     }
 
     @Override
@@ -957,6 +1005,31 @@ public class DisplayServiceImpl implements DisplayService {
         displayCommentRepository.deleteById(commentUid);
     }
 
+    @Override
+    public DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId) {
+        // 사용자 검증
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        // 디스플레이 조회
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new DisplayNotFoundException("존재하지 않는 디스플레이입니다."));
+
+        // 권한 검증 (생성자만 수정 가능)
+        if (!display.getCreatorUid().equals(user.getUserUid())) {
+            throw new InvalidDisplayDataException("디스플레이 수정 권한이 없습니다.");
+        }
+
+        // 상태 업데이트
+        display.setDisplayIsPosted(!display.getDisplayIsPosted());
+        displayRepository.save(display);  // 변경사항 저장
+
+        return DisplayPostedToggleResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayIsPosted(display.getDisplayIsPosted())
+                .build();
+    }
+
     // 유효성 검사를 위한 private 메소드 추가
     private void validateDisplayCreateRequest(DisplayCreateRequest request) {
         if (request == null) {
@@ -970,7 +1043,6 @@ public class DisplayServiceImpl implements DisplayService {
         if (request.getDisplayThumbnailUrl() == null || request.getDisplayThumbnailUrl().trim().isEmpty()) {
             throw new InvalidDisplayDataException("썸네일 URL은 필수입니다.");
         }
-
 
         // 텍스트 유효성 검사
         if (request.getTexts() != null) {

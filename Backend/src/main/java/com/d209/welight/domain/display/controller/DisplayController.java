@@ -2,6 +2,7 @@ package com.d209.welight.domain.display.controller;
 
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
+import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
@@ -342,6 +343,17 @@ public class DisplayController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 삭제 중 오류가 발생했습니다.");
         }
+    }
+
+    @PatchMapping("/{displayId}/isposted")
+    @Operation(summary = "디스플레이 게시 여부 토글", description = "디스플레이 게시 여부를 토글합니다.")
+    public ResponseEntity<DisplayPostedToggleResponse> toggleDisplayStatus(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String userId = userDetails.getUsername();
+        DisplayPostedToggleResponse response = displayService.updateDisplayStatus(displayId, userId);
+        return ResponseEntity.ok(response);
     }
 }
 
