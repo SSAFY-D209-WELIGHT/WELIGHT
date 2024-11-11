@@ -4,6 +4,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.rohkee.core.network.ApiResponse
+import com.rohkee.core.network.BuildConfig
 import com.rohkee.core.network.model.Upload
 import com.rohkee.core.network.repository.UploadRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -31,7 +32,9 @@ class UploadRepositoryImpl @Inject constructor(
                     ) {
                         when (state) {
                             TransferState.COMPLETED -> {
-                                trySend(ApiResponse.Success(Upload.Completed(key)))
+                                val objectUrl = "https://${BuildConfig.BUCKET_NAME}.s3.${BuildConfig.BUCKET_REGION}.amazonaws.com/$key"
+
+                                trySend(ApiResponse.Success(Upload.Completed(objectUrl)))
                                 close()
                             }
 

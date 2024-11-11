@@ -15,6 +15,7 @@ android {
     defaultConfig {
         buildConfigField("String", "BASE_URL", properties["BASE_URL"] as String)
         buildConfigField("String", "BUCKET_NAME", properties["BUCKET_NAME"] as String)
+        buildConfigField("String", "BUCKET_REGION", properties["BUCKET_REGION"] as String)
         buildConfigField("String", "AWS_ACCESS_KEY", properties["AWS_ACCESS_KEY"] as String)
         buildConfigField("String", "AWS_SECRET_KEY", properties["AWS_SECRET_KEY"] as String)
     }
