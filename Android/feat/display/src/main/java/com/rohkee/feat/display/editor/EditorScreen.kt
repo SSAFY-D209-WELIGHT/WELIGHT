@@ -41,6 +41,9 @@ fun EditorScreen(
             is EditorEvent.ExitPage -> onPopBackStack()
             is EditorEvent.ShowSnackBar -> onShowSnackBar(event.message)
             EditorEvent.OpenPhotoGallery -> photoGalleryLauncher.launch("image/*")
+            EditorEvent.Save.Success -> onPopBackStack()
+            EditorEvent.Save.Failure -> { // TODO : Snackbar
+            }
         }
     }
 

@@ -8,4 +8,10 @@ sealed interface EditorEvent {
     data class ShowSnackBar(
         val message: String,
     ) : EditorEvent
+
+    sealed interface Save : EditorEvent {
+        data object Success : Save
+
+        data object Failure : Save
+    }
 }

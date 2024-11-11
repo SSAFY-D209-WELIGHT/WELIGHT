@@ -299,6 +299,7 @@ class EditorViewModel @Inject constructor(
                 .isEmpty()
         ) {
             editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorStateHolder.value.editorInfoState))
+            return
         }
 
         viewModelScope.launch {
@@ -339,13 +340,21 @@ class EditorViewModel @Inject constructor(
 
                                     if (image is Upload.Completed && thumbnailUrl is Upload.Completed) {
                                         editorStateHolder.value.let { data ->
-                                            displayRepository.createDisplay(
-                                                display =
-                                                    data.toDisplayRequest(
-                                                        thumbnailUrl = thumbnailUrl.uploadedFile,
-                                                        imageUrl = image.uploadedFile,
-                                                    ),
-                                            )
+                                            displayRepository
+                                                .createDisplay(
+                                                    display =
+                                                        data.toDisplayRequest(
+                                                            thumbnailUrl = thumbnailUrl.uploadedFile,
+                                                            imageUrl = image.uploadedFile,
+                                                        ),
+                                                ).handle(
+                                                    onSuccess = {
+                                                        emitEvent(EditorEvent.Save.Success)
+                                                    },
+                                                    onError = { _, _ ->
+                                                        emitEvent(EditorEvent.Save.Failure)
+                                                    },
+                                                )
                                         }
                                     }
                                 }
