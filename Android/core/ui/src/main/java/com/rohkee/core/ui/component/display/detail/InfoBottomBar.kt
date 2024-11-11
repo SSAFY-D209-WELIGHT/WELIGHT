@@ -125,10 +125,12 @@ private fun DefaultInfoBottomBar(
             title = state.title,
             editable = false,
         )
-        TagRow(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            tags = state.tags,
-        )
+        if (state.tags.isNotEmpty()) {
+            TagRow(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                tags = state.tags,
+            )
+        }
         Text(
             modifier = Modifier.padding(horizontal = 16.dp),
             text = "by ${state.author}",

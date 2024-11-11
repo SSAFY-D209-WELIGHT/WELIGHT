@@ -3,7 +3,6 @@ package com.rohkee.core.ui.component.display
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
@@ -37,7 +36,6 @@ fun TitleRow(
             color = if (title.isNotEmpty()) AppColor.OnSurface else AppColor.OnBackgroundTransparent,
             modifier = Modifier.weight(1f),
         )
-        Spacer(modifier = Modifier.weight(1f))
         if (editable) {
             Icon(
                 modifier = Modifier.clickable { onEditClick() },
