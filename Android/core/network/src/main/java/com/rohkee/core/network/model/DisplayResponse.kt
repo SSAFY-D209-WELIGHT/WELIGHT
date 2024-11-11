@@ -107,12 +107,6 @@ data class DisplayText(
 data class DisplayBackground(
     @SerialName("displayBackgroundBrightness")
     val brightness: Float,
-    @SerialName("color")
-    val color: DisplayColor,
-)
-
-@Serializable
-data class DisplayColor(
     @SerialName("displayColorSolid")
     val isSingle: Boolean,
     @SerialName("displayBackgroundGradationColor1")

@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.DisplayBackground
-import com.rohkee.core.network.model.DisplayColor
 import com.rohkee.core.network.model.DisplayImage
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
@@ -387,28 +386,26 @@ private fun DisplayEditorData.toDisplayRequest(thumbnailUrl: String): DisplayReq
                 ),
             ),
         background =
-            DisplayBackground(
-                brightness = this.editorBackgroundState.brightness,
-                color =
-                    when (val color = this.editorBackgroundState.color) {
-                        is CustomColor.Single ->
-                            DisplayColor(
-                                isSingle = true,
-                                color1 = color.primary.toHexString(),
-                                color2 = color.primary.toHexString(),
-                                type = ColorType.Radial.name,
-                            )
+            when (val color = this.editorBackgroundState.color) {
+                is CustomColor.Single ->
+                    DisplayBackground(
+                        brightness = this.editorBackgroundState.brightness,
+                        isSingle = true,
+                        color1 = color.primary.toHexString(),
+                        color2 = color.primary.toHexString(),
+                        type = ColorType.Radial.name,
+                    )
 
-                        is CustomColor.Gradient -> {
-                            DisplayColor(
-                                isSingle = false,
-                                color1 = color.primary.toHexString(),
-                                color2 = color.primary.toHexString(),
-                                type = color.type.name,
-                            )
-                        }
-                    },
-            ),
+                is CustomColor.Gradient -> {
+                    DisplayBackground(
+                        brightness = this.editorBackgroundState.brightness,
+                        isSingle = false,
+                        color1 = color.primary.toHexString(),
+                        color2 = color.primary.toHexString(),
+                        type = color.type.name,
+                    )
+                }
+            },
     )
 
 private fun DisplayResponse.Editable.toDisplayEditorData() =
@@ -445,7 +442,7 @@ private fun DisplayResponse.Editable.toDisplayEditorData() =
         editorBackgroundState =
             DisplayBackgroundState(
                 color =
-                    this.background.color.let {
+                    this.background.let {
                         if (it.isSingle) {
                             CustomColor.Single(color = it.color1.toComposeColor())
                         } else {
