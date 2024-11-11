@@ -17,6 +17,7 @@ import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.global.exception.display.DisplayNotFoundException;
+import com.d209.welight.global.exception.display.InvalidDisplayDataException;
 import com.d209.welight.global.service.s3.S3Service;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -56,11 +57,15 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
-    public DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request) {
+    public DisplayCreateResponse createDisplay(String userId, DisplayCreateRequest request) {
+
+        validateDisplayCreateRequest(request);
+
         try {
+            Optional<User> user = userRepository.findByUserId(userId);
             // 1. Display 엔티티 생성
             Display display = Display.builder()
-                .creatorUid(user.getUserUid())
+                .creatorUid(user.get().getUserUid())
                 .displayName(request.getDisplayName())
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
                 .displayIsPosted(request.getDisplayIsPosted())  // 초기 생성시 게시되지 않은 상태
@@ -154,9 +159,8 @@ public class DisplayServiceImpl implements DisplayService {
                     .message("디스플레이가 성공적으로 생성되었습니다.")
                     .build();
 
-        } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException("디스플레이를 찾을 수 없습니다.");
         } catch (Exception e) {
+            log.error("디스플레이 생성 중 예기치 않은 오류: {}", e.getMessage());
             throw new RuntimeException("디스플레이 생성 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
@@ -951,6 +955,38 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 삭제
         displayCommentRepository.deleteById(commentUid);
+    }
+
+    // 유효성 검사를 위한 private 메소드 추가
+    private void validateDisplayCreateRequest(DisplayCreateRequest request) {
+        if (request == null) {
+            throw new InvalidDisplayDataException("요청 데이터가 없습니다.");
+        }
+
+        if (request.getDisplayName() == null || request.getDisplayName().trim().isEmpty()) {
+            throw new InvalidDisplayDataException("디스플레이 이름은 필수입니다.");
+        }
+
+        if (request.getDisplayThumbnailUrl() == null || request.getDisplayThumbnailUrl().trim().isEmpty()) {
+            throw new InvalidDisplayDataException("썸네일 URL은 필수입니다.");
+        }
+
+
+        // 텍스트 유효성 검사
+        if (request.getTexts() != null) {
+            request.getTexts().forEach(text -> {
+                if (text.getDisplayTextDetail() == null || text.getDisplayTextDetail().trim().isEmpty()) {
+                    throw new InvalidDisplayDataException("텍스트 내용은 필수입니다.");
+                }
+            });
+        }
+
+        // 배경 유효성 검사
+        if (request.getBackground() != null) {
+            if (request.getBackground().getDisplayColorSolid() == null) {
+                throw new InvalidDisplayDataException("배경 색상은 필수입니다.");
+            }
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.d209.welight.global.error;
 
 import com.d209.welight.global.exception.display.DisplayNotFoundException;
+import com.d209.welight.global.exception.display.InvalidDisplayDataException;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +48,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("Unhandled exception occurred: ", e);
         return createErrorResponse(CommonErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InvalidDisplayDataException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDisplayDataException(InvalidDisplayDataException e) {
+        log.error("InvalidDisplayDataException", e);
+        return createErrorResponse(CommonErrorCode.INVALID_DISPLAY_DATA);
     }
 
     private ResponseEntity<ErrorResponse> createErrorResponse(ErrorCode errorCode) {
