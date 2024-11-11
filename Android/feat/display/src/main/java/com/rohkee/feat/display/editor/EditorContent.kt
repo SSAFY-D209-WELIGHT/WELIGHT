@@ -1,16 +1,11 @@
 package com.rohkee.feat.display.editor
 
-import android.Manifest
-import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -20,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.rohkee.core.ui.component.appbar.SavableAppBar
 import com.rohkee.core.ui.component.display.editor.BackgroundToolBar
 import com.rohkee.core.ui.component.display.editor.CustomDisplay
@@ -79,7 +73,7 @@ private fun EditContent(
     state: EditorState.Edit,
     onIntent: (EditorIntent) -> Unit = {},
 ) {
-    when (state.dialogState) {
+    when (val dialog = state.dialogState) {
         DialogState.Closed -> {}
         is DialogState.ExitAsking ->
             AskingDialog(
@@ -93,7 +87,7 @@ private fun EditContent(
 
         is DialogState.ColorPicker ->
             ColorPickerDialog(
-                color = state.dialogState.color,
+                color = dialog.color,
                 onConfirm = { onIntent(EditorIntent.Dialog.ColorPicked(it)) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )
@@ -132,6 +126,7 @@ private fun EditContent(
 
         is DialogState.TextEdit ->
             TextInputDialog(
+                initialValue = dialog.text,
                 hint = stringResource(R.string.dialog_text_input_hint),
                 onConfirm = { onIntent(EditorIntent.Dialog.EditText(it)) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
@@ -139,17 +134,7 @@ private fun EditContent(
     }
 
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val graphicsLayer = rememberGraphicsLayer()
-
-    val writeStorageAccessState = rememberMultiplePermissionsState(
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            emptyList()
-        } else {
-            listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
-    )
 
     Scaffold(
         modifier = modifier,

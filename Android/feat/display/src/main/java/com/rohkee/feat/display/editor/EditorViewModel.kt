@@ -2,14 +2,20 @@ package com.rohkee.feat.display.editor
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.rohkee.core.network.ApiResponse
+import com.rohkee.core.network.model.DisplayBackground
+import com.rohkee.core.network.model.DisplayColor
+import com.rohkee.core.network.model.DisplayImage
+import com.rohkee.core.network.model.DisplayRequest
+import com.rohkee.core.network.model.DisplayResponse
+import com.rohkee.core.network.model.DisplayText
+import com.rohkee.core.network.model.Upload
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.UploadRepository
 import com.rohkee.core.network.util.handle
@@ -21,6 +27,8 @@ import com.rohkee.core.ui.model.ColorType
 import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.util.toComposeColor
 import com.rohkee.core.ui.util.toFontFamily
+import com.rohkee.core.ui.util.toFontName
+import com.rohkee.core.ui.util.toHexString
 import com.rohkee.feat.display.editor.navigation.EditorRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
@@ -35,8 +43,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -139,7 +145,7 @@ class EditorViewModel @Inject constructor(
 
             // BackgroundToolBar
             EditorIntent.BackgroundToolBar.Close ->
-                editorStateHolder.resetBackground()
+                editorStateHolder.updateBottomBar(editingState = EditingState.None)
 
             EditorIntent.BackgroundToolBar.Delete ->
                 editorStateHolder.updateDialog(dialogState = DialogState.BackgroundDeleteWarning)
@@ -242,75 +248,13 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    private fun createData() {
-        if (editorState.value is EditorState.Edit) return
-        editorStateHolder.update {
-            DisplayEditorData(
-                displayId = null,
-                editorInfoState = EditorInfoState(),
-                editorImageState = DisplayImageState(),
-                editorTextState = DisplayTextState(),
-                editorBackgroundState = DisplayBackgroundState(),
-            )
-        }
-    }
-
     private suspend fun loadData() {
         if (displayId != null && editorState.value !is EditorState.Edit) {
             displayRepository.getDisplayEdit(displayId).handle(
                 onSuccess = { display ->
                     display?.let {
                         editorStateHolder.update {
-                            DisplayEditorData(
-                                displayId = display.id,
-                                editorInfoState =
-                                    EditorInfoState(
-                                        title = display.title,
-                                        tags = display.tags.toPersistentList(),
-                                    ),
-                                editorImageState =
-                                    display.images.firstOrNull()?.let { image ->
-                                        DisplayImageState(
-                                            imageSource = image.url,
-                                            color = CustomColor.Single(color = image.color.toComposeColor()),
-                                            scale = image.scale,
-                                            rotationDegree = image.rotation,
-                                            offsetPercentX = image.offsetX,
-                                            offsetPercentY = image.offsetY,
-                                        )
-                                    } ?: DisplayImageState(),
-                                editorTextState =
-                                    display.texts.firstOrNull()?.let { text ->
-                                        DisplayTextState(
-                                            text = text.text,
-                                            color = CustomColor.Single(color = text.color.toComposeColor()),
-                                            font = text.font.toFontFamily(),
-                                            scale = text.scale,
-                                            rotationDegree = text.rotation,
-                                            offsetPercentX = text.offsetX,
-                                            offsetPercentY = text.offsetY,
-                                        )
-                                    } ?: DisplayTextState(),
-                                editorBackgroundState =
-                                    DisplayBackgroundState(
-                                        color =
-                                            display.background.color.let {
-                                                if (it.isSingle) {
-                                                    CustomColor.Single(color = it.color1.toComposeColor())
-                                                } else {
-                                                    CustomColor.Gradient(
-                                                        colors =
-                                                            persistentListOf(
-                                                                it.color1.toComposeColor(),
-                                                                it.color2.toComposeColor(),
-                                                            ),
-                                                        type = ColorType.valueOf(it.type),
-                                                    )
-                                                }
-                                            },
-                                        brightness = display.background.brightness,
-                                    ),
-                            )
+                            display.toDisplayEditorData()
                         }
                     }
                 },
@@ -342,116 +286,55 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    private fun getFileFromUri(
-        context: Context,
-        uri: Uri,
-    ): File? {
-        val fileName = getFileName(context, uri) ?: return null
-        val cacheDir = context.cacheDir
-        val file = File(cacheDir, fileName)
-
-        try {
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                FileOutputStream(file).use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-            return file
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        return null
-    }
-
-    private fun getFileName(
-        context: Context,
-        uri: Uri,
-    ): String? {
-        val cursor = context.contentResolver.query(uri, null, null, null, null)
-        cursor?.use {
-            if (it.moveToFirst()) {
-                val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                if (displayNameIndex != -1) {
-                    return it.getString(displayNameIndex)
-                }
-            }
-        }
-        return null
-    }
-
     private fun saveDisplay(
         context: Context,
         bitmap: GraphicsLayer,
     ) {
+        if (editorStateHolder.value.editorInfoState.title
+                .isEmpty()
+        ) {
+            editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorStateHolder.value.editorInfoState))
+        }
+
         viewModelScope.launch {
             val imageBitmap = bitmap.toImageBitmap().asAndroidBitmap()
-            val fileName = "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
+            val fileName =
+                "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
             val file = imageBitmap.saveToInternalStorage(fileName, context)
 
-            uploadRepository.upload(fileName, file)
-//            editorStateHolder.updateImage(imageSource = uri)
-//            editorStateHolder.value.let { data ->
-//                displayRepository.createDisplay(
-//                    display =
-//                        DisplayRequest(
-//                            title = data.editorInfoState.title,
-//                            tags = data.editorInfoState.tags.toList(),
-//                            thumbnailUrl = TODO(),
-//                            posted = false,
-//                            images =
-//                                listOf(
-//                                    DisplayImage(
-//                                        url = data.editorImageState.imageSource.toString(),
-//                                        color =
-//                                            data.editorImageState.color.primary
-//                                                .toHexString(),
-//                                        scale = data.editorImageState.scale,
-//                                        rotation = data.editorImageState.rotationDegree,
-//                                        offsetX = data.editorImageState.offsetPercentX,
-//                                        offsetY = data.editorImageState.offsetPercentY,
-//                                    ),
-//                                ),
-//                            texts =
-//                                listOf(
-//                                    DisplayText(
-//                                        text = data.editorTextState.text,
-//                                        color =
-//                                            data.editorTextState.color.primary
-//                                                .toHexString(),
-//                                        font = data.editorTextState.font.toFontName(),
-//                                        rotation = data.editorTextState.rotationDegree,
-//                                        scale = data.editorImageState.scale,
-//                                        offsetX = data.editorTextState.offsetPercentX,
-//                                        offsetY = data.editorTextState.offsetPercentY,
-//                                    ),
-//                                ),
-//                            background = DisplayBackground(
-//                                brightness = data.editorBackgroundState.brightness,
-//                                color =
-//                                when(data.editorBackgroundState.color){
-//                                    is CustomColor.Single -> DisplayColor(
-//                                        isSingle = true,
-//                                        color1 = data.editorBackgroundState.color.primary.toHexString(),
-//                                        color2 = data.editorBackgroundState.color.primary.toHexString(),
-//                                        type = ColorType.Radial.name,
-//                                    )
-//                                    is CustomColor.Gradient -> DisplayColor(
-//                                        isSingle = data.editorBackgroundState.color is CustomColor.Single,
-//                                        color1 = data.editorImageState.color.primary.toHexString(),
-//                                        color2 = data.editorImageState.color.primary.toHexString(),
-//                                        type = TODO()
-//                                    )
-//                                }
-//                            ),
-//                        ),
-//                )
-//            }
+            uploadRepository.upload(fileName, file).collect { response ->
+                when (response) {
+                    is ApiResponse.Success -> {
+                        response.body?.let { status ->
+                            when (status) {
+                                is Upload.Completed -> {
+                                    editorStateHolder.value.let { data ->
+                                        displayRepository.createDisplay(
+                                            display = data.toDisplayRequest(status.uploadedFile),
+                                        )
+                                    }
+                                }
+
+                                else -> {
+                                    // TODO : Error
+                                }
+                            }
+                        }
+                    }
+
+                    is ApiResponse.Error -> {
+                        // TODO : Error
+                    }
+                }
+            }
         }
     }
 }
 
-private suspend fun Bitmap.saveToInternalStorage(filename: String, context: Context): File {
+private fun Bitmap.saveToInternalStorage(
+    filename: String,
+    context: Context,
+): File {
     val file = File(context.filesDir, filename)
 
     file.writeBitmap(this, Bitmap.CompressFormat.PNG, 100)
@@ -469,3 +352,113 @@ private fun File.writeBitmap(
         out.flush()
     }
 }
+
+private fun DisplayEditorData.toDisplayRequest(thumbnailUrl: String): DisplayRequest =
+    DisplayRequest(
+        title = this.editorInfoState.title,
+        tags = this.editorInfoState.tags.toList(),
+        thumbnailUrl = thumbnailUrl,
+        posted = false,
+        images =
+            listOf(
+                DisplayImage(
+                    url = this.editorImageState.imageSource.toString(),
+                    color =
+                        this.editorImageState.color.primary
+                            .toHexString(),
+                    scale = this.editorImageState.scale,
+                    rotation = this.editorImageState.rotationDegree,
+                    offsetX = this.editorImageState.offsetPercentX,
+                    offsetY = this.editorImageState.offsetPercentY,
+                ),
+            ),
+        texts =
+            listOf(
+                DisplayText(
+                    text = this.editorTextState.text,
+                    color =
+                        this.editorTextState.color.primary
+                            .toHexString(),
+                    font = this.editorTextState.font.toFontName(),
+                    rotation = this.editorTextState.rotationDegree,
+                    scale = this.editorImageState.scale,
+                    offsetX = this.editorTextState.offsetPercentX,
+                    offsetY = this.editorTextState.offsetPercentY,
+                ),
+            ),
+        background =
+            DisplayBackground(
+                brightness = this.editorBackgroundState.brightness,
+                color =
+                    when (val color = this.editorBackgroundState.color) {
+                        is CustomColor.Single ->
+                            DisplayColor(
+                                isSingle = true,
+                                color1 = color.primary.toHexString(),
+                                color2 = color.primary.toHexString(),
+                                type = ColorType.Radial.name,
+                            )
+
+                        is CustomColor.Gradient -> {
+                            DisplayColor(
+                                isSingle = false,
+                                color1 = color.primary.toHexString(),
+                                color2 = color.primary.toHexString(),
+                                type = color.type.name,
+                            )
+                        }
+                    },
+            ),
+    )
+
+private fun DisplayResponse.Editable.toDisplayEditorData() =
+    DisplayEditorData(
+        displayId = this.id,
+        editorInfoState =
+            EditorInfoState(
+                title = this.title,
+                tags = this.tags.toPersistentList(),
+            ),
+        editorImageState =
+            this.images.firstOrNull()?.let { image ->
+                DisplayImageState(
+                    imageSource = image.url,
+                    color = CustomColor.Single(color = image.color.toComposeColor()),
+                    scale = image.scale,
+                    rotationDegree = image.rotation,
+                    offsetPercentX = image.offsetX,
+                    offsetPercentY = image.offsetY,
+                )
+            } ?: DisplayImageState(),
+        editorTextState =
+            this.texts.firstOrNull()?.let { text ->
+                DisplayTextState(
+                    text = text.text,
+                    color = CustomColor.Single(color = text.color.toComposeColor()),
+                    font = text.font.toFontFamily(),
+                    scale = text.scale,
+                    rotationDegree = text.rotation,
+                    offsetPercentX = text.offsetX,
+                    offsetPercentY = text.offsetY,
+                )
+            } ?: DisplayTextState(),
+        editorBackgroundState =
+            DisplayBackgroundState(
+                color =
+                    this.background.color.let {
+                        if (it.isSingle) {
+                            CustomColor.Single(color = it.color1.toComposeColor())
+                        } else {
+                            CustomColor.Gradient(
+                                colors =
+                                    persistentListOf(
+                                        it.color1.toComposeColor(),
+                                        it.color2.toComposeColor(),
+                                    ),
+                                type = ColorType.valueOf(it.type),
+                            )
+                        }
+                    },
+                brightness = this.background.brightness,
+            ),
+    )

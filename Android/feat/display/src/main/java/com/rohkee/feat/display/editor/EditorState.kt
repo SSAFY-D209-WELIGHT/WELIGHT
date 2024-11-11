@@ -63,7 +63,7 @@ sealed interface DialogState {
 
     @Immutable
     data class TextEdit(
-        val text: String? = null,
+        val text: String = "",
     ) : DialogState
 
     @Immutable
