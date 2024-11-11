@@ -34,7 +34,7 @@ fun StorageContent(
 ) {
     Scaffold { innerPadding ->
         Column(
-            modifier = modifier.padding(innerPadding),
+            modifier = modifier.padding(innerPadding).padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

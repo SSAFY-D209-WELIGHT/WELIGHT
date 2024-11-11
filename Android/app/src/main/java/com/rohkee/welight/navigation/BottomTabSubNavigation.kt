@@ -1,5 +1,6 @@
 package com.rohkee.welight.navigation
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,7 +13,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rohkee.core.ui.component.common.BottomNavigationBar
 import com.rohkee.core.ui.component.common.BottomNavigationItemState
-import com.rohkee.feature.storage.Storage
+import com.rohkee.feature.group.GroupRoute
+import com.rohkee.feature.storage.StorageRoute
 import com.rohkee.feature.storage.StorageScreen
 import com.rohkee.welight.R
 
@@ -31,13 +33,13 @@ fun BottomTabSubNavigation(
             items =
                 listOf(
                     BottomNavigationItemState(
-                        route = Storage,
+                        route = StorageRoute,
                         label = "보관함",
                         icon = R.drawable.ic_storage_unselected,
                         selectedIcon = R.drawable.ic_storage_selected,
                     ),
                     BottomNavigationItemState(
-                        route = "group",
+                        route = GroupRoute,
                         label = "단체 응원",
                         icon = R.drawable.ic_group_unselected,
                         selectedIcon = R.drawable.ic_group_selected,
@@ -60,13 +62,19 @@ fun BottomTabSubNavigation(
             },
         )
     }) { innerPadding ->
-        NavHost(navController = navController, startDestination = Storage) {
-            composable<Storage> {
+        NavHost(
+            modifier = Modifier.padding(innerPadding),
+            navController = navController,
+            startDestination = StorageRoute,
+        ) {
+            composable<StorageRoute> {
                 StorageScreen(
                     onNavigateToDisplayDetail = onNavigateToDisplayDetail,
                     onNavigateToCreateNewDisplay = onNavigateToCreateNewDisplay,
                 )
             }
+
+            composable<GroupRoute> { }
         }
     }
 }
