@@ -1,6 +1,7 @@
 package com.d209.welight.domain.display.service;
 
 import com.d209.welight.domain.display.entity.*;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
@@ -17,7 +18,7 @@ import java.util.List;
 public interface DisplayService {
 
     // 디스플레이 정보 저장 (기본 정보, 배경, 이미지, 텍스트, 태그)
-    DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request);
+    DisplayCreateResponse createDisplay(String userId, DisplayCreateRequest request);
 
     // 디스플레이 상세 보기
     DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request);
@@ -59,4 +60,5 @@ public interface DisplayService {
     void createComment(User user, Long displayId, DisplayCommentRequest request);
     void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request);
     void deleteComment(User user, Long displayId, Long commentUid);
+
 }
