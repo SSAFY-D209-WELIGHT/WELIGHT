@@ -21,10 +21,13 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +39,7 @@ import com.rohkee.core.ui.component.common.RoundedTextInput
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 import com.rohkee.feat.display.R
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -53,6 +57,8 @@ fun InfoEditDialog(
     val (tagList, setTagList) = remember(tags) { mutableStateOf(tags) }
     val (tagListSizeError, setTagListSizeError) = remember { mutableStateOf(false) }
     val (hasEdited, setHasEdited) = remember { mutableStateOf(false) }
+
+
 
     fun inputTitle(title: String) {
         setHasEdited(true)
@@ -82,8 +88,19 @@ fun InfoEditDialog(
 
     Dialog(
         onDismissRequest = {},
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        properties =
+            DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
     ) {
+        val focusRequester = remember { FocusRequester() }
+
+        LaunchedEffect(Unit) {
+            delay(100)
+            focusRequester.requestFocus()
+        }
+
         Column(
             modifier =
                 modifier
@@ -104,7 +121,7 @@ fun InfoEditDialog(
                 },
             )
             RoundedTextInput(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp).focusRequester(focusRequester),
                 autofocus = true,
                 value = titleText,
                 hint = stringResource(R.string.dialog_info_title_hint),
