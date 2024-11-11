@@ -19,15 +19,16 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
 }
 
 dependencies {
-implementation(files("libs/TarsosDSP-Android-2.4.jar"))
-    //
+    implementation(files("libs/TarsosDSP-Android-2.4.jar"))
+    implementation(project(":core:ui"))
+//    implementation("androidx.compose.foundation:foundation:1.2.0")
 //    implementation(libs.androidx.core.ktx)
 //    implementation(libs.androidx.lifecycle.runtime.ktx)
 //    implementation(libs.androidx.activity.compose)
