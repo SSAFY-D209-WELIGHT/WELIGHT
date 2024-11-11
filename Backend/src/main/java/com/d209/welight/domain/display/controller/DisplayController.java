@@ -68,22 +68,15 @@ public class DisplayController {
     public ResponseEntity<DisplayDetailResponse> getDisplayDetail(
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            String userId = userDetails.getUsername(); // userId
+        String userId = userDetails.getUsername();
 
-            DisplayDetailRequest request = DisplayDetailRequest.builder()
-                    .displayUid(displayId)
-                    .userId(userId) // userUid 대신 userId로 변경
-                    .build();
+        DisplayDetailRequest request = DisplayDetailRequest.builder()
+                .displayUid(displayId)
+                .userId(userId)
+                .build();
 
-            DisplayDetailResponse response = displayService.getDisplayDetail(request);
-            return ResponseEntity.ok(response);
-
-        } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) { // 예외 발생 시
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        DisplayDetailResponse response = displayService.getDisplayDetail(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping

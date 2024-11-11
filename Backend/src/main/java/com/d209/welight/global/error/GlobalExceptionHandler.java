@@ -1,8 +1,8 @@
 package com.d209.welight.global.error;
 
+import com.d209.welight.global.exception.display.DisplayNotFoundException;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,35 +12,47 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GlobalExceptionHandler {
 
+
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         log.error("EntityNotFoundException", e);
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+        return createErrorResponse(CommonErrorCode.ENTITY_NOT_FOUND);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("IllegalArgumentException", e);
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
+        return createErrorResponse(CommonErrorCode.INVALID_PARAMETER);
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
         log.error("IllegalStateException", e);
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
+        return createErrorResponse(CommonErrorCode.INVALID_STATE);
     }
 
     @ExceptionHandler(NoSearchResultException.class)
-    public ResponseEntity<String> handleNoSearchResultException(NoSearchResultException e) {
+    public ResponseEntity<ErrorResponse> handleNoSearchResultException(NoSearchResultException e) {
         log.error("NoSearchResultException", e);
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+        return createErrorResponse(CommonErrorCode.NO_SEARCH_RESULT);
     }
-} 
+
+    @ExceptionHandler(DisplayNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDisplayNotFoundException(DisplayNotFoundException e) {
+        log.error("DisplayNotFoundException", e);
+        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.error("Unhandled exception occurred: ", e);
+        return createErrorResponse(CommonErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<ErrorResponse> createErrorResponse(ErrorCode errorCode) {
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(new ErrorResponse(errorCode));
+    }
+
+}
