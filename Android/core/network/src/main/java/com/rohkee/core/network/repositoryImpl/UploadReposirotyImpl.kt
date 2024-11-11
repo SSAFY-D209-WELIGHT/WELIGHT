@@ -3,6 +3,7 @@ package com.rohkee.core.network.repositoryImpl
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
+import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.BuildConfig
 import com.rohkee.core.network.model.Upload
@@ -22,7 +23,7 @@ class UploadRepositoryImpl @Inject constructor(
     ): Flow<ApiResponse<Upload>> =
         callbackFlow {
             val uploadObserver =
-                transferUtility.upload(key, file)
+                transferUtility.upload(key, file, CannedAccessControlList.PublicRead)
 
             uploadObserver.setTransferListener(
                 object : TransferListener {
@@ -86,4 +87,72 @@ class UploadRepositoryImpl @Inject constructor(
                 uploadObserver.cleanTransferListener()
             }
         }
+
+    override suspend fun upload(files: List<Pair<String, File>>): Flow<ApiResponse<Upload>> = callbackFlow {
+        for ((key, file) in files) {
+            val uploadObserver =
+                transferUtility.upload(key, file, CannedAccessControlList.PublicRead)
+
+            uploadObserver.setTransferListener(
+                object : TransferListener {
+                    override fun onStateChanged(
+                        id: Int,
+                        state: TransferState,
+                    ) {
+                        when (state) {
+                            TransferState.COMPLETED -> {
+                                val objectUrl = "https://${BuildConfig.BUCKET_NAME}.s3.${BuildConfig.BUCKET_REGION}.amazonaws.com/$key"
+
+                                trySend(ApiResponse.Success(Upload.Completed(objectUrl)))
+                                uploadObserver.cleanTransferListener()
+                            }
+
+                            TransferState.CANCELED -> {
+                                trySend(
+                                    ApiResponse.Error(
+                                        errorCode = id,
+                                        errorMessage = "업로드 취소",
+                                    ),
+                                )
+                                uploadObserver.cleanTransferListener()
+                                close()
+                            }
+
+                            TransferState.FAILED -> {
+                                trySend(
+                                    ApiResponse.Error(
+                                        errorCode = id,
+                                        errorMessage = "업로드 실패",
+                                    ),
+                                )
+                                uploadObserver.cleanTransferListener()
+                                close()
+                            }
+
+                            else -> {}
+                        }
+                    }
+
+                    override fun onProgressChanged(
+                        id: Int,
+                        bytesCurrent: Long,
+                        bytesTotal: Long,
+                    ) {
+//                coroutineScope.launch {
+//                    emit(ApiResponse.Success(Upload.InProgress(progress = bytesCurrent / bytesTotal.toFloat())))
+//                }
+                    }
+
+                    override fun onError(
+                        id: Int,
+                        ex: Exception,
+                    ) {
+                        trySend(ApiResponse.Error(errorCode = id, errorMessage = ex.message))
+                        uploadObserver.cleanTransferListener()
+                        close()
+                    }
+                },
+            )
+        }
+    }
 }

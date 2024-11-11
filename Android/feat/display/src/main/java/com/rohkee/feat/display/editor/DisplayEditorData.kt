@@ -1,5 +1,6 @@
 package com.rohkee.feat.display.editor
 
+import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.font.FontFamily
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
@@ -57,7 +58,7 @@ data class DisplayEditorData(
 
     fun copyWithImage(
         isSelected: Boolean = editorImageState.isSelected,
-        imageSource: Any? = editorImageState.imageSource,
+        imageSource: Uri? = editorImageState.imageSource,
         color: CustomColor = editorImageState.color,
         scale: Float = editorImageState.scale,
         rotationDegree: Float = editorImageState.rotationDegree,
@@ -145,7 +146,7 @@ internal fun MutableStateFlow<DisplayEditorData>.updateImage(editorImageState: D
 
 internal fun MutableStateFlow<DisplayEditorData>.updateImage(
     isSelected: Boolean = this.value.editorImageState.isSelected,
-    imageSource: Any? = this.value.editorImageState.imageSource,
+    imageSource: Uri? = this.value.editorImageState.imageSource,
     color: CustomColor = this.value.editorImageState.color,
     scale: Float = this.value.editorImageState.scale,
     rotationDegree: Float = this.value.editorImageState.rotationDegree,

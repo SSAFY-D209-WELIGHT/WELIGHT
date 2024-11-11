@@ -10,4 +10,6 @@ interface UploadRepository {
         key: String,
         file: File,
     ): Flow<ApiResponse<Upload>>
+
+    suspend fun upload(files: List<Pair<String, File>>): Flow<ApiResponse<Upload>>
 }

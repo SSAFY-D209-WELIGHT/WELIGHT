@@ -2,8 +2,11 @@ package com.rohkee.feat.display.editor
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,12 +39,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -301,30 +307,55 @@ class EditorViewModel @Inject constructor(
                 "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
             val file = imageBitmap.saveToInternalStorage(fileName, context)
 
-            uploadRepository.upload(fileName, file).collect { response ->
-                when (response) {
-                    is ApiResponse.Success -> {
-                        response.body?.let { status ->
-                            when (status) {
-                                is Upload.Completed -> {
-                                    editorStateHolder.value.let { data ->
-                                        displayRepository.createDisplay(
-                                            display = data.toDisplayRequest(status.uploadedFile),
-                                        )
+            val imageFile =
+                editorStateHolder.value.editorImageState.imageSource?.let { uri ->
+                    getFileFromUri(context, uri)
+                }
+
+            imageFile?.let {
+                val imageName = imageFile.name
+                uploadRepository
+                    .upload(imageName, imageFile)
+                    .combine(
+                        uploadRepository.upload(fileName, file),
+                    ) { imageResponse, thumbnailResponse ->
+                        if (imageResponse is ApiResponse.Error) {
+                            ApiResponse.Error(imageResponse.errorCode, imageResponse.errorMessage)
+                        } else if (thumbnailResponse is ApiResponse.Error) {
+                            ApiResponse.Error(
+                                thumbnailResponse.errorCode,
+                                thumbnailResponse.errorMessage,
+                            )
+                        } else {
+                            ApiResponse.Success(imageResponse to thumbnailResponse)
+                        }
+                    }.collect { response ->
+                        when (response) {
+                            is ApiResponse.Success -> {
+                                response.body?.let { pair ->
+
+                                    val image = (pair.first as ApiResponse.Success).body
+                                    val thumbnailUrl = (pair.second as ApiResponse.Success).body
+
+                                    if (image is Upload.Completed && thumbnailUrl is Upload.Completed) {
+                                        editorStateHolder.value.let { data ->
+                                            displayRepository.createDisplay(
+                                                display =
+                                                    data.toDisplayRequest(
+                                                        thumbnailUrl = thumbnailUrl.uploadedFile,
+                                                        imageUrl = image.uploadedFile,
+                                                    ),
+                                            )
+                                        }
                                     }
                                 }
+                            }
 
-                                else -> {
-                                    // TODO : Error
-                                }
+                            is ApiResponse.Error -> {
+                                // TODO : Error
                             }
                         }
                     }
-
-                    is ApiResponse.Error -> {
-                        // TODO : Error
-                    }
-                }
             }
         }
     }
@@ -352,7 +383,48 @@ private fun File.writeBitmap(
     }
 }
 
-private fun DisplayEditorData.toDisplayRequest(thumbnailUrl: String): DisplayRequest =
+private fun getFileFromUri(
+    context: Context,
+    uri: Uri,
+): File? {
+    val fileName = getFileName(context, uri) ?: return null
+    val cacheDir = context.cacheDir
+    val file = File(cacheDir, fileName)
+
+    try {
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            FileOutputStream(file).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+        return file
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+
+    return null
+}
+
+private fun getFileName(
+    context: Context,
+    uri: Uri,
+): String? {
+    val cursor = context.contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        if (it.moveToFirst()) {
+            val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (displayNameIndex != -1) {
+                return it.getString(displayNameIndex)
+            }
+        }
+    }
+    return null
+}
+
+private fun DisplayEditorData.toDisplayRequest(
+    thumbnailUrl: String,
+    imageUrl: String,
+): DisplayRequest =
     DisplayRequest(
         title = this.editorInfoState.title,
         tags = this.editorInfoState.tags.toList(),
@@ -361,7 +433,7 @@ private fun DisplayEditorData.toDisplayRequest(thumbnailUrl: String): DisplayReq
         images =
             listOf(
                 DisplayImage(
-                    url = this.editorImageState.imageSource.toString(),
+                    url = imageUrl,
                     color =
                         this.editorImageState.color.primary
                             .toHexString(),
@@ -419,7 +491,7 @@ private fun DisplayResponse.Editable.toDisplayEditorData() =
         editorImageState =
             this.images.firstOrNull()?.let { image ->
                 DisplayImageState(
-                    imageSource = image.url,
+                    imageSource = image.url.toUri(),
                     color = CustomColor.Single(color = image.color.toComposeColor()),
                     scale = image.scale,
                     rotationDegree = image.rotation,
