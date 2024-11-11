@@ -6,11 +6,9 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.Upload
 import com.rohkee.core.network.repository.UploadRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.callbackFlow
 import java.io.File
 import javax.inject.Inject
 
@@ -21,12 +19,9 @@ class UploadRepositoryImpl @Inject constructor(
         key: String,
         file: File,
     ): Flow<ApiResponse<Upload>> =
-        flow {
+        callbackFlow {
             val uploadObserver =
                 transferUtility.upload(key, file)
-
-            val context = currentCoroutineContext()
-            val scope = CoroutineScope(context)
 
             uploadObserver.setTransferListener(
                 object : TransferListener {
@@ -36,29 +31,28 @@ class UploadRepositoryImpl @Inject constructor(
                     ) {
                         when (state) {
                             TransferState.COMPLETED -> {
-                                scope.launch { emit(ApiResponse.Success(Upload.Completed(key))) }
+                                trySend(ApiResponse.Success(Upload.Completed(key)))
+                                close()
                             }
 
                             TransferState.CANCELED -> {
-                                scope.launch {
-                                    emit(
-                                        ApiResponse.Error(
-                                            errorCode = id,
-                                            errorMessage = "업로드 취소",
-                                        ),
-                                    )
-                                }
+                                trySend(
+                                    ApiResponse.Error(
+                                        errorCode = id,
+                                        errorMessage = "업로드 취소",
+                                    ),
+                                )
+                                close()
                             }
 
                             TransferState.FAILED -> {
-                                scope.launch {
-                                    emit(
-                                        ApiResponse.Error(
-                                            errorCode = id,
-                                            errorMessage = "업로드 실패",
-                                        ),
-                                    )
-                                }
+                                trySend(
+                                    ApiResponse.Error(
+                                        errorCode = id,
+                                        errorMessage = "업로드 실패",
+                                    ),
+                                )
+                                close()
                             }
 
                             else -> {}
@@ -79,11 +73,14 @@ class UploadRepositoryImpl @Inject constructor(
                         id: Int,
                         ex: Exception,
                     ) {
-                        scope.launch {
-                            emit(ApiResponse.Error(errorCode = id, errorMessage = ex.message))
-                        }
+                        trySend(ApiResponse.Error(errorCode = id, errorMessage = ex.message))
+                        close()
                     }
                 },
             )
+
+            awaitClose {
+                uploadObserver.cleanTransferListener()
+            }
         }
 }
