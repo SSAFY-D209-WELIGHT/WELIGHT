@@ -117,17 +117,9 @@ public class DisplayController {
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        try {
-            String userId = userDetails.getUsername();
-            DisplayCreateResponse response = displayService.duplicateDisplay(displayId, userId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (EntityNotFoundException e) {
-            log.error("디스플레이 복제 중 엔티티를 찾을 수 없음: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            log.error("디스플레이 복제 중 예상치 못한 오류 발생: displayId={}, userId={}", displayId, userDetails.getUsername(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        String userId = userDetails.getUsername();
+        DisplayCreateResponse response = displayService.duplicateDisplay(displayId, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{displayId}/edit")
@@ -136,19 +128,8 @@ public class DisplayController {
             @PathVariable Long displayId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        try {
-            DisplayCreateRequest response = displayService.getDisplayForEdit(displayId, userDetails.getUsername());
-            return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("디스플레이를 찾을 수 없습니다.");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("조회 권한이 없습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("디스플레이 정보 조회 중 오류가 발생했습니다.");
-        }
+        DisplayCreateRequest response = displayService.getDisplayForEdit(displayId, userDetails.getUsername());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{displayId}/edit")
@@ -158,42 +139,24 @@ public class DisplayController {
             @RequestBody DisplayCreateRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        try {
-            DisplayCreateResponse response = displayService.updateDisplay(displayId, request, userDetails.getUsername());
-            return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("디스플레이를 찾을 수 없습니다.");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("수정 권한이 없습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("디스플레이 수정 중 오류가 발생했습니다.");
-        }
+        DisplayCreateResponse response = displayService.updateDisplay(displayId, request, userDetails.getUsername());
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{displayId}")
     @Operation(summary = "디스플레이 삭제", description = "특정 디스플레이를 삭제합니다.")
     public ResponseEntity<?> deleteDisplay(
             @PathVariable Long displayId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            displayService.deleteDisplay(displayId, userDetails.getUsername());
-            return ResponseEntity.ok().body("디스플레이가 성공적으로 삭제되었습니다.");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("디스플레이를 찾을 수 없습니다.");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 권한이 없습니다");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("디스플레이 삭제 중 오류가 발생했습니다.");
-        }
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        displayService.deleteDisplay(displayId, userDetails.getUsername());
+        return ResponseEntity.ok().body("디스플레이가 성공적으로 삭제되었습니다.");
     }
 
     @PostMapping("/{displayId}/storage")
     @Operation(summary = "디스플레이 다운로드", description = "디스플레이를 저장소에 저장합니다.")
     public ResponseEntity<?> downloadDisplay(Authentication authentication,
-                                              @PathVariable("displayId") long displayUid) throws Exception{
+                                              @PathVariable("displayId") long displayUid) {
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
