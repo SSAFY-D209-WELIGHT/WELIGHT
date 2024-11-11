@@ -41,7 +41,7 @@ fun EditorScreen(
             is EditorEvent.ExitPage -> onPopBackStack()
             is EditorEvent.ShowSnackBar -> onShowSnackBar(event.message)
             EditorEvent.OpenPhotoGallery -> photoGalleryLauncher.launch("image/*")
-            EditorEvent.Save.Success -> onPopBackStack()
+            is EditorEvent.Save.Success -> onNavigateToDisplayDetail(event.displayId)
             EditorEvent.Save.Failure -> { // TODO : Snackbar
             }
         }
@@ -59,6 +59,7 @@ fun EditorScreen(
     }
 
     EditorContent(
+        modifier = modifier,
         state = editorUIState,
         onIntent = editorViewModel::onIntent,
     )

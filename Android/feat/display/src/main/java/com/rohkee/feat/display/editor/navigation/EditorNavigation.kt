@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EditorRoute(
-    val id: Long?,
+    val displayId: Long?,
 )

@@ -56,7 +56,7 @@ class EditorViewModel @Inject constructor(
     private val displayRepository: DisplayRepository,
     private val uploadRepository: UploadRepository,
 ) : ViewModel() {
-    private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().id
+    private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().displayId
 
     private val editorStateHolder = MutableStateFlow<DisplayEditorData>(DisplayEditorData())
 
@@ -263,7 +263,9 @@ class EditorViewModel @Inject constructor(
                         }
                     }
                 },
-                onError = { _, _ -> },
+                onError = { _, message ->
+                    //Log.d("TAG", "loadData: $message")
+                },
             )
         }
     }
@@ -349,7 +351,9 @@ class EditorViewModel @Inject constructor(
                                                         ),
                                                 ).handle(
                                                     onSuccess = {
-                                                        emitEvent(EditorEvent.Save.Success)
+                                                        it?.let {
+                                                            emitEvent(EditorEvent.Save.Success(it.id))
+                                                        }
                                                     },
                                                     onError = { _, _ ->
                                                         emitEvent(EditorEvent.Save.Failure)

@@ -4,7 +4,9 @@ sealed interface DetailEvent {
     data object ExitPage : DetailEvent
 
     sealed interface Download : DetailEvent {
-        data object Success : Download
+        data class Success(
+            val displayId: Long,
+        ) : Download
 
         data object Error : Download
     }

@@ -11,19 +11,29 @@ import com.rohkee.core.ui.util.collectWithLifecycle
 fun DetailScreen(
     modifier: Modifier = Modifier,
     detailViewModel: DetailViewModel = hiltViewModel(),
+    onPopBackStack: () -> Unit = {},
+    onEditDisplay: (displayId: Long) -> Unit = {},
+    onDuplicateDisplay: (displayId: Long) -> Unit = {},
+    onDownloadDisplay: (displayId: Long) -> Unit = {},
 ) {
     val state by detailViewModel.detailState.collectAsStateWithLifecycle()
 
     detailViewModel.detailEvent.collectWithLifecycle { event ->
         when (event) {
-            DetailEvent.ExitPage -> TODO()
-            DetailEvent.Download.Success -> TODO()
-            DetailEvent.Download.Error -> TODO()
-            DetailEvent.Delete.Error -> TODO()
-            DetailEvent.Delete.Success -> TODO()
-            DetailEvent.Duplicate.Error -> TODO()
-            is DetailEvent.Duplicate.Success -> TODO()
-            is DetailEvent.EditDisplay -> TODO()
+            DetailEvent.ExitPage -> onPopBackStack()
+            is DetailEvent.Download.Success -> onDownloadDisplay(event.displayId)
+            DetailEvent.Download.Error -> {
+                // TODO: 에러 처리
+            }
+            DetailEvent.Delete.Success -> onPopBackStack()
+            DetailEvent.Delete.Error -> {
+                // TODO: 에러 처리
+            }
+            is DetailEvent.Duplicate.Success -> onDuplicateDisplay(event.displayId)
+            DetailEvent.Duplicate.Error -> {
+                // TODO: 에러 처리
+            }
+            is DetailEvent.EditDisplay -> onEditDisplay(event.displayId)
         }
     }
 

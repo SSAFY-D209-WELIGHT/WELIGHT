@@ -55,8 +55,16 @@ class DetailViewModel @Inject constructor(
             DetailIntent.Post -> postToBoard()
             DetailIntent.ToggleFavorite -> toggleFavorite()
             DetailIntent.ToggleLike -> toggleLike()
-            DetailIntent.ToggleUI -> TODO()
-            DetailIntent.ExitPage -> TODO()
+            DetailIntent.ToggleUI -> {
+                // TODO : UI 토글
+            }
+            DetailIntent.ExitPage -> emitEvent(DetailEvent.ExitPage)
+        }
+    }
+
+    private fun emitEvent(event: DetailEvent) {
+        viewModelScope.launch {
+            detailEvent.emit(event)
         }
     }
 
@@ -85,7 +93,9 @@ class DetailViewModel @Inject constructor(
                     )
                 }
             },
-            onError = { _, _ -> },
+            onError = { errorCode, message ->
+                //Log.d("TAG", "loadData: $message")
+            },
         )
     }
 
@@ -138,10 +148,12 @@ class DetailViewModel @Inject constructor(
         viewModelScope.launch {
             displayRepository.importDisplayToMyStorage(id).handle(
                 onSuccess = {
-                    detailStateHolder.update {
-                        it.copy(download = it.download + 1)
+                    detailStateHolder.update { data ->
+                        data.copy(download = data.download + 1)
                     }
-                    detailEvent.emit(DetailEvent.Download.Success)
+                    if (it != null) {
+                        detailEvent.emit(DetailEvent.Download.Success(it.id))
+                    }
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Download.Error) },
             )
