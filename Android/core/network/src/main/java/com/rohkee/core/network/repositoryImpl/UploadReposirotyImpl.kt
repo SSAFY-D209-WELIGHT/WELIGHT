@@ -1,6 +1,5 @@
 package com.rohkee.core.network.repositoryImpl
 
-import android.util.Log
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
@@ -37,11 +36,18 @@ class UploadRepositoryImpl @Inject constructor(
                     ) {
                         when (state) {
                             TransferState.COMPLETED -> {
-                                Log.d("TAG", "onStateChanged: ")
                                 scope.launch { emit(ApiResponse.Success(Upload.Completed(key))) }
                             }
 
                             TransferState.CANCELED -> {
+                                scope.launch {
+                                    emit(
+                                        ApiResponse.Error(
+                                            errorCode = id,
+                                            errorMessage = "업로드 취소",
+                                        ),
+                                    )
+                                }
                             }
 
                             TransferState.FAILED -> {
@@ -73,9 +79,9 @@ class UploadRepositoryImpl @Inject constructor(
                         id: Int,
                         ex: Exception,
                     ) {
-//                coroutineScope.launch {
-//                    emit(ApiResponse.Error(errorCode = id, errorMessage = ex.message))
-//                }
+                        scope.launch {
+                            emit(ApiResponse.Error(errorCode = id, errorMessage = ex.message))
+                        }
                     }
                 },
             )
