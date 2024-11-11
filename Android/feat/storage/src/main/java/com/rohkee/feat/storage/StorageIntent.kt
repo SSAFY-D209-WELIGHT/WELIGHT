@@ -12,6 +12,13 @@ interface StorageIntent {
     ) : StorageIntent
 
     /**
+     * 응원도구 즐겨찾기 토글
+     */
+    data class ToggleFavorite(
+        val displayId: Long,
+    ) : StorageIntent
+
+    /**
      * 새로운 응원도구 생성
      */
     data object CreateNewDisplay : StorageIntent

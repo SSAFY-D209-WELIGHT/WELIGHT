@@ -19,9 +19,9 @@ import com.rohkee.core.ui.component.appbar.LogoAppBar
 import com.rohkee.core.ui.component.storage.CreateDisplayButton
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
+import com.rohkee.core.ui.component.storage.DisplayCardWithFavorite
 import com.rohkee.core.ui.component.storage.InfiniteHorizontalPager
 import com.rohkee.core.ui.component.storage.NoContentCard
-import kotlinx.coroutines.flow.flow
 
 /**
  * 보관함 화면
@@ -96,9 +96,10 @@ private fun LoadedContent(
         pageCount = displayList.itemCount,
     ) { index ->
         displayList[index]?.let { item ->
-            DisplayCard(
+            DisplayCardWithFavorite(
                 state = item,
                 onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
+                onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
             )
         }
     }

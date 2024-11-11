@@ -49,6 +49,11 @@ class StorageViewModel @Inject constructor(
                     storageEvent.emit(StorageEvent.CreateNewDisplay)
                 }
             }
+            is StorageIntent.ToggleFavorite -> {
+                viewModelScope.launch {
+                    displayRepository.favoriteDisplay(intent.displayId)
+                }
+            }
         }
     }
 
