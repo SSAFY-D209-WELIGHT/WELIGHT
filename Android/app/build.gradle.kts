@@ -33,5 +33,6 @@ dependencies {
 
     implementation(project(":core:ui"))
     implementation(project(":feat:storage"))
+    implementation(project(":feat:detail"))
     implementation(project(":feat:display"))
 }
