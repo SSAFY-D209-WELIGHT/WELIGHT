@@ -2,23 +2,17 @@ package com.rohkee.feat.display.editor
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Environment
 import android.provider.OpenableColumns
-import android.util.Log
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rohkee.core.network.repository.DisplayRepository
-import com.rohkee.core.network.util.handle
-import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.repository.UploadRepository
+import com.rohkee.core.network.util.handle
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
@@ -35,7 +29,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -44,9 +37,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
-import kotlin.coroutines.resume
 
 @HiltViewModel
 class EditorViewModel @Inject constructor(
@@ -80,7 +71,7 @@ class EditorViewModel @Inject constructor(
 
             is EditorIntent.Save -> {
                 saveDisplay(intent.context, intent.bitmap)
-                //emitEvent(EditorEvent.ExitPage)
+                // emitEvent(EditorEvent.ExitPage)
             }
 
             // ImageObject
@@ -236,7 +227,6 @@ class EditorViewModel @Inject constructor(
                     displayImageState = editorStateHolder.value.editorImageState.copy(imageSource = intent.image),
                     dialogState = DialogState.Closed,
                 )
-            }
 
             EditorIntent.Dialog.Close ->
                 editorStateHolder.updateState(
@@ -389,14 +379,18 @@ class EditorViewModel @Inject constructor(
         }
         return null
     }
-}
 
-    private fun saveDisplay(context: Context, bitmap: GraphicsLayer) {
+    private fun saveDisplay(
+        context: Context,
+        bitmap: GraphicsLayer,
+    ) {
         viewModelScope.launch {
-            val bitmap = bitmap.toImageBitmap()
-            val uri = bitmap.asAndroidBitmap().saveToDisk(context)
+            val imageBitmap = bitmap.toImageBitmap().asAndroidBitmap()
+            val fileName = "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
+            val file = imageBitmap.saveToInternalStorage(fileName, context)
 
-            editorStateHolder.updateImage(imageSource = uri)
+            uploadRepository.upload(fileName, file)
+//            editorStateHolder.updateImage(imageSource = uri)
 //            editorStateHolder.value.let { data ->
 //                displayRepository.createDisplay(
 //                    display =
@@ -457,39 +451,19 @@ class EditorViewModel @Inject constructor(
     }
 }
 
-
-private suspend fun Bitmap.saveToDisk(context: Context): Uri {
-    val file = File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-        "screenshot-${System.currentTimeMillis()}.png"
-    )
+private suspend fun Bitmap.saveToInternalStorage(filename: String, context: Context): File {
+    val file = File(context.filesDir, filename)
 
     file.writeBitmap(this, Bitmap.CompressFormat.PNG, 100)
 
-    return scanFilePath(context, file.path) ?: throw Exception("File could not be saved")
+    return file
 }
 
-/**
- * We call [MediaScannerConnection] to index the newly created image inside MediaStore to be visible
- * for other apps, as well as returning its [MediaStore] Uri
- */
-private suspend fun scanFilePath(context: Context, filePath: String): Uri? {
-    return suspendCancellableCoroutine { continuation ->
-        MediaScannerConnection.scanFile(
-            context,
-            arrayOf(filePath),
-            arrayOf("image/png")
-        ) { _, scannedUri ->
-            if (scannedUri == null) {
-                continuation.cancel(Exception("File $filePath could not be scanned"))
-            } else {
-                continuation.resume(scannedUri)
-            }
-        }
-    }
-}
-
-private fun File.writeBitmap(bitmap: Bitmap, format: Bitmap.CompressFormat, quality: Int) {
+private fun File.writeBitmap(
+    bitmap: Bitmap,
+    format: Bitmap.CompressFormat,
+    quality: Int,
+) {
     outputStream().use { out ->
         bitmap.compress(format, quality, out)
         out.flush()
