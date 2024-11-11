@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket 클라이언트 테스트</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .disconnected {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>WebSocket 클라이언트 테스트</h2>
+        <div id="status" class="disconnected">연결 상태: 연결 끊김</div>
+        
+        <div>
+            <input type="text" id="messageInput" placeholder="표시할 메시지 입력">
+            <button onclick="sendMessage()">메시지 전송</button>
+        </div>
+        
+        <div id="response" style="margin-top: 20px;">
+            <h3>서버 응답:</h3>
+            <pre id="responseText"></pre>
+        </div>
+    </div>
+
+    <script>
+        const socket = io('https://k11d209.p.ssafy.io', {
+            path: '/socket.io/',
+            transports: ['websocket'],
+            secure: true
+        });
+        
+        const statusDiv = document.getElementById('status');
+        const responseText = document.getElementById('responseText');
+
+        socket.on('connect', () => {
+            statusDiv.textContent = '연결 상태: 연결됨';
+            statusDiv.className = 'connected';
+            console.log('연결 성공!');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('연결 오류:', error);
+            statusDiv.textContent = '연결 상태: 연결 오류 - ' + error.message;
+            statusDiv.className = 'disconnected';
+        });
+
+        socket.on('disconnect', () => {
+            statusDiv.textContent = '연결 상태: 연결 끊김';
+            statusDiv.className = 'disconnected';
+            console.log('연결 끊김');
+        });
+
+        socket.on('updateDisplay', (data) => {
+            responseText.textContent = JSON.stringify(data, null, 2);
+            console.log('메시지 수신:', data);
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value;
+            
+            if (message.trim()) {
+                const data = {
+                    message: message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('메시지 전송:', data);
+                socket.emit('displayCommand', data);
+                input.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
