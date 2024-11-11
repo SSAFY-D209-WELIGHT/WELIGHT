@@ -297,6 +297,8 @@ class EditorViewModel @Inject constructor(
         context: Context,
         bitmap: GraphicsLayer,
     ) {
+        val userId = 2 // TODO : userId
+
         if (editorStateHolder.value.editorInfoState.title
                 .isEmpty()
         ) {
@@ -305,10 +307,10 @@ class EditorViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val imageBitmap = bitmap.toImageBitmap().asAndroidBitmap()
-            val fileName =
+            val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
+            val thumbnailName =
                 "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
-            val file = imageBitmap.saveToInternalStorage(fileName, context)
+            val file = thumbnailBitmap.saveToInternalStorage(thumbnailName, context)
 
             val imageFile =
                 editorStateHolder.value.editorImageState.imageSource?.let { uri ->
@@ -316,11 +318,10 @@ class EditorViewModel @Inject constructor(
                 }
 
             imageFile?.let {
-                val imageName = imageFile.name
                 uploadRepository
-                    .upload(imageName, imageFile)
+                    .upload("$userId/images/${imageFile.name}", imageFile)
                     .combine(
-                        uploadRepository.upload(fileName, file),
+                        uploadRepository.upload("$userId/thumbnails/$thumbnailName", file),
                     ) { imageResponse, thumbnailResponse ->
                         if (imageResponse is ApiResponse.Error) {
                             ApiResponse.Error(imageResponse.errorCode, imageResponse.errorMessage)
@@ -457,19 +458,23 @@ private fun DisplayEditorData.toDisplayRequest(
                 ),
             ),
         texts =
-            listOf(
-                DisplayText(
-                    text = this.editorTextState.text,
-                    color =
-                        this.editorTextState.color.primary
-                            .toHexString(),
-                    font = this.editorTextState.font.toFontName(),
-                    rotation = this.editorTextState.rotationDegree,
-                    scale = this.editorImageState.scale,
-                    offsetX = this.editorTextState.offsetPercentX,
-                    offsetY = this.editorTextState.offsetPercentY,
-                ),
-            ),
+            if (this.editorTextState.text.isNotEmpty()) {
+                listOf(
+                    DisplayText(
+                        text = this.editorTextState.text,
+                        color =
+                            this.editorTextState.color.primary
+                                .toHexString(),
+                        font = this.editorTextState.font.toFontName(),
+                        rotation = this.editorTextState.rotationDegree,
+                        scale = this.editorImageState.scale,
+                        offsetX = this.editorTextState.offsetPercentX,
+                        offsetY = this.editorTextState.offsetPercentY,
+                    ),
+                )
+            } else {
+                emptyList()
+            },
         background =
             when (val color = this.editorBackgroundState.color) {
                 is CustomColor.Single ->
