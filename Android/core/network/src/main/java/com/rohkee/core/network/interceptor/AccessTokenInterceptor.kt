@@ -21,7 +21,7 @@ class AccessTokenInterceptor @Inject constructor(
                 requestBuilder.build()
             } else {
                 requestBuilder
-                    .header("Authorization", accessToken)
+                    .header("Authorization", "Bearer $accessToken")
                     .build()
             }
         return chain.proceed(request)
