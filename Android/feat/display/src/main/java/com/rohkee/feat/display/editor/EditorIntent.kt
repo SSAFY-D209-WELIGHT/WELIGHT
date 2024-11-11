@@ -118,6 +118,7 @@ sealed interface EditorIntent {
         ) : Dialog
 
         data class PickedImage(
+            val context: Context,
             val image: Uri,
         ) : Dialog
     }

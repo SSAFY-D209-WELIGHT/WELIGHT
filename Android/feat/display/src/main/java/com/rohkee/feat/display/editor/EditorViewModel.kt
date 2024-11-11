@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.provider.OpenableColumns
+import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -15,6 +17,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.util.handle
+import com.rohkee.core.network.ApiResponse
+import com.rohkee.core.network.repository.UploadRepository
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
@@ -31,13 +35,16 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -45,6 +52,7 @@ import kotlin.coroutines.resume
 class EditorViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val displayRepository: DisplayRepository,
+    private val uploadRepository: UploadRepository,
 ) : ViewModel() {
     private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().id
 
@@ -228,6 +236,7 @@ class EditorViewModel @Inject constructor(
                     displayImageState = editorStateHolder.value.editorImageState.copy(imageSource = intent.image),
                     dialogState = DialogState.Closed,
                 )
+            }
 
             EditorIntent.Dialog.Close ->
                 editorStateHolder.updateState(
@@ -342,6 +351,45 @@ class EditorViewModel @Inject constructor(
             editorStateHolder.update { editorStateHolder.value.copy(bottomBarState = EditingState.Image) }
         }
     }
+
+    private fun getFileFromUri(
+        context: Context,
+        uri: Uri,
+    ): File? {
+        val fileName = getFileName(context, uri) ?: return null
+        val cacheDir = context.cacheDir
+        val file = File(cacheDir, fileName)
+
+        try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(file).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            return file
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return null
+    }
+
+    private fun getFileName(
+        context: Context,
+        uri: Uri,
+    ): String? {
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (displayNameIndex != -1) {
+                    return it.getString(displayNameIndex)
+                }
+            }
+        }
+        return null
+    }
+}
 
     private fun saveDisplay(context: Context, bitmap: GraphicsLayer) {
         viewModelScope.launch {

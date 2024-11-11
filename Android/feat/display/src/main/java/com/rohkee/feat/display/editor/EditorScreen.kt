@@ -33,7 +33,7 @@ fun EditorScreen(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent(),
         ) { uri: Uri? ->
-            uri?.let { editorViewModel.onIntent(EditorIntent.Dialog.PickedImage(uri)) }
+            uri?.let { editorViewModel.onIntent(EditorIntent.Dialog.PickedImage(context, uri)) }
         }
 
     editorViewModel.editorEvent.collectWithLifecycle { event ->
