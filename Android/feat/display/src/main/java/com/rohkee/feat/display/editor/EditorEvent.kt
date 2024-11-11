@@ -10,7 +10,9 @@ sealed interface EditorEvent {
     ) : EditorEvent
 
     sealed interface Save : EditorEvent {
-        data object Success : Save
+        data class Success(
+            val displayId: Long,
+        ) : Save
 
         data object Failure : Save
     }
