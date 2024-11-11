@@ -55,7 +55,7 @@ class DisplayRepositoryImpl @Inject constructor(
 
     override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> = apiHandler { displayApi.getDisplayEdit(id) }
 
-    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<String> = apiHandler { displayApi.importDisplayToMyStorage(id) }
+    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted> = apiHandler { displayApi.importDisplayToMyStorage(id) }
 
     override suspend fun searchDisplayList(
         keyword: String,

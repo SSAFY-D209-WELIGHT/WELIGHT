@@ -2,6 +2,7 @@ package com.rohkee.core.network.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 sealed interface DisplayResponse {
     val id: Long
@@ -16,8 +17,8 @@ sealed interface DisplayResponse {
 
     @Serializable
     data class Detail(
-        @SerialName("displayUid")
-        override val id: Long,
+        @Transient
+        override val id: Long = 0,
         @SerialName("displayThumbnailUrl")
         val thumbnailUrl: String,
         @SerialName("displayName")
@@ -34,14 +35,14 @@ sealed interface DisplayResponse {
         val downloads: Int,
         @SerialName("commentCount")
         val comments: Int,
-        @SerialName("favorite")
+        @SerialName("favourite")
         val favorite: Boolean,
     ) : DisplayResponse
 
     @Serializable
     data class Editable(
-        @SerialName("displayUid")
-        override val id: Long,
+        @Transient
+        override val id: Long = 0,
         @SerialName("displayThumbnailUrl")
         val thumbnailUrl: String,
         @SerialName("displayName")

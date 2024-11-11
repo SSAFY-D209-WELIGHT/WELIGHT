@@ -80,7 +80,7 @@ interface DisplayApi {
     @POST("display/{displayId}/storage")
     suspend fun importDisplayToMyStorage(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Posted>
 
     // TODO : /display/{displayId}/comment
 
@@ -92,6 +92,8 @@ interface DisplayApi {
 
     // PATCH
     // TODO : /display/{displayId}/comment
+
+    // TODO : /display/{display}
 
     // /display/{displayId}/favorite
     @PATCH("display/{displayId}/favorite")

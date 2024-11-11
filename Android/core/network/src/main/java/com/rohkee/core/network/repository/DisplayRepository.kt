@@ -35,7 +35,7 @@ interface DisplayRepository {
         display: DisplayRequest,
     ): ApiResponse<DisplayResponse.Posted>
 
-    suspend fun importDisplayToMyStorage(id: Long): ApiResponse<String>
+    suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted>
 
     suspend fun likeDisplay(id: Long): ApiResponse<String>
 
