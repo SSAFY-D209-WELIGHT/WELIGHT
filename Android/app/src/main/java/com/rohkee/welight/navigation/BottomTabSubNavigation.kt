@@ -5,6 +5,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -35,20 +36,20 @@ fun BottomTabSubNavigation(
                     BottomNavigationItemState(
                         route = StorageRoute,
                         label = "보관함",
-                        icon = R.drawable.ic_storage_unselected,
-                        selectedIcon = R.drawable.ic_storage_selected,
+                        icon = painterResource(R.drawable.ic_storage_unselected),
+                        selectedIcon = painterResource(R.drawable.ic_storage_selected),
                     ),
                     BottomNavigationItemState(
                         route = GroupRoute,
                         label = "단체 응원",
-                        icon = R.drawable.ic_group_unselected,
-                        selectedIcon = R.drawable.ic_group_selected,
+                        icon = painterResource(R.drawable.ic_group_unselected),
+                        selectedIcon = painterResource(R.drawable.ic_group_selected),
                     ),
                     BottomNavigationItemState(
                         route = "board",
                         label = "게시판",
-                        icon = R.drawable.ic_board_unselected,
-                        selectedIcon = R.drawable.ic_board_selected,
+                        icon = painterResource(R.drawable.ic_board_unselected),
+                        selectedIcon = painterResource(R.drawable.ic_board_selected),
                     ),
                 ),
             onSelected = { route ->

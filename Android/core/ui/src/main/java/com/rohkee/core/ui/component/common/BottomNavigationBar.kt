@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,8 +26,8 @@ import com.rohkee.core.ui.util.topBorder
 data class BottomNavigationItemState<T>(
     val route: T,
     val label: String,
-    val icon: Int,
-    val selectedIcon: Int,
+    val icon: Painter,
+    val selectedIcon: Painter,
 )
 
 @Composable
@@ -69,8 +69,8 @@ fun BottomNavigationItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean,
     label: String,
-    icon: Int,
-    selectedIcon: Int,
+    icon: Painter,
+    selectedIcon: Painter,
     onClick: () -> Unit = {},
 ) {
     Column(
@@ -83,7 +83,7 @@ fun BottomNavigationItem(
     ) {
         Icon(
             tint = if (isSelected) AppColor.Active else AppColor.Inactive,
-            painter = painterResource(id = if (isSelected) selectedIcon else icon),
+            painter = if (isSelected) selectedIcon else icon,
             contentDescription = "홈",
         )
         Text(
