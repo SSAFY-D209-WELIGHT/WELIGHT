@@ -34,5 +34,5 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":feature:storage"))
     implementation(project(":feature:detail"))
-    implementation(project(":feature:display"))
+    implementation(project(":feature:editor"))
 }

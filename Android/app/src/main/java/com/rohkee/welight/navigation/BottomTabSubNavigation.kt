@@ -12,8 +12,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rohkee.core.ui.component.common.BottomNavigationBar
 import com.rohkee.core.ui.component.common.BottomNavigationItemState
-import com.rohkee.feat.storage.Storage
-import com.rohkee.feat.storage.StorageScreen
+import com.rohkee.feature.storage.Storage
+import com.rohkee.feature.storage.StorageScreen
 import com.rohkee.welight.R
 
 @Composable

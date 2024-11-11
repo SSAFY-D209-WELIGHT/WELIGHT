@@ -7,10 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.rohkee.feat.detail.DetailRoute
-import com.rohkee.feat.detail.DetailScreen
-import com.rohkee.feat.display.editor.EditorScreen
-import com.rohkee.feat.display.editor.navigation.EditorRoute
+import com.rohkee.feature.detail.DetailRoute
+import com.rohkee.feature.detail.DetailScreen
+import com.rohkee.feature.editor.EditorScreen
+import com.rohkee.feature.editor.navigation.EditorRoute
 
 @Composable
 fun MainNavigation(
