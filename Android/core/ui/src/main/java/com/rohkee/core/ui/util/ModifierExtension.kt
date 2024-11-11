@@ -118,6 +118,58 @@ fun Modifier.dashedBorder(
     )
 }
 
+fun Modifier.topBorder(
+    color: Color,
+    width: Dp,
+) = this.drawWithContent {
+    drawContent()
+    drawLine(
+        color = color,
+        start = Offset(0f, 0f),
+        end = Offset(size.width, 0f),
+        strokeWidth = width.toPx(),
+    )
+}
+
+fun Modifier.rightBorder(
+    color: Color,
+    width: Dp,
+) = this.drawWithContent {
+    drawContent()
+    drawLine(
+        color = color,
+        start = Offset(size.width, 0f),
+        end = Offset(size.width, size.height),
+        strokeWidth = width.toPx(),
+    )
+}
+
+fun Modifier.bottomBorder(
+    color: Color,
+    width: Dp,
+) = this.drawWithContent {
+    drawContent()
+    drawLine(
+        color = color,
+        start = Offset(0f, size.height),
+        end = Offset(size.width, size.height),
+        strokeWidth = width.toPx(),
+    )
+}
+
+fun Modifier.leftBorder(
+    color: Color,
+    width: Dp,
+) = this.drawWithContent {
+    drawContent()
+    drawLine(
+        color = color,
+        start = Offset(0f, 0f),
+        end = Offset(0f, size.height),
+        strokeWidth = width.toPx(),
+    )
+}
+
 @Preview
 @Composable
 fun AnimatedGradientBackgroundPreview() {
