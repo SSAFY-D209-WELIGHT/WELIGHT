@@ -1,15 +1,19 @@
 package com.d209.welight.domain.display.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "DISPLAY_BACKGROUND")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "display")
+@EqualsAndHashCode(exclude = "display")
 public class DisplayBackground {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +22,7 @@ public class DisplayBackground {
 
     @OneToOne
     @JoinColumn(name = "DISPLAY_UID")
+    @JsonIgnore
     private Display display;
 
     @Column(name = "DISPLAY_BACKGROUND_BRIGHTNESS", nullable = false)

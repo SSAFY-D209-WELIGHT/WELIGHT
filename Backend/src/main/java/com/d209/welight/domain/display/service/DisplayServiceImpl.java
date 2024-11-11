@@ -154,6 +154,18 @@ public class DisplayServiceImpl implements DisplayService {
 
             }
 
+            /* display 저장소에 저장 */
+            // displayStorage 생성 및 저장
+            DisplayStorage displayStorage = DisplayStorage.builder()
+                    .user(user.get())
+                    .display(display)
+                    .downloadAt(LocalDateTime.now())
+                    .isFavorites(false)
+                    .favoritesAt(null)
+                    .build();
+            displayStorageRepository.save(displayStorage);
+
+
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
                     .displayName(savedDisplay.getDisplayName())
@@ -324,6 +336,18 @@ public class DisplayServiceImpl implements DisplayService {
         // 이미지 복제
         duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
 
+        // storage에 저장
+        /* display 저장소에 저장 */
+        // displayStorage 생성 및 저장
+        DisplayStorage displayStorage = DisplayStorage.builder()
+                .user(user)
+                .display(savedDisplay)
+                .downloadAt(LocalDateTime.now())
+                .isFavorites(false)
+                .favoritesAt(null)
+                .build();
+        displayStorageRepository.save(displayStorage);
+
         // 응답 객체 생성 및 반환
         return DisplayCreateResponse.builder()
                 .displayUid(savedDisplay.getDisplayUid())
@@ -366,7 +390,7 @@ public class DisplayServiceImpl implements DisplayService {
     public void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId) {
         try {
             if (originalImages != null) {
-                for (DisplayImage image : originalImages) {
+                originalImages.forEach(image -> {
                     try {
                         String originalImgUrl = image.getDisplayImgUrl();
                         if (originalImgUrl != null && !originalImgUrl.isEmpty()) {
@@ -393,7 +417,7 @@ public class DisplayServiceImpl implements DisplayService {
                     } catch (Exception e) {
                         throw new RuntimeException("이미지 복제 중 오류가 발생했습니다: " + e.getMessage());
                     }
-                }
+                });
             }
             
         } catch (Exception e) {
@@ -404,25 +428,21 @@ public class DisplayServiceImpl implements DisplayService {
     @Override
     @Transactional
     public void duplicateBackground(DisplayBackground originalBackground, Display newDisplay) {
-        
-        try {
-            if (originalBackground != null) {
 
-                // 새로운 배경 엔티티 생성
-                DisplayBackground newBackground = DisplayBackground.builder()
-                        .display(newDisplay)
-                        .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
-                        .displayColorSolid(originalBackground.getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
-                        .build();
-    
-                // 디스플레이 배경 저장
-                displayBackgroundRepository.save(newBackground);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("배경 복제 중 오류가 발생했습니다.");
+        if (originalBackground != null) {
+
+            // 새로운 배경 엔티티 생성
+            DisplayBackground newBackground = DisplayBackground.builder()
+                    .display(newDisplay)
+                    .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                    .displayColorSolid(originalBackground.getDisplayColorSolid())
+                    .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
+                    .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
+                    .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
+                    .build();
+
+            // 디스플레이 배경 저장
+            displayBackgroundRepository.save(newBackground);
         }
        
     }

@@ -4,9 +4,9 @@
     
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <!--        로컬용-->
-<!--        <destination>localhost:5000</destination>-->
+        <destination>localhost:5000</destination>
         <!--        서버용-->
-        <destination>logstash:5000</destination>
+<!--        <destination>logstash:5000</destination>-->
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <customFields>{"application":"welight"}</customFields>
         </encoder>

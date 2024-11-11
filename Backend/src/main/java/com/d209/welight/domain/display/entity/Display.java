@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -60,5 +61,6 @@ public class Display {
     // Display 엔티티와 DisplayBackground 엔티티 간의 일대일 관계를 설정
     // Display가 삭제되면 관련된 DisplayBackground도 함께 삭제
     @OneToOne(mappedBy = "display", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private DisplayBackground background;
 }
