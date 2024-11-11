@@ -85,6 +85,7 @@ public class CheerServiceImpl implements CheerService {
         // 응원방 생성
         Cheerroom cheerroom = Cheerroom.builder()
                 .name(request.getCheerroomName())
+                .description(request.getCheerroomDescription())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .isDone(false)
@@ -132,9 +133,6 @@ public class CheerServiceImpl implements CheerService {
         );
 
         log.info("위치 기반 응원방 조회 완료 - 조회된 응원방 개수={}", cheerrooms.size());
-//        return cheerrooms.stream()
-//                .map(CheerroomResponse::from)
-//                .collect(Collectors.toList());
         return cheerrooms.stream()
                 .map(cheerroom -> {
                     // 참가자 수 조회
@@ -410,6 +408,7 @@ public class CheerServiceImpl implements CheerService {
                 .participationDate(participation.getLastExitTime().format(
                         DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
                 .cheerroomName(participation.getCheerroom().getName())
+                .cheerroomDescription(participation.getCheerroom().getDescription())
                 .participantCount(cheerParticipationRepository
                         .countParticipantsByCheerroomId(participation.getCheerroom().getId()))
                 .memo(participation.getMemo())

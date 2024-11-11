@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class CheerroomResponse {
     private Long cheerroomUid;
     private String cheerroomName;
+    private String cheerroomDescription;
     private Double latitude;
     private Double longitude;
     private LocalDateTime createdAt;
@@ -21,6 +22,7 @@ public class CheerroomResponse {
         return CheerroomResponse.builder()
                 .cheerroomUid(cheerroom.getId())
                 .cheerroomName(cheerroom.getName())
+                .cheerroomDescription(cheerroom.getDescription())
                 .latitude(cheerroom.getLatitude())
                 .longitude(cheerroom.getLongitude())
                 .createdAt(cheerroom.getCreatedAt())
