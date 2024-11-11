@@ -17,7 +17,7 @@ class DisplaySearchPagingSource<T : DisplayResponse>(
     override fun getRefreshKey(state: PagingState<Int, T>): Int? = state.anchorPosition
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> {
-        val currentPage = params.key ?: 1
+        val currentPage = params.key ?: 0
 
         val result = apiHandler { api(keyword, currentPage, 10, sortType.name) }
 
@@ -26,7 +26,7 @@ class DisplaySearchPagingSource<T : DisplayResponse>(
                 page?.let {
                     LoadResult.Page(
                         data = page.displays,
-                        prevKey = if (currentPage == 1) null else currentPage - 1,
+                        prevKey = if (currentPage == 0) null else currentPage - 1,
                         nextKey = if (page.displays.isEmpty()) null else currentPage + 1,
                     )
                 } ?: LoadResult.Error(Exception("null"))
