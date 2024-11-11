@@ -6,9 +6,7 @@ import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
 import com.d209.welight.domain.display.dto.DisplayImageDto;
 import com.d209.welight.domain.display.dto.DisplayTextDto;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
-import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
-import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
-import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
+import com.d209.welight.domain.display.dto.response.*;
 import com.d209.welight.domain.display.entity.*;
 import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
 import com.d209.welight.domain.display.entity.displaystorage.DisplayStorage;
@@ -36,7 +34,6 @@ import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -154,7 +151,6 @@ public class DisplayServiceImpl implements DisplayService {
 
             }
 
-            /* display 저장소에 저장 */
             // displayStorage 생성 및 저장
             DisplayStorage displayStorage = DisplayStorage.builder()
                     .user(user.get())
@@ -336,8 +332,6 @@ public class DisplayServiceImpl implements DisplayService {
         // 이미지 복제
         duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
 
-        // storage에 저장
-        /* display 저장소에 저장 */
         // displayStorage 생성 및 저장
         DisplayStorage displayStorage = DisplayStorage.builder()
                 .user(user)
@@ -428,21 +422,25 @@ public class DisplayServiceImpl implements DisplayService {
     @Override
     @Transactional
     public void duplicateBackground(DisplayBackground originalBackground, Display newDisplay) {
+        
+        try {
+            if (originalBackground != null) {
 
-        if (originalBackground != null) {
-
-            // 새로운 배경 엔티티 생성
-            DisplayBackground newBackground = DisplayBackground.builder()
-                    .display(newDisplay)
-                    .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
-                    .displayColorSolid(originalBackground.getDisplayColorSolid())
-                    .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
-                    .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
-                    .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
-                    .build();
-
-            // 디스플레이 배경 저장
-            displayBackgroundRepository.save(newBackground);
+                // 새로운 배경 엔티티 생성
+                DisplayBackground newBackground = DisplayBackground.builder()
+                        .display(newDisplay)
+                        .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                        .displayColorSolid(originalBackground.getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
+                        .build();
+    
+                // 디스플레이 배경 저장
+                displayBackgroundRepository.save(newBackground);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("배경 복제 중 오류가 발생했습니다.");
         }
        
     }
@@ -988,6 +986,31 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 삭제
         displayCommentRepository.deleteById(commentUid);
+    }
+
+    @Override
+    public DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId) {
+        // 사용자 검증
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        // 디스플레이 조회
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new DisplayNotFoundException("존재하지 않는 디스플레이입니다."));
+
+        // 권한 검증 (생성자만 수정 가능)
+        if (!display.getCreatorUid().equals(user.getUserUid())) {
+            throw new InvalidDisplayDataException("디스플레이 수정 권한이 없습니다.");
+        }
+
+        // 상태 업데이트
+        display.setDisplayIsPosted(!display.getDisplayIsPosted());
+        displayRepository.save(display);  // 변경사항 저장
+
+        return DisplayPostedToggleResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayIsPosted(display.getDisplayIsPosted())
+                .build();
     }
 
     // 유효성 검사를 위한 private 메소드 추가

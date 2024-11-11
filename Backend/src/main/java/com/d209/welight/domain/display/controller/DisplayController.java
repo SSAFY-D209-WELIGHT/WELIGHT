@@ -2,6 +2,7 @@ package com.d209.welight.domain.display.controller;
 
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
+import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
@@ -178,7 +179,7 @@ public class DisplayController {
     @DeleteMapping("/{displayId}/storage")
     @Operation(summary = "저장된 디스플레이 삭제", description = "사용자의 저장소에서 디스플레이를 삭제합니다.")
     public ResponseEntity<?> deleteStoredDisplay(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid) throws Exception {
+                                             @PathVariable("displayId") long displayUid){
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
@@ -197,7 +198,7 @@ public class DisplayController {
     @PatchMapping("/{displayId}/favorite")
     @Operation(summary = "디스플레이 즐겨찾기 토글", description = "디스플레이의 즐겨찾기 상태를 변경합니다.")
     public ResponseEntity<?> updateDisplayFavorite(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid) throws Exception{
+                                             @PathVariable("displayId") long displayUid) {
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
@@ -219,7 +220,7 @@ public class DisplayController {
     @PostMapping("/{displayId}/like")
     @Operation(summary = "디스플레이 좋아요", description = "디스플레이 좋아요 기능")
     public ResponseEntity<?> doLikeDisplay(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid) throws Exception{
+                                             @PathVariable("displayId") long displayUid)  {
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
@@ -240,7 +241,7 @@ public class DisplayController {
     @DeleteMapping("/{displayId}/like")
     @Operation(summary = "디스플레이 좋아요 취소", description = "디스플레이 좋아요 취소 기능")
     public ResponseEntity<?> cancelLikeDisplay(Authentication authentication,
-                                                 @PathVariable("displayId") long displayUid) throws Exception {
+                                                 @PathVariable("displayId") long displayUid)  {
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
@@ -262,7 +263,7 @@ public class DisplayController {
     @GetMapping("/{displayId}/comment")
     @Operation(summary = "댓글 목록 조회", description = "디스플레이의 모든 댓글을 조회합니다.")
     public ResponseEntity<?> getComments(Authentication authentication,
-                                         @PathVariable("displayId") long displayUid) throws Exception {
+                                         @PathVariable("displayId") long displayUid)   {
         try {
             User user = userService.findByUserId(authentication.getName());
             if (user == null) {
@@ -346,6 +347,17 @@ public class DisplayController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 삭제 중 오류가 발생했습니다.");
         }
+    }
+
+    @PatchMapping("/{displayId}/isposted")
+    @Operation(summary = "디스플레이 게시 여부 토글", description = "디스플레이 게시 여부를 토글합니다.")
+    public ResponseEntity<?> toggleDisplayStatus(
+            @PathVariable Long displayId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String userId = userDetails.getUsername();
+        DisplayPostedToggleResponse response = displayService.updateDisplayStatus(displayId, userId);
+        return ResponseEntity.ok(response);
     }
 }
 

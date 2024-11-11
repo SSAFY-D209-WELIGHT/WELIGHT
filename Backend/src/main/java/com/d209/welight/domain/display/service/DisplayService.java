@@ -1,7 +1,6 @@
 package com.d209.welight.domain.display.service;
 
 import com.d209.welight.domain.display.entity.*;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
@@ -12,6 +11,7 @@ import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
+import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 
 import java.util.List;
 
@@ -60,5 +60,7 @@ public interface DisplayService {
     void createComment(User user, Long displayId, DisplayCommentRequest request);
     void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request);
     void deleteComment(User user, Long displayId, Long commentUid);
+
+    DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId);
 
 }

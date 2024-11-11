@@ -44,17 +44,20 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
 
             // 키워드로만 검색
             if (keyword != null && !keyword.isEmpty()) {
-                return displaySearchRepository.findByDisplayNameContainingOrTagsContaining(
+                Page<DisplayDocument> displayResults = displaySearchRepository.findByDisplayNameContainingOrTagsContaining(
                         keyword,  // displayName 검색용
                         keyword,  // tags 검색용
                         pageable
                 );
+                if (displayResults.isEmpty()) {
+                    throw new NoSearchResultException("해당하는 결과가 없습니다.");
+                }
             }
 
             return displaySearchRepository.findAll(pageable);
 
         } catch (NoSearchResultException e) {
-            log.warn("해당하는 결과가 없습니다");
+            log.error("해당하는 결과가 없습니다");
             throw new NoSearchResultException("해당하는 결과가 없습니다.");
         }
     }
