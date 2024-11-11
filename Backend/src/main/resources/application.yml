@@ -25,18 +25,17 @@ spring:
         format_sql: true  # SQL 쿼리 포맷팅 여부
 
   elasticsearch:
-    uris: elasticsearch:9200
-#    username: elastic      # 필요한 경우
-#    password: yourpassword # 필요한 경우
+    #    uris: localhost:9200
+    uris: k11d209.p.ssafy.io:9200
+      #    username: elastic      # 필요한 경우
+      #    password: yourpassword # 필요한 경우
     data:
       elasticsearch:
         repositories:
           enabled: true
         properties:
           index:
-            create: true
-            setting-path: classpath:elasticsearch/settings/
-            mapping-path: classpath:elasticsearch/mappings/
+            setting-path: classpath:elasticsearch/settings/ # 세팅 파일 위치
 
 
 server:
@@ -50,6 +49,3 @@ logging:
     root: INFO    # 전체 애플리케이션의 기본 로그 레벨 설정
     com.d209.welight: DEBUG   # 특정 패키지에 대한 로그 레벨 설정
     org.springframework.web: INFO   # 스프링 웹 관련 로그 레벨 설정
-
-
-
