@@ -775,7 +775,7 @@ public class DisplayServiceImpl implements DisplayService {
      * 디스플레이 저장소 (다운로드, 삭제)
      * */
     @Override
-    public void downloadDisplay(User user, long displayUid) {
+    public DisplayCreateResponse downloadDisplay(User user, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
@@ -801,6 +801,12 @@ public class DisplayServiceImpl implements DisplayService {
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() + 1);
         displayRepository.save(display);
 
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayName(display.getDisplayName())
+                .message("디스플레이가 성공적으로 다운로드되었습니다.")
+                .build();
     }
 
     @Override

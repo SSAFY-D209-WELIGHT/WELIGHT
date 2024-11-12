@@ -165,8 +165,8 @@ public class DisplayController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
             }
 
-            displayService.downloadDisplay(user, displayUid);
-            return ResponseEntity.ok().body("디스플레이 저장 완료");
+            DisplayCreateResponse response = displayService.downloadDisplay(user, displayUid);
+            return ResponseEntity.ok().body(response);
         } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch(EntityExistsException e) {

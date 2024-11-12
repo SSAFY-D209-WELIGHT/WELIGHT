@@ -45,7 +45,7 @@ public interface DisplayService {
     void deleteDisplay(Long displayUid, String userId);
 
     // 디스플레이 저장소 - 다운로드, 삭제
-    void downloadDisplay(User user, long displayUid);
+    DisplayCreateResponse downloadDisplay(User user, long displayUid);
     void deleteStoredDisplay(User user, long displayUid);
 
     // 디스플레이 즐겨찾기 (저장소에서 & 내가 제작)
