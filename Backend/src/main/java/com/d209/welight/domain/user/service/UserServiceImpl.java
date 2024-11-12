@@ -8,6 +8,7 @@ import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.global.exception.auth.InvalidTokenException;
 import com.d209.welight.global.exception.user.UserNicknameDuplicateException;
+import com.d209.welight.global.exception.user.UserNotFoundException;
 import com.d209.welight.global.service.jwt.JwtTokenService;
 import com.d209.welight.global.service.redis.RedisService;
 //import com.d209.welight.global.service.s3.S3Service;
@@ -206,13 +207,17 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User findByUserId(String userId) throws Exception {
-        return userRepository.findByUserId(userId).get();
+    public User findByUserId(String userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format("사용자를 찾을 수 없습니다. (ID: %s)", userId)));
     }
 
     @Override
-    public User findByUserUid(Long userUid) throws Exception {
-        return userRepository.findByUserUid(userUid).get();
+    public User findByUserUid(Long userUid) {
+        return userRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format("사용자를 찾을 수 없습니다. (UID: %d)", userUid)));
     }
 }
 

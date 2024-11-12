@@ -1,5 +1,8 @@
 package com.d209.welight.global.error;
 
+import com.d209.welight.global.exception.cheer.CheerAccessDeniedException;
+import com.d209.welight.global.exception.cheer.CheerNotFoundException;
+import com.d209.welight.global.exception.cheer.InvalidCheerDataException;
 import com.d209.welight.global.exception.display.DisplayNotFoundException;
 import com.d209.welight.global.exception.display.InvalidDisplayDataException;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
@@ -56,6 +59,24 @@ public class GlobalExceptionHandler {
         return createErrorResponse(CommonErrorCode.INVALID_DISPLAY_DATA);
     }
 
+    // cheerroom
+    @ExceptionHandler(CheerNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCheerNotFoundException(CheerNotFoundException e) {
+        log.error("CheerNotFoundException", e);
+        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCheerDataException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCheerDataException(InvalidCheerDataException e) {
+        log.error("InvalidCheerDataException", e);
+        return createErrorResponse(CommonErrorCode.INVALID_PARAMETER, e.getMessage());
+    }
+
+    @ExceptionHandler(CheerAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleCheerAccessDeniedException(CheerAccessDeniedException e) {
+        log.error("CheerAccessDeniedException", e);
+        return createErrorResponse(CommonErrorCode.FORBIDDEN, e.getMessage());
+    }
     private ResponseEntity<ErrorResponse> createErrorResponse(ErrorCode errorCode) {
         return ResponseEntity
                 .status(errorCode.getStatus())

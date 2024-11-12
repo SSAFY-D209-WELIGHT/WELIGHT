@@ -50,13 +50,9 @@ public class CheerController {
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam double radius) {
-        try {
-            FindByGeoRequest geoDTO = new FindByGeoRequest(latitude, longitude, radius);
-            List<CheerroomResponse> cheerRooms = cheerService.getAllCheerroomsByGeo(geoDTO);
-            return ResponseEntity.status(HttpStatus.OK).body(cheerRooms);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        FindByGeoRequest geoDTO = new FindByGeoRequest(latitude, longitude, radius);
+        List<CheerroomResponse> cheerRooms = cheerService.getAllCheerroomsByGeo(geoDTO);
+        return ResponseEntity.ok(cheerRooms);
     }
 
     @PatchMapping("/{cheerId}/delegate")
@@ -64,24 +60,10 @@ public class CheerController {
     public ResponseEntity<?> delegateLeader(Authentication authentication,
                                                             @PathVariable(name="cheerId") long cheerId,
                                                             @RequestBody LeaderDelegateRequest leaderDelegateRequest) {
-        try {
-            User currentLeader = userService.findByUserId(authentication.getName());
-            if (currentLeader == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-            User newLeader = userService.findByUserUid(leaderDelegateRequest.getUserUid());
-            if (newLeader == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            cheerService.delegateLeader(cheerId, currentLeader, newLeader);
-
-            return ResponseEntity.ok().body("그룹 방장 위임 완료");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        User currentLeader = userService.findByUserId(authentication.getName());
+        User newLeader = userService.findByUserUid(leaderDelegateRequest.getUserUid());
+        cheerService.delegateLeader(cheerId, currentLeader, newLeader);
+        return ResponseEntity.ok("그룹 방장 위임 완료");
     }
 
     @GetMapping("/{cheerId}/participants")
