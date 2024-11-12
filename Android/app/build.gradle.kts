@@ -65,4 +65,5 @@ dependencies {
     implementation(project(":feature:detail"))
     implementation(project(":feature:editor"))
     implementation(project(":feature:group"))
+    implementation(libs.androidx.runtime.livedata)
 }
