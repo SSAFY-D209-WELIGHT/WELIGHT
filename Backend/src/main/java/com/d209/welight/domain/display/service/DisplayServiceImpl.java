@@ -834,7 +834,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
-    public void updateDisplayFavorite(User user, long displayUid) {
+    public DisplayCreateResponse updateDisplayFavorite(User user, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
@@ -861,8 +861,16 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 5. 저장
             displayStorageRepository.save(storagedDisplay);
+
+            // 응답 객체 생성 및 반환
+            return DisplayCreateResponse.builder()
+                    .displayUid(display.getDisplayUid())
+                    .displayName(display.getDisplayName())
+                    .message("디스플레이의 즐겨찾기 정보를 토글합니다.")
+                    .build();
+
         } else {
-            throw new AccessDeniedException("해당 디스플레이에 대한 권한이 없습니다.");
+            throw new IllegalStateException("해당 디스플레이에 대한 권한이 없습니다.");
         }
     }
 
@@ -874,7 +882,7 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 2. 이미 이 회원이 이 display를 좋아요 했는지
         if (displayLikeRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityExistsException("이미 좋아요를 누른 디스플레이입니다.");
+            throw new IllegalStateException("이미 좋아요를 누른 디스플레이입니다.");
         }
 
         // DisplayLike 생성
@@ -897,12 +905,12 @@ public class DisplayServiceImpl implements DisplayService {
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
         // 2. 저장된 디스플레이가 존재하는지 확인
         if (!displayLikeRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityNotFoundException("좋아요한 디스플레이가 아닙니다.");
+            throw new IllegalStateException("좋아요한 디스플레이가 아닙니다.");
         }
 
         // 3. displayLike 삭제
         DisplayLike displayLike = displayLikeRepository.findByUserAndDisplay(user, display)
-                .orElseThrow(() -> new EntityNotFoundException("좋아요한 디스플레이가 아닙니다."));
+                .orElseThrow(() -> new IllegalStateException("좋아요한 디스플레이가 아닙니다."));
         displayLikeRepository.delete(displayLike);
 
         // 4. Display의 Display_like_count 횟수 -1
@@ -910,10 +918,6 @@ public class DisplayServiceImpl implements DisplayService {
         displayRepository.save(display);
     }
 
-
-    /*
-     * 댓글
-     * */
 
     // 해당 display에 있는 댓글 전체 조회
     @Override
