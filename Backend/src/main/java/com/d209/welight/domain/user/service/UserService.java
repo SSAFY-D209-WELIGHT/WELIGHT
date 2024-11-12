@@ -4,6 +4,7 @@ import com.d209.welight.domain.user.dto.request.FormLoginRequestDTO;
 import com.d209.welight.domain.user.dto.request.SocialLoginRequestDTO;
 import com.d209.welight.domain.user.dto.response.UserInfoResponseDTO;
 import com.d209.welight.domain.user.entity.User;
+import com.d209.welight.global.exception.user.UserNotFoundException;
 import com.d209.welight.global.util.jwt.JwtToken;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,9 +37,12 @@ public interface UserService {
     // userNickname을 닉네임 중복 체크
     boolean chkuserId(String userId);
 
-    User findByUserId(String userId) throws Exception;
+    // userId로 사용자 찾기
+    // @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+    User findByUserId(String userId);
 
-    // userUid로 User찾기
-    User findByUserUid(Long userUid) throws Exception;
+    // userUid로 사용자 찾기
+    // @throws UserNotFoundException 사용자를 찾을 수 없는 경우
+    User findByUserUid(Long userUid);
 
 }
