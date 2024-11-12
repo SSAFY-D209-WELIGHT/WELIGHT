@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -23,12 +26,15 @@ import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 import kotlinx.collections.immutable.persistentListOf
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupContent(
     modifier: Modifier = Modifier,
     state: GroupState,
     onIntent: (GroupIntent) -> Unit = {},
 ) {
+    val pullRefreshState = rememberPullToRefreshState()
+
     Scaffold(
         modifier = modifier,
         topBar = { TitleAppBar(title = "단체 응원") },
@@ -53,14 +59,21 @@ fun GroupContent(
                 style = Pretendard.SemiBold20,
                 color = AppColor.OnBackground,
             )
-            CardButton(
-                icon = painterResource(R.drawable.ic_group_search),
-                title = "",
-                description = "응원할 사람을 모집하고 있는지 탐색해보세요",
-                onClick = { onIntent(GroupIntent.LoadGroupList) },
-            )
+            if (state is GroupState.Loaded && state.cardList.isEmpty()) {
+                CardButton(
+                    icon = painterResource(R.drawable.ic_group_search),
+                    title = "",
+                    description = "응원할 사람을 모집하고 있는지 탐색해보세요",
+                    onClick = { onIntent(GroupIntent.LoadGroupList) },
+                )
+            }
             LazyColumn(
-                modifier = Modifier.fillMaxWidth().weight(1f),
+                modifier =
+                    Modifier.fillMaxWidth().weight(1f).pullToRefresh(
+                        state = pullRefreshState,
+                        isRefreshing = state is GroupState.Loading,
+                        onRefresh = { onIntent(GroupIntent.LoadGroupList) },
+                    ),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 when (state) {

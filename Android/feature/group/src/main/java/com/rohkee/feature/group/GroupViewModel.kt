@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,7 +22,9 @@ class GroupViewModel @Inject constructor(
 
     val groupState: StateFlow<GroupState> =
         groupStateHolder
-            .map { data ->
+            .onStart {
+                loadData()
+            }.map { data ->
                 data.toState()
             }.stateIn(
                 scope = viewModelScope,
@@ -32,8 +36,19 @@ class GroupViewModel @Inject constructor(
 
     fun onIntent(intent: GroupIntent) {
         when (intent) {
-            GroupIntent.CreateGroup -> TODO()
-            is GroupIntent.GroupJoin -> TODO()
+            GroupIntent.CreateGroup -> emitEvent(GroupEvent.OpenRoomCreation)
+            is GroupIntent.GroupJoin -> emitEvent(GroupEvent.OpenClient(intent.id))
+            GroupIntent.LoadGroupList -> viewModelScope.launch { loadData() }
         }
+    }
+
+    private fun emitEvent(event: GroupEvent) {
+        viewModelScope.launch {
+            groupEvent.emit(event)
+        }
+    }
+
+    private suspend fun loadData() {
+        // TODO: load data from repository
     }
 }
