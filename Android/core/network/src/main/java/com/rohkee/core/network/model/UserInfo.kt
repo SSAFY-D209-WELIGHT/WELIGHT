@@ -6,5 +6,5 @@ data class UserInfo(
     val userProfileImg: String,
     val userLogin: String,
     val userIsAdmin: Boolean,
-    val userSignupDate: String
+    val userSignupDate: String,
 )

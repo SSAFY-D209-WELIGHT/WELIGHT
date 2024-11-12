@@ -9,6 +9,6 @@ android {
 }
 
 dependencies {
-
+    implementation(project(":core:network"))
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
