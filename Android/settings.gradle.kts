@@ -27,5 +27,7 @@ gradle.startParameter.excludedTaskNames.addAll(listOf(":build-logic:convention:t
 include(":core:ui")
 include(":core:network")
 include(":core:datastore")
+include(":feat:login")
+include(":demo")
 include(":feat:storage")
 include(":feat:display")
