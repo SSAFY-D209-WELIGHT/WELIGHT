@@ -778,7 +778,7 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 2. 이미 이 회원이 이 display를 저장했는지 확인
         if (displayStorageRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityExistsException("이미 저장한 디스플레이입니다.");
+            throw new IllegalStateException("이미 저장한 디스플레이입니다.");
         }
 
         // displayStorage 생성
@@ -806,13 +806,14 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
-    public void deleteStoredDisplay(User user, long displayUid) {
+    public DisplayCreateResponse deleteStoredDisplay(User user, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+
         // 2. 저장된 디스플레이가 존재하는지 확인
         if (!displayStorageRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.");
+            throw new IllegalStateException("저장된 디스플레이를 찾을 수 없습니다.");
         }
 
         // 3. 저장소에서 삭제
@@ -823,6 +824,13 @@ public class DisplayServiceImpl implements DisplayService {
         // 4. Display의 Display_download_count 횟수 -1
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
         displayRepository.save(display);
+
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayName(display.getDisplayName())
+                .message("저장소에서 디스플레이가 삭제되었습니다.")
+                .build();
     }
 
     @Override

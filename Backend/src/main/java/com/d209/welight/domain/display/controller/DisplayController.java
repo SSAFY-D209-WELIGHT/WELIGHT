@@ -158,41 +158,19 @@ public class DisplayController {
     @PostMapping("/{displayId}/storage")
     @Operation(summary = "디스플레이 다운로드", description = "디스플레이를 저장소에 저장합니다.")
     public ResponseEntity<?> downloadDisplay(Authentication authentication,
-                                              @PathVariable("displayId") long displayUid) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            DisplayCreateResponse response = displayService.downloadDisplay(user, displayUid);
-            return ResponseEntity.ok().body(response);
-        } catch (EntityNotFoundException e) { // 디스플레이를 찾을 수 없는 경우
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch(EntityExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+                                              @PathVariable("displayId") long displayUid) throws Exception {
+        User user = userService.findByUserId(authentication.getName());
+        DisplayCreateResponse response = displayService.downloadDisplay(user, displayUid);
+        return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("/{displayId}/storage")
     @Operation(summary = "저장된 디스플레이 삭제", description = "사용자의 저장소에서 디스플레이를 삭제합니다.")
     public ResponseEntity<?> deleteStoredDisplay(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid){
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            displayService.deleteStoredDisplay(user, displayUid);
-            return ResponseEntity.ok().body("디스플레이가 저장소에서 삭제되었습니다.");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+                                             @PathVariable("displayId") long displayUid) throws Exception {
+        User user = userService.findByUserId(authentication.getName());
+        DisplayCreateResponse response = displayService.deleteStoredDisplay(user, displayUid);
+        return ResponseEntity.ok().body(response);
     }
 
     @PatchMapping("/{displayId}/favorite")
