@@ -12,15 +12,15 @@ fun GroupScreen(
     modifier: Modifier = Modifier,
     groupViewModel: GroupViewModel = hiltViewModel(),
     onPopBackStack: () -> Unit = {},
-    onOpenRoom: (Long) -> Unit = {},
-    onRoomCreation: () -> Unit = {},
+    onNavigateToGroupRoom: (Long) -> Unit = {},
+    onNavigateToCreateGroupRoom: () -> Unit = {},
 ) {
     val groupUIState by groupViewModel.groupState.collectAsStateWithLifecycle()
 
     groupViewModel.groupEvent.collectWithLifecycle { event ->
         when (event) {
-            is GroupEvent.OpenClient -> onOpenRoom(event.roomId)
-            GroupEvent.OpenRoomCreation -> onRoomCreation()
+            is GroupEvent.OpenClient -> onNavigateToGroupRoom(event.roomId)
+            GroupEvent.OpenRoomCreation -> onNavigateToCreateGroupRoom()
         }
     }
 

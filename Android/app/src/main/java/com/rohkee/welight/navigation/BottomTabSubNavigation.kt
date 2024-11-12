@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rohkee.core.ui.component.common.BottomNavigationBar
 import com.rohkee.core.ui.component.common.BottomNavigationItemState
 import com.rohkee.feature.group.GroupRoute
+import com.rohkee.feature.group.GroupScreen
 import com.rohkee.feature.storage.StorageRoute
 import com.rohkee.feature.storage.StorageScreen
 import com.rohkee.welight.R
@@ -25,6 +26,8 @@ fun BottomTabSubNavigation(
     navController: NavHostController = rememberNavController(),
     onNavigateToDisplayDetail: (id: Long) -> Unit,
     onNavigateToCreateNewDisplay: () -> Unit,
+    onNavigateToGroupRoom: (id: Long) -> Unit,
+    onNavigateToCreateGroupRoom: () -> Unit,
 ) {
     val bottomRoute by navController.currentBackStackEntryAsState()
 
@@ -75,7 +78,13 @@ fun BottomTabSubNavigation(
                 )
             }
 
-            composable<GroupRoute> { }
+            composable<GroupRoute> {
+                GroupScreen(
+                    onPopBackStack = {},
+                    onNavigateToGroupRoom = onNavigateToGroupRoom,
+                    onNavigateToCreateGroupRoom = onNavigateToCreateGroupRoom,
+                )
+            }
         }
     }
 }

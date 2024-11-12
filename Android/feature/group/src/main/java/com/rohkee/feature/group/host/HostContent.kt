@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +46,13 @@ enum class DisplayEffect(
     NONE("없음"),
     FLASH("점멸"),
     CROSS("교차점멸"),
-    WAVE("파도타기"),
+    WAVE("파도타기");
+
+    companion object {
+        fun parse(text: String): DisplayEffect {
+            return entries.find { it.text == text } ?: NONE
+        }
+    }
 }
 
 @Composable
@@ -132,8 +139,9 @@ fun WaitingRoomContent(
                     list = options,
                     selected = selected.text,
                 ) {
-                    setSelected(DisplayEffect.valueOf(it))
-                    onIntent(HostIntent.Control.ChangeEffect(options.indexOf(it)))
+                    val effect = DisplayEffect.parse(it)
+                    setSelected(effect)
+                    onIntent(HostIntent.Control.ChangeEffect(effect))
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -147,6 +155,15 @@ fun WaitingRoomContent(
                 Switch(
                     checked = checked,
                     onCheckedChange = setChecked,
+                    colors = SwitchDefaults.colors().copy(
+                        checkedThumbColor = AppColor.OnConvex,
+                        checkedTrackColor = AppColor.Convex,
+                        checkedBorderColor = AppColor.OnConvex,
+                        uncheckedThumbColor = AppColor.Surface,
+                        uncheckedTrackColor = AppColor.Inactive,
+                        uncheckedBorderColor = AppColor.Surface,
+
+                    )
                 )
             }
             Box(

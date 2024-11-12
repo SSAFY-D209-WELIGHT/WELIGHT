@@ -4,19 +4,30 @@ import com.rohkee.core.ui.component.group.CardListItemState
 import kotlinx.collections.immutable.toPersistentList
 
 data class GroupData(
+    private val isValid: Boolean = false,
     val currentPostion: LatLng = LatLng(0.0, 0.0),
     val list: List<RoomData> = emptyList(),
 ) {
-    fun toState() = GroupState.Loaded(
-        cardList = list.map {
-            CardListItemState(
-                id = it.roomId,
-                title = it.title,
-                description = it.description,
-                number = it.participants
+    fun toState() =
+        if (isValid) {
+            GroupState.Loaded(
+                cardList =
+                    list
+                        .map {
+                            CardListItemState(
+                                id = it.roomId,
+                                title = it.title,
+                                description = it.description,
+                                number = it.participants,
+                            )
+                        }.toPersistentList(),
             )
-        }.toPersistentList()
-    )
+        } else {
+            GroupState.Loading
+        }
+
+    fun invalidate() = copy(isValid = false)
+    fun validate() = copy(isValid = true)
 }
 
 data class LatLng(

@@ -12,13 +12,15 @@ fun HostScreen(
     modifier: Modifier = Modifier,
     hostViewModel: HostViewModel = hiltViewModel(),
     onPopBackStack: () -> Unit = {},
-    onStartCheer: () -> Unit = {},
+    onStartCheer: (id: Long) -> Unit = {},
 ) {
     val hostUIState by hostViewModel.hostState.collectAsStateWithLifecycle()
 
     hostViewModel.hostEvent.collectWithLifecycle { event ->
         when (event) {
             HostEvent.ExitPage -> onPopBackStack()
+            HostEvent.ChooseDisplayForNewGroup -> TODO()
+            is HostEvent.StartCheer -> onStartCheer(event.roomId)
         }
     }
 

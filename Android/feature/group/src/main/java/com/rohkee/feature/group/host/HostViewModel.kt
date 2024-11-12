@@ -31,12 +31,35 @@ class HostViewModel @Inject constructor() : ViewModel() {
 
     fun onIntent(intent: HostIntent) {
         when (intent) {
-            HostIntent.Control.AddDisplayGroup -> TODO()
-            is HostIntent.Control.ChangeEffect -> TODO()
-            HostIntent.Control.Exit -> TODO()
-            HostIntent.Control.StartCheer -> TODO()
+            HostIntent.Control.AddDisplayGroup -> emitEvent(HostEvent.ChooseDisplayForNewGroup)
+            is HostIntent.Control.ChangeEffect ->
+                hostStateHolder.update {
+                    it.copy(effect = intent.effect)
+                }
+
+            HostIntent.Control.Exit -> emitEvent(HostEvent.ExitPage)
+            HostIntent.Control.StartCheer -> emitEvent(HostEvent.StartCheer(hostStateHolder.value.roomId))
             HostIntent.Creation.Cancel -> emitEvent(HostEvent.ExitPage)
-            is HostIntent.Creation.Confirm -> TODO()
+            is HostIntent.Creation.Confirm -> {
+                // TODO : 방 생성
+
+                val roomId = 1L // TODO 방 id
+
+                hostStateHolder.update {
+                    it.copy(
+                        roomId = roomId,
+                        title = intent.title,
+                        description = intent.description,
+                    )
+                }
+            }
+
+            HostIntent.Dialog.Cancel -> hostStateHolder.update { it.copy(dialogState = DialogState.Closed) }
+            is HostIntent.Dialog.SelectDisplay ->
+                addDisplayGroup(
+                    intent.displayId,
+                    intent.thumbnailUrl,
+                )
         }
     }
 
@@ -46,7 +69,20 @@ class HostViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun addDisplayGroup() {
-
+    fun addDisplayGroup(
+        displayId: Long,
+        thumbnailUrl: String,
+    ) {
+        // TODO 그룹 추가
+        hostStateHolder.update {
+            it.copy(
+                list =
+                    it.list +
+                        GroupDisplayData(
+                            displayId,
+                            thumbnailUrl,
+                        ),
+            )
+        }
     }
 }

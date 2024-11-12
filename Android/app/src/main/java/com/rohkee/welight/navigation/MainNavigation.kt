@@ -12,6 +12,10 @@ import com.rohkee.feature.detail.DetailRoute
 import com.rohkee.feature.detail.DetailScreen
 import com.rohkee.feature.editor.EditorScreen
 import com.rohkee.feature.editor.navigation.EditorRoute
+import com.rohkee.feature.group.client.ClientRoute
+import com.rohkee.feature.group.client.ClientScreen
+import com.rohkee.feature.group.host.HostRoute
+import com.rohkee.feature.group.host.HostScreen
 
 @Composable
 fun MainNavigation(
@@ -21,7 +25,7 @@ fun MainNavigation(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Login,
+        startDestination = Home,
     ) {
         composable<Login> {
             LoginRoute()
@@ -31,6 +35,8 @@ fun MainNavigation(
             BottomTabSubNavigation(
                 onNavigateToDisplayDetail = { id -> navController.navigate(DetailRoute(displayId = id)) },
                 onNavigateToCreateNewDisplay = { navController.navigate(EditorRoute(null)) },
+                onNavigateToGroupRoom = { id -> navController.navigate(ClientRoute(id)) },
+                onNavigateToCreateGroupRoom = { navController.navigate(HostRoute) },
             )
         }
 
@@ -67,6 +73,24 @@ fun MainNavigation(
                     }
                 },
                 onPopBackStack = { navController.popBackStack() },
+            )
+        }
+
+        composable<HostRoute> {
+            HostScreen(
+                onPopBackStack = { navController.popBackStack() },
+                onStartCheer = {
+                    // TODO: 응원 시작
+                },
+            )
+        }
+
+        composable<ClientRoute> {
+            ClientScreen(
+                onPopBackStack = { navController.popBackStack() },
+                onStartCheer = {
+                    // TODO: 응원 시작
+                },
             )
         }
     }

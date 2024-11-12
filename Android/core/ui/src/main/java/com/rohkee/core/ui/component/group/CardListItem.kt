@@ -103,8 +103,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
             Box(
                 modifier =
                     Modifier.fillMaxWidth().weight(3f).animateGradientBackground(
-                        startColor = AppColor.OverSurface,
-                        endColor = AppColor.Surface,
+                        startColor = AppColor.LoadLight,
+                        endColor = AppColor.LoadDark,
+                        shape = RoundedCornerShape(4.dp)
                     ),
             )
             Box(
@@ -114,8 +115,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                         .weight(2f)
                         .animateGradientBackground(
-                            startColor = AppColor.OverSurface,
-                            endColor = AppColor.Surface,
+                            startColor = AppColor.LoadLight,
+                            endColor = AppColor.LoadDark,
+                            shape = RoundedCornerShape(4.dp)
                         ),
             )
             Box(
@@ -125,8 +127,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                         .fillMaxWidth()
                         .weight(2f)
                         .animateGradientBackground(
-                            startColor = AppColor.OverSurface,
-                            endColor = AppColor.Surface,
+                            startColor = AppColor.LoadLight,
+                            endColor = AppColor.LoadDark,
+                            shape = RoundedCornerShape(4.dp)
                         ),
             )
         }
@@ -136,8 +139,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                     .weight(1f)
                     .fillMaxSize()
                     .animateGradientBackground(
-                        startColor = AppColor.OverSurface,
-                        endColor = AppColor.Surface,
+                        startColor = AppColor.LoadLight,
+                        endColor = AppColor.LoadDark,
+                        shape = RoundedCornerShape(4.dp)
                     ),
         ) {
         }

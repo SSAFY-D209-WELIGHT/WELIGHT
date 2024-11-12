@@ -1,10 +1,17 @@
 package com.rohkee.feature.group.dialog
 
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
@@ -60,15 +67,37 @@ private fun LoadedContent(
 ) {
     val displayList = state.displayListFlow.collectAsLazyPagingItems()
 
-    InfiniteHorizontalPager(
+    LazyVerticalGrid(
         modifier = modifier,
-        pageCount = displayList.itemCount,
-    ) { index ->
-        displayList[index]?.let { item ->
-            DisplayCard(
-                state = item,
-                onCardSelected = { onIntent(SelectionDialogIntent.SelectDisplay(displayId = item.cardId)) },
-            )
+        columns = GridCells.Fixed(3),
+    ) {
+        items(displayList.itemCount) { index ->
+            displayList[index]?.let { item ->
+                DisplayCard(
+                    modifier = Modifier.aspectRatio(0.5f),
+                    state = item,
+                    onCardSelected = { onIntent(SelectionDialogIntent.SelectDisplay(displayId = item.cardId)) },
+                )
+            }
+        }
+        if (displayList.loadState.append == LoadState.Loading) {
+            item {
+                CircularProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().wrapContentSize(),
+                )
+            }
         }
     }
+
+//    InfiniteHorizontalPager(
+//        modifier = modifier,
+//        pageCount = displayList.itemCount,
+//    ) { index ->
+//        displayList[index]?.let { item ->
+//            DisplayCard(
+//                state = item,
+//                onCardSelected = { onIntent(SelectionDialogIntent.SelectDisplay(displayId = item.cardId)) },
+//            )
+//        }
+//    }
 }
