@@ -7,7 +7,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.rohkee.feat.display.editor.EditorScreen
+import com.rohkee.feat.login.LoginRoute
+import com.rohkee.feature.detail.DetailRoute
+import com.rohkee.feature.detail.DetailScreen
+import com.rohkee.feature.editor.EditorScreen
+import com.rohkee.feature.editor.navigation.EditorRoute
 
 @Composable
 fun MainNavigation(
@@ -17,26 +21,51 @@ fun MainNavigation(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Home,
+        startDestination = Login,
     ) {
         composable<Login> {
+            LoginRoute()
         }
 
         composable<Home> {
             BottomTabSubNavigation(
-                onNavigateToDisplayDetail = { id -> },
-                onNavigateToCreateNewDisplay = { navController.navigate(DisplayEditor()) },
+                onNavigateToDisplayDetail = { id -> navController.navigate(DetailRoute(displayId = id)) },
+                onNavigateToCreateNewDisplay = { navController.navigate(EditorRoute(null)) },
             )
         }
 
-        composable<DisplayDetail> {
+        composable<DetailRoute> {
+            val currentId = it.toRoute<DetailRoute>().displayId
+            DetailScreen(
+                onPopBackStack = { navController.popBackStack() },
+                onEditDisplay = { id ->
+                    navController.navigate(EditorRoute(displayId = id)) {
+                        popUpTo(DetailRoute(currentId)) { inclusive = true }
+                    }
+                },
+                onDuplicateDisplay = { id ->
+                    navController.navigate(DetailRoute(displayId = id)) {
+                        popUpTo(DetailRoute(currentId)) { inclusive = true }
+                    }
+                },
+                onDownloadDisplay = { id ->
+                    navController.navigate(DetailRoute(displayId = id)) {
+                        popUpTo(DetailRoute(currentId)) { inclusive = true }
+                    }
+                },
+            )
         }
 
-        composable<DisplayEditor> {
-            val displayId = it.toRoute<DisplayEditor>().displayId
+        composable<EditorRoute> {
             EditorScreen(
-                displayId = displayId,
-                onNavigateToDisplayDetail = { id -> },
+                onNavigateToDisplayDetail = { id ->
+                    navController.navigate(DetailRoute(displayId = id)) {
+                        popUpTo(Home) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
                 onPopBackStack = { navController.popBackStack() },
             )
         }

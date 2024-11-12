@@ -28,6 +28,7 @@ viewmodel-compose = "2.8.6"
 navigation-compose = "2.8.3"
 lifecycleRuntimeComposeAndroid = "2.8.6"
 pagingCommonAndroid = "3.3.2"
+accompanist = "0.34.0"
 
 # datastore
 androidxDataStore = "1.1.1"
@@ -39,11 +40,18 @@ okhttp = "4.11.0"
 kotlinx-serialization = "1.6.0"
 kotlinx-serialization-converter = "1.0.0"
 
+# paging
+paging_version = "3.3.2"
+pagingComposeAndroid = "3.3.2"
+
 # hilt
 hilt = "2.50"
 hilt-navigation-compose = "1.2.0"
 appcompat = "1.7.0"
 material = "1.12.0"
+
+# s3
+awsAndroidSdkS3 = "2.73.0"
 
 # lottie
 lottie = "3.1.0"
@@ -94,6 +102,9 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
 androidx-paging-common-android = { group = "androidx.paging", name = "paging-common-android", version.ref = "pagingCommonAndroid" }
 
+# permission
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+
 # datastore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
 
@@ -105,12 +116,21 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "kotlinx-serialization-converter" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
+# paging
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging_version" }
+androidx-paging-compose-android = { group = "androidx.paging", name = "paging-compose-android", version.ref = "pagingComposeAndroid" }
+
 # hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
+
+# s3
+aws-android-sdk-core = { module = "com.amazonaws:aws-android-sdk-core", version.ref = "awsAndroidSdkS3" }
+aws-android-sdk-s3 = { module = "com.amazonaws:aws-android-sdk-s3", version.ref = "awsAndroidSdkS3" }
+
 
 # lottie
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }

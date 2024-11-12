@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.module.android.application.compose)
     alias(libs.plugins.module.hilt)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -33,6 +32,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(project(":core:ui"))
-    implementation(project(":feat:storage"))
-    implementation(project(":feat:display"))
+    implementation(project(":feat:login"))
+    implementation(project(":feature:storage"))
+    implementation(project(":feature:detail"))
+    implementation(project(":feature:editor"))
+    implementation(project(":feature:group"))
 }
