@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "user_uid": {
+      "type": "long"
+    },
+    "user_id": {
+      "type": "text"
+    },
+    "user_nickname": {
+      "type": "text"
+    },
+    "user_profile_img": {
+      "type": "text"
+    }
+  }
+}
