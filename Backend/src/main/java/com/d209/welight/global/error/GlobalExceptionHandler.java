@@ -1,8 +1,12 @@
 package com.d209.welight.global.error;
 
+import com.d209.welight.global.exception.cheer.CheerAccessDeniedException;
+import com.d209.welight.global.exception.cheer.CheerNotFoundException;
+import com.d209.welight.global.exception.cheer.InvalidCheerDataException;
 import com.d209.welight.global.exception.display.DisplayNotFoundException;
 import com.d209.welight.global.exception.display.InvalidDisplayDataException;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
+import com.d209.welight.global.exception.user.UserNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -56,10 +60,35 @@ public class GlobalExceptionHandler {
         return createErrorResponse(CommonErrorCode.INVALID_DISPLAY_DATA);
     }
 
+    // cheerroom
+    @ExceptionHandler(CheerNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCheerNotFoundException(CheerNotFoundException e) {
+        log.error("CheerNotFoundException", e);
+        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCheerDataException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCheerDataException(InvalidCheerDataException e) {
+        log.error("InvalidCheerDataException", e);
+        return createErrorResponse(CommonErrorCode.INVALID_PARAMETER, e.getMessage());
+    }
+
+    @ExceptionHandler(CheerAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleCheerAccessDeniedException(CheerAccessDeniedException e) {
+        log.error("CheerAccessDeniedException", e);
+        return createErrorResponse(CommonErrorCode.FORBIDDEN, e.getMessage());
+    }
     private ResponseEntity<ErrorResponse> createErrorResponse(ErrorCode errorCode) {
         return ResponseEntity
                 .status(errorCode.getStatus())
                 .body(new ErrorResponse(errorCode));
+    }
+
+    // user
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
+        log.error("UserNotFoundException", e);
+        return createErrorResponse(CommonErrorCode.ENTITY_NOT_FOUND, e.getMessage());
     }
 
     // 커스텀 에러 메시지를 받을 때

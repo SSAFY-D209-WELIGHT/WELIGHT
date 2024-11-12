@@ -2,9 +2,12 @@ package com.d209.welight.domain.cheer.entity.cheerparticipation;
 
 import com.d209.welight.domain.cheer.entity.Cheerroom;
 import com.d209.welight.domain.user.entity.User;
+import com.d209.welight.global.exception.cheer.CheerAccessDeniedException;
+import com.d209.welight.global.exception.cheer.CheerNotFoundException;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -51,7 +54,41 @@ public class CheerParticipation {
     @Builder.Default
     private LocalTime totalDuration = LocalTime.of(0, 0, 0);
 
+    // 상태 변경 메소드들
+
     public void updateCheerMemo(String cheerMemo) {
         this.memo = cheerMemo;
     }
+
+    public void delegateLeaderTo(CheerParticipation newLeader) {
+        this.setOwner(false);
+        newLeader.setOwner(true);
+    }
+
+    public void updateEntry() {
+        this.lastEntryTime = LocalDateTime.now();
+        this.lastExitTime = null;
+        this.entryCount = this.entryCount + 1;
+    }
+
+    public LocalTime updateExitInfo(LocalDateTime exitTime) {
+        this.setLastExitTime(exitTime);
+        Duration cheerDuration = Duration.between(this.getLastEntryTime(), exitTime);
+        LocalTime currentTotal = this.getTotalDuration();
+        LocalTime newTotal = currentTotal.plusHours(cheerDuration.toHours())
+                .plusMinutes(cheerDuration.toMinutesPart())
+                .plusSeconds(cheerDuration.toSecondsPart());
+        this.setTotalDuration(newTotal);
+        return newTotal;
+    }
+    public static CheerParticipation createNewParticipation(User user, Cheerroom cheerroom, boolean isOwner) {
+        return CheerParticipation.builder()
+                .user(user)
+                .cheerroom(cheerroom)
+                .participationDate(LocalDateTime.now())
+                .lastEntryTime(LocalDateTime.now())
+                .isOwner(isOwner)
+                .build();
+    }
+
 }
