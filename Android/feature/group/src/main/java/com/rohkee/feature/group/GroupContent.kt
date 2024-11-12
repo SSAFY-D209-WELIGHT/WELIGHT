@@ -53,6 +53,12 @@ fun GroupContent(
                 style = Pretendard.SemiBold20,
                 color = AppColor.OnBackground,
             )
+            CardButton(
+                icon = painterResource(R.drawable.ic_group_search),
+                title = "",
+                description = "응원할 사람을 모집하고 있는지 탐색해보세요",
+                onClick = { onIntent(GroupIntent.LoadGroupList) },
+            )
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
