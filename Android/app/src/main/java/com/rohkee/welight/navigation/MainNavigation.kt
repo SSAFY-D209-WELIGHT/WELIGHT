@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.rohkee.feat.login.LoginRoute
 import com.rohkee.feature.detail.DetailRoute
 import com.rohkee.feature.detail.DetailScreen
 import com.rohkee.feature.editor.EditorScreen
@@ -20,9 +21,10 @@ fun MainNavigation(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Home,
+        startDestination = Login,
     ) {
         composable<Login> {
+            LoginRoute()
         }
 
         composable<Home> {

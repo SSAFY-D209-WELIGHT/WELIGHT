@@ -32,6 +32,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(project(":core:ui"))
+    implementation(project(":feat:login"))
     implementation(project(":feature:storage"))
     implementation(project(":feature:detail"))
     implementation(project(":feature:editor"))
