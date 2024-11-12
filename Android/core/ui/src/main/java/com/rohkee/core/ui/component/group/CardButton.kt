@@ -80,7 +80,7 @@ fun CardButton(
 
 @Preview
 @Composable
-fun CardButtonPreview() {
+private fun CardButtonPreview() {
     CardButton(
         icon = rememberVectorPainter(Icons.Default.AccountCircle),
         title = "제목",
