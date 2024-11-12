@@ -38,10 +38,16 @@ public class GlobalExceptionHandler {
         return createErrorResponse(CommonErrorCode.NO_SEARCH_RESULT);
     }
 
+//    @ExceptionHandler(DisplayNotFoundException.class)
+//    public ResponseEntity<ErrorResponse> handleDisplayNotFoundException(DisplayNotFoundException e) {
+//        log.error("DisplayNotFoundException", e);
+//        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT);
+//    }
+
     @ExceptionHandler(DisplayNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleDisplayNotFoundException(DisplayNotFoundException e) {
         log.error("DisplayNotFoundException", e);
-        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT);
+        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
@@ -60,6 +66,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorCode.getStatus())
                 .body(new ErrorResponse(errorCode));
+    }
+
+    // 커스텀 에러 메시지를 받을 때
+    private ResponseEntity<ErrorResponse> createErrorResponse(ErrorCode errorCode, String customMessage) {
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(new ErrorResponse(errorCode, customMessage));
     }
 
 }
