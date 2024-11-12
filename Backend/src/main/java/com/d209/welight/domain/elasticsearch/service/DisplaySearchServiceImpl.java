@@ -37,7 +37,8 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
                         .map(UserDocument::getUserUid)
                         .collect(Collectors.toList());
 
-
+                log.info("creatorUids로 검색: {}", creatorUids);
+                
                 // keyword가 없는 경우 creatorUids로만 검색
                 return displaySearchRepository.findByCreatorUidInAndDisplayIsPostedTrue(creatorUids, pageable);
             }
@@ -52,10 +53,12 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
                 if (displayResults.isEmpty()) {
                     throw new NoSearchResultException("해당하는 결과가 없습니다.");
                 }
-
+                
+                log.info("키워드로 검색: {}", displayResults);
                 return displayResults;
             }
-
+            
+            log.info("게시된 모든 디스플레이 조회");
             return displaySearchRepository.findByDisplayIsPostedTrue(pageable);
 
         } catch (NoSearchResultException e) {

@@ -15,7 +15,8 @@ public enum CommonErrorCode implements ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다"),
     NO_FOUND_RESULT(HttpStatus.NOT_FOUND, "조회 결과가 없습니다"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다"),
-    INVALID_DISPLAY_DATA(HttpStatus.BAD_REQUEST, "필요한 정보가 부족합니다");
+    INVALID_DISPLAY_DATA(HttpStatus.BAD_REQUEST, "필요한 정보가 부족합니다"),
+    USER_CONFLICT(HttpStatus.CONFLICT, "충돌이 발생했습니다");
 
     private final HttpStatus status; // getStatus() 메서드를 위해 필드명 변경
     private final String message;
