@@ -3,7 +3,6 @@ package com.d209.welight.domain.display.controller;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
-import com.d209.welight.domain.user.service.UserService;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

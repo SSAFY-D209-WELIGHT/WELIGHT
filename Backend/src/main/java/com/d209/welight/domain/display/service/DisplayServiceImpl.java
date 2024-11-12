@@ -678,6 +678,7 @@ public class DisplayServiceImpl implements DisplayService {
             // 수정된 배경 저장
             displayBackgroundRepository.save(newBackground);
 
+            log.info("디스플레이 ID: {}의 수정이 완료되었습니다.", savedDisplay.getDisplayUid());
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -745,7 +746,7 @@ public class DisplayServiceImpl implements DisplayService {
             // 5. 디스플레이 삭제
             displayRepository.delete(display);
             eventPublisher.publishEvent(new DisplayEvent("DELETE", display));
-
+            log.info("디스플레이 삭제 완료: 디스플레이 ID {}", displayUid);
         } catch (Exception e) {
             throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다.");
         }
@@ -917,6 +918,7 @@ public class DisplayServiceImpl implements DisplayService {
         // 4. Display의 Display_like_count 횟수 +1
         display.setDisplayLikeCount(display.getDisplayLikeCount() + 1);
         displayRepository.save(display);
+        log.info("디스플레이 좋아요: 디스플레이 ID {}", displayUid);
     }
 
     public void cancelLikeDisplay(String userId, long displayUid) {
@@ -940,6 +942,7 @@ public class DisplayServiceImpl implements DisplayService {
         // 4. Display의 Display_like_count 횟수 -1
         display.setDisplayLikeCount(display.getDisplayLikeCount() - 1);
         displayRepository.save(display);
+        log.info("디스플레이 좋아요 취소: 디스플레이 ID {}", displayUid);
     }
 
 
@@ -956,7 +959,8 @@ public class DisplayServiceImpl implements DisplayService {
         // 부모 댓글들 다 찾기
         List<DisplayComment> comments = displayCommentRepository
                 .findByDisplayAndParentCommentIsNullOrderByCommentCreatedAt(display);
-
+        
+        log.info("디스플레이 댓글 조회: 디스플레이 ID {}", displayUid);
         return comments.stream()
                 .map(comment -> DisplayCommentResponse.convertToDTO(comment, currentUser))
                 .collect(Collectors.toList());
@@ -981,6 +985,7 @@ public class DisplayServiceImpl implements DisplayService {
                 .commentUpdatedAt(LocalDateTime.now())
                 .build();
 
+        log.info("디스플레이 댓글 작성: 디스플레이 ID {} 댓글 ID {}", displayId, comment.getCommentUid());
         // 대댓글인 경우 - parentComment도 추가
         if (requestDTO.getParentCommentUid() != null) {
             DisplayComment parentComment = displayCommentRepository.findById(requestDTO.getParentCommentUid())
@@ -1017,6 +1022,7 @@ public class DisplayServiceImpl implements DisplayService {
 
         comment.setCommentText(request.getNewCommentText());
         comment.setCommentUpdatedAt(LocalDateTime.now());
+        log.info("디스플레이 댓글 수정: 디스플레이 ID {} 댓글 ID {}", displayId, comment.getCommentUid());
         displayCommentRepository.save(comment);
     }
 
@@ -1046,6 +1052,7 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 삭제
         displayCommentRepository.deleteById(commentUid);
+        log.info("디스플레이 댓글 삭제: 디스플레이 ID {} 댓글 ID {}", displayUid, commentUid);
     }
 
     @Override
@@ -1066,6 +1073,7 @@ public class DisplayServiceImpl implements DisplayService {
         // 상태 업데이트
         display.setDisplayIsPosted(!display.getDisplayIsPosted());
         displayRepository.save(display);  // 변경사항 저장
+        log.info("디스플레이 상태 업데이트: 디스플레이 ID {} 상태 {}", displayUid, display.getDisplayIsPosted());
 
         return DisplayPostedToggleResponse.builder()
                 .displayUid(display.getDisplayUid())
