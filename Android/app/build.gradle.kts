@@ -68,4 +68,5 @@ dependencies {
     implementation(project(":feature:board"))
     implementation(libs.androidx.runtime.livedata)
     implementation(project(":feature:mypage"))
+    implementation(project(":feature:websocketclient"))
 }
