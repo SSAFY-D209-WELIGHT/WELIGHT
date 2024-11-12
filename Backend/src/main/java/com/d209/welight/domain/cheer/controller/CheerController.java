@@ -147,7 +147,7 @@ public class CheerController {
     }
 
     @PutMapping("/{cheerId}/{displayId}")
-    @Operation(summary = "응원방 디스플레이 설정", description = "응원방에 사용할 디스플레이를 설정합니다.")
+    @Operation(summary = "응원방 디스플레이 설정 (방장)", description = "응원방에 사용할 디스플레이를 설정합니다.")
     public ResponseEntity<?> updateCheerroomDisplay(
             @PathVariable Long cheerId,
             @PathVariable Long displayId,
