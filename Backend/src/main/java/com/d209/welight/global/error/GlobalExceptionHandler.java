@@ -17,32 +17,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         log.error("EntityNotFoundException", e);
-        return createErrorResponse(CommonErrorCode.ENTITY_NOT_FOUND);
+        return createErrorResponse(CommonErrorCode.ENTITY_NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("IllegalArgumentException", e);
-        return createErrorResponse(CommonErrorCode.INVALID_PARAMETER);
+        return createErrorResponse(CommonErrorCode.INVALID_PARAMETER, e.getMessage());
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
         log.error("IllegalStateException", e);
-        return createErrorResponse(CommonErrorCode.INVALID_STATE);
+        return createErrorResponse(CommonErrorCode.INVALID_STATE, e.getMessage());
     }
 
     @ExceptionHandler(NoSearchResultException.class)
     public ResponseEntity<ErrorResponse> handleNoSearchResultException(NoSearchResultException e) {
         log.error("NoSearchResultException", e);
-        return createErrorResponse(CommonErrorCode.NO_SEARCH_RESULT);
+        return createErrorResponse(CommonErrorCode.NO_SEARCH_RESULT, e.getMessage());
     }
-
-//    @ExceptionHandler(DisplayNotFoundException.class)
-//    public ResponseEntity<ErrorResponse> handleDisplayNotFoundException(DisplayNotFoundException e) {
-//        log.error("DisplayNotFoundException", e);
-//        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT);
-//    }
 
     @ExceptionHandler(DisplayNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleDisplayNotFoundException(DisplayNotFoundException e) {
