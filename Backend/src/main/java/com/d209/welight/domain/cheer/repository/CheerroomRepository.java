@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {

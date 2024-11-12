@@ -3,13 +3,10 @@ package com.d209.welight.domain.display.service;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
-import com.d209.welight.domain.display.dto.DisplayColorDto;
 import com.d209.welight.domain.display.dto.DisplayImageDto;
 import com.d209.welight.domain.display.dto.DisplayTextDto;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
-import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
-import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
-import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
+import com.d209.welight.domain.display.dto.response.*;
 import com.d209.welight.domain.display.entity.*;
 import com.d209.welight.domain.display.entity.displaylike.DisplayLike;
 import com.d209.welight.domain.display.entity.displaystorage.DisplayStorage;
@@ -17,12 +14,12 @@ import com.d209.welight.domain.elasticsearch.event.DisplayEvent;
 import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
-import com.d209.welight.global.exception.display.DisplayNotFoundException;
+import com.d209.welight.global.exception.common.NotFoundException;
 import com.d209.welight.global.service.s3.S3Service;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -34,10 +31,10 @@ import java.util.stream.Collectors;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DisplayServiceImpl implements DisplayService {
 
     private final DisplayRepository displayRepository;
@@ -45,7 +42,6 @@ public class DisplayServiceImpl implements DisplayService {
     private final DisplayImageRepository displayImageRepository;
     private final DisplayTextRepository displayTextRepository;
     private final DisplayBackgroundRepository displayBackgroundRepository;
-    private final DisplayColorRepository displayColorRepository;
     private final DisplayStorageRepository displayStorageRepository;
     private final DisplayLikeRepository displayLikeRepository;
     private final DisplayCommentRepository displayCommentRepository;
@@ -54,18 +50,17 @@ public class DisplayServiceImpl implements DisplayService {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    /**
-     * 새로운 디스플레이를 생성합니다.
-     * @param request 생성할 디스플레이 정보
-     * @return DispalayCreateReponse
-     */
     @Override
     @Transactional
-    public DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request) {
+    public DisplayCreateResponse createDisplay(String userId, DisplayCreateRequest request) {
+
+        validateDisplayCreateRequest(request);
+
         try {
+            Optional<User> user = userRepository.findByUserId(userId);
             // 1. Display 엔티티 생성
             Display display = Display.builder()
-                .creatorUid(user.getUserUid())
+                .creatorUid(user.get().getUserUid())
                 .displayName(request.getDisplayName())
                 .displayThumbnailUrl(request.getDisplayThumbnailUrl())
                 .displayIsPosted(request.getDisplayIsPosted())  // 초기 생성시 게시되지 않은 상태
@@ -76,6 +71,7 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 1. 디스플레이 기본 정보 저장
             Display savedDisplay = displayRepository.save(display);
+            log.debug("디스플레이 ID: {}로 기본 정보 저장 완료", savedDisplay.getDisplayUid());
 
             // 이벤트 발행
             eventPublisher.publishEvent(new DisplayEvent("CREATE", display));
@@ -92,6 +88,7 @@ public class DisplayServiceImpl implements DisplayService {
                     })
                     .collect(Collectors.toList());
                 displayTagRepository.saveAll(tags);
+                log.debug("디스플레이 ID: {}에 대해 {} 개의 태그 저장 완료", savedDisplay.getDisplayUid(), tags.size());
             }
 
             // 3. 이미지 정보 저장
@@ -101,13 +98,19 @@ public class DisplayServiceImpl implements DisplayService {
                         DisplayImage image = new DisplayImage();
                         image.setDisplay(savedDisplay);
                         image.setDisplayImgUrl(imageDto.getDisplayImgUrl());
-                        image.setDisplayImgPosition(imageDto.getDisplayImgPosition());
+                        image.setDisplayImgColor(imageDto.getDisplayImgColor());
+                        image.setDisplayImgScale(imageDto.getDisplayImgScale());
+                        image.setDisplayImgRotation(imageDto.getDisplayImgRotation());
+                        image.setDisplayImgOffsetx(imageDto.getDisplayImgOffsetx());
+                        image.setDisplayImgOffsety(imageDto.getDisplayImgOffsety());
                         image.setDisplayImgCreatedAt(LocalDateTime.now());
                         return image;
                     })
                     .collect(Collectors.toList());
+
                 displayImageRepository.saveAll(images);
                 savedDisplay.setImages(images);
+                log.debug("디스플레이 ID: {}에 대해 {} 개의 이미지 저장 완료", savedDisplay.getDisplayUid(), images.size());
             }
 
             // 4. 텍스트 정보 저장
@@ -118,40 +121,48 @@ public class DisplayServiceImpl implements DisplayService {
                         text.setDisplay(savedDisplay);
                         text.setDisplayTextDetail(textDto.getDisplayTextDetail());
                         text.setDisplayTextColor(textDto.getDisplayTextColor());
-                        text.setDisplayTextPosition(textDto.getDisplayTextPosition());
-                        text.setDisplayTextRotation(textDto.getDisplayTextRotation());
                         text.setDisplayTextFont(textDto.getDisplayTextFont());
+                        text.setDisplayTextRotation(textDto.getDisplayTextRotation());
+                        text.setDisplayTextScale(textDto.getDisplayTextScale());
+                        text.setDisplayTextOffsetx(textDto.getDisplayTextOffsetx());
+                        text.setDisplayTextOffsety(textDto.getDisplayTextOffsety());
                         text.setDisplayTextCreatedAt(LocalDateTime.now());
                         return text;
                     })
                     .collect(Collectors.toList());
+
                 displayTextRepository.saveAll(texts);
                 savedDisplay.setTexts(texts);
+                log.debug("디스플레이 ID: {}에 대해 {} 개의 텍스트 저장 완료", savedDisplay.getDisplayUid(), texts.size());
             }
 
             // 5. 배경 정보 저장
             if (request.getBackground() != null) {
                 DisplayBackground background = new DisplayBackground();
-                DisplayColor color = new DisplayColor();
                 background.setDisplay(savedDisplay);
                 background.setDisplayBackgroundBrightness(request.getBackground().getDisplayBackgroundBrightness());
+                background.setDisplayColorSolid(request.getBackground().getDisplayColorSolid());
+                background.setDisplayBackgroundGradationColor1(request.getBackground().getDisplayBackgroundGradationColor1());
+                background.setDisplayBackgroundGradationColor2(request.getBackground().getDisplayBackgroundGradationColor2());
+                background.setDisplayBackgroundGradationType(request.getBackground().getDisplayBackgroundGradationType());
                 background.setDisplayBackgroundCreatedAt(LocalDateTime.now());
 
-                // 배경 색상 정보 저장
-                if (request.getBackground().getColor() != null) {
-
-                    color.setDisplayBackground(background);
-                    color.setDisplayColorSolid(request.getBackground().getColor().getDisplayColorSolid());
-                    color.setDisplayBackgroundGradationColor1(request.getBackground().getColor().getDisplayBackgroundGradationColor1());
-                    color.setDisplayBackgroundGradationColor2(request.getBackground().getColor().getDisplayBackgroundGradationColor2());
-                    color.setDisplayBackgroundGradationType(request.getBackground().getColor().getDisplayBackgroundGradationType());
-                }
-
                 displayBackgroundRepository.save(background);
-                displayColorRepository.save(color);
                 savedDisplay.setBackground(background);
+                log.debug("디스플레이 ID: {}에 대한 배경 정보 저장 완료", savedDisplay.getDisplayUid());
 
             }
+
+            // displayStorage 생성 및 저장
+            DisplayStorage displayStorage = DisplayStorage.builder()
+                    .user(user.get())
+                    .display(display)
+                    .downloadAt(LocalDateTime.now())
+                    .isFavorites(false)
+                    .favoritesAt(null)
+                    .build();
+            displayStorageRepository.save(displayStorage);
+            log.info("사용자 {}의 디스플레이 ID: {} 생성 완료", userId, savedDisplay.getDisplayUid());
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -160,32 +171,50 @@ public class DisplayServiceImpl implements DisplayService {
                     .build();
 
         } catch (Exception e) {
+            log.error("디스플레이 생성 중 예기치 않은 오류: {}", e.getMessage());
             throw new RuntimeException("디스플레이 생성 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
     @Override
     public DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request) {
-        try {
-            // Display 존재 여부 확인
-            Display display = displayRepository.findById(request.getDisplayUid())
-                    .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
 
+        // Display 존재 여부 확인
+        Display display = displayRepository.findById(request.getDisplayUid())
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        try {
             // 태그 정보 조회
             List<DisplayTag> tags = displayTagRepository.findByDisplay(display);
 
             // 현재 사용자의 userId를 userUid로 변환하여 비교
             boolean isOwner = false;
+            boolean isFavorite = false;
+            boolean isLiked = false;
+
+            // 제작자 정보 조회
+            User creator = userRepository.findByUserUid(display.getCreatorUid())
+                  .orElseThrow(() -> new EntityNotFoundException("제작자 정보를 찾을 수 없습니다."));
+            String creatorName = creator.getUsername();
+
             if (request.getUserId() != null) {
                 Optional<User> currentUser = userRepository.findByUserId(request.getUserId());
                 if (currentUser.isPresent()) {
                     isOwner = display.getCreatorUid().equals(currentUser.get().getUserUid());
+
+                    // 즐겨찾기 여부 확인
+                    isFavorite = displayStorageRepository.existsByUserAndDisplayAndIsFavoritesIsTrue(currentUser, display);
+                    // 좋아요 여부 확인
+                    isLiked = displayLikeRepository.existsByUserAndDisplay(currentUser, display);
                 }
             }
+
+            log.info("디스플레이 상세 정보 조회 완료: 디스플레이 ID {}", request.getDisplayUid());
 
             // Response 객체 생성 및 반환
             return DisplayDetailResponse.builder()
                     .creatorUid(display.getCreatorUid())
+                    .creatorName(creatorName)
                     .displayName(display.getDisplayName())
                     .displayThumbnailUrl(display.getDisplayThumbnailUrl())
                     .displayIsPosted(display.getDisplayIsPosted())
@@ -193,10 +222,16 @@ public class DisplayServiceImpl implements DisplayService {
                             .map(DisplayTag::getDisplayTagText)
                             .collect(Collectors.toList()))
                     .isOwner(isOwner)
+                    .isFavorite(isFavorite)
+                    .isLiked(isLiked)
+                    .likeCount(display.getDisplayLikeCount())
+                    .downloadCount(display.getDisplayDownloadCount())
+                    .commentCount(displayCommentRepository.countByDisplay(display))
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 상세 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
+            log.error("디스플레이 상세 조회 중 예외 발생", e);
+            throw e;
         }
     }
 
@@ -212,12 +247,14 @@ public class DisplayServiceImpl implements DisplayService {
                     .build())
                 .collect(Collectors.toList());
 
+            log.info("디스플레이 목록 조회 완료: {} 개의 디스플레이 반환", displayInfos.size());
+
             return DisplayListResponse.builder()
                 .currentPage(pageable.getPageNumber())
                 .displays(displayInfos)
                 .build();
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("디스플레이 목록 조회 중 오류가 발생했습니다.");
         }
     }
 
@@ -233,31 +270,43 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 사용자의 디스플레이 목록 조회
             List<DisplayListResponse.DisplayInfo> displayInfos = displays.getContent().stream()
-                .map(display -> DisplayListResponse.DisplayInfo.builder()
-                    .displayUid(display.getDisplayUid())
-                    .displayThumbnail(display.getDisplayThumbnailUrl())
-                    .build())
-                .collect(Collectors.toList());
+                    .map(display -> {
+                        // DisplayStorage에서 즐겨찾기 여부 확인
+                        boolean isFavorite = displayStorageRepository.findByUserAndDisplay(user.get(), display)
+                                .map(DisplayStorage::getIsFavorites)
+                                .orElse(false);
+
+                        return DisplayListResponse.DisplayInfo.builder()
+                                .displayUid(display.getDisplayUid())
+                                .displayThumbnail(display.getDisplayThumbnailUrl())
+                                .isFavorite(isFavorite)  // 즐겨찾기 여부 추가
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            log.info("사용자 {}의 디스플레이 목록 조회 완료: {} 개의 디스플레이 반환", userId, displayInfos.size());
 
             return DisplayListResponse.builder()
                 .currentPage(pageable.getPageNumber())
                 .displays(displayInfos)
                 .build();
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("사용자를 찾을 수 없습니다.");
         } catch (Exception e) {
-            throw new RuntimeException("내 디스플레이 목록 조회 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("내 디스플레이 목록 조회 중 오류가 발생했습니다.");
         }
     }
 
     @Override
     @Transactional
-    public Long duplicateDisplay(Long displayId, String userId) {
+    public DisplayCreateResponse duplicateDisplay(Long displayId, String userId) {
         // 원본 디스플레이 조회
         Display originalDisplay = displayRepository.findById(displayId)
-                .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
 
         // userUid로 userId 조회
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new DisplayNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         Long userUid = user.getUserUid();
 
         // 새로운 디스플레이 생성
@@ -283,13 +332,14 @@ public class DisplayServiceImpl implements DisplayService {
                 // 새로운 디스플레이에 썸네일 URL 설정
                 newDisplay.setDisplayThumbnailUrl(newThumbnailUrl);
             }
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("디스플레이를 찾을 수 없습니다.");
         } catch (Exception e) {
-            throw new RuntimeException("썸네일 복제 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("디스플레이 복제 중 오류가 발생했습니다.");
         }
 
         // 디스플레이 정보 저장
         Display savedDisplay = displayRepository.save(newDisplay);
-        Long newDisplayId = savedDisplay.getDisplayUid();
 
         // 배경 복제
         duplicateBackground(originalDisplay.getBackground(), savedDisplay);
@@ -300,94 +350,117 @@ public class DisplayServiceImpl implements DisplayService {
         // 이미지 복제
         duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
 
-        return newDisplayId;
+        // displayStorage 생성 및 저장
+        DisplayStorage displayStorage = DisplayStorage.builder()
+                .user(user)
+                .display(savedDisplay)
+                .downloadAt(LocalDateTime.now())
+                .isFavorites(false)
+                .favoritesAt(null)
+                .build();
+        displayStorageRepository.save(displayStorage);
+
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(savedDisplay.getDisplayUid())
+                .displayName(savedDisplay.getDisplayName())
+                .message("디스플레이가 성공적으로 복제되었습니다.")
+                .build();
     }
 
     @Override
     @Transactional
     public void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay) {
-        //  디스플레이 정보 수정 후 나머지 텍스트 정보 복제
-        if (originalTexts != null) {
-            originalTexts.forEach(text -> {
-                DisplayText newText = DisplayText.builder()
-                        .display(newDisplay)
-                        .displayTextDetail(text.getDisplayTextDetail())
-                        .displayTextFont(text.getDisplayTextFont())
-                        .displayTextColor(text.getDisplayTextColor())
-                        .displayTextPosition(text.getDisplayTextPosition())
-                        .displayTextRotation(text.getDisplayTextRotation())
-                        .build();
+        try {
+             //  디스플레이 정보 수정 후 나머지 텍스트 정보 복제
+            if (originalTexts != null) {
+                originalTexts.forEach(text -> {
+                    DisplayText newText = DisplayText.builder()
+                            .display(newDisplay)
+                            .displayTextDetail(text.getDisplayTextDetail())
+                            .displayTextColor(text.getDisplayTextColor())
+                            .displayTextFont(text.getDisplayTextFont())
+                            .displayTextRotation(text.getDisplayTextRotation())
+                            .displayTextScale(text.getDisplayTextScale())
+                            .displayTextOffsetx(text.getDisplayTextOffsetx())
+                            .displayTextOffsety(text.getDisplayTextOffsety())
+                            .displayTextCreatedAt(LocalDateTime.now())
+                            .build();
 
-                // 디스플레이 텍스트 저장
-                displayTextRepository.save(newText);
-            });
+                    // 디스플레이 텍스트 저장
+                    displayTextRepository.save(newText);
+                });
+            }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("텍스트 복제 중 오류가 발생했습니다.");
         }
     }
 
     @Override
     @Transactional
     public void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId) {
-        if (originalImages != null) {
-            for (DisplayImage image : originalImages) {
-                try {
-                    String originalImgUrl = image.getDisplayImgUrl();
-                    if (originalImgUrl != null && !originalImgUrl.isEmpty()) {
-                        // 새로운 파일명 생성
-                        String newFileName = generateFileName(userId, "images", originalImgUrl);
-
-                        // S3에 이미지 복사
-                        String newImgUrl = s3Service.copyS3(originalImgUrl, newFileName);
-
-                        // 새로운 이미지 엔티티 생성 및 저장
-                        DisplayImage newImage = DisplayImage.builder()
-                            .display(newDisplay)
-                            .displayImgUrl(newImgUrl)
-                            .displayImgPosition(image.getDisplayImgPosition())
-                            .displayImgCreatedAt(LocalDateTime.now())
-                            .build();
-
-                        displayImageRepository.save(newImage);
+        try {
+            if (originalImages != null) {
+                originalImages.forEach(image -> {
+                    try {
+                        String originalImgUrl = image.getDisplayImgUrl();
+                        if (originalImgUrl != null && !originalImgUrl.isEmpty()) {
+                            // 새로운 파일명 생성
+                            String newFileName = generateFileName(userId, "images", originalImgUrl);
+    
+                            // S3에 이미지 복사
+                            String newImgUrl = s3Service.copyS3(originalImgUrl, newFileName);
+    
+                            // 새로운 이미지 엔티티 생성 및 저장
+                            DisplayImage newImage = DisplayImage.builder()
+                                .display(newDisplay)
+                                .displayImgUrl(newImgUrl)
+                                .displayImgColor(image.getDisplayImgColor())
+                                .displayImgScale(image.getDisplayImgScale())
+                                .displayImgRotation(image.getDisplayImgRotation())
+                                .displayImgOffsetx(image.getDisplayImgOffsetx())
+                                .displayImgOffsety(image.getDisplayImgOffsety())
+                                .displayImgCreatedAt(LocalDateTime.now())
+                                .build();
+    
+                            displayImageRepository.save(newImage);
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException("이미지 복제 중 오류가 발생했습니다: " + e.getMessage());
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException("이미지 복제 중 오류가 발생했습니다: " + e.getMessage());
-                }
+                });
             }
+            
+        } catch (Exception e) {
+            throw new RuntimeException("이미지 복제 중 오류가 발생했습니다.");
         }
     }
 
     @Override
     @Transactional
     public void duplicateBackground(DisplayBackground originalBackground, Display newDisplay) {
-        if (originalBackground != null) {
+        
+        try {
+            if (originalBackground != null) {
 
-            // 새로운 배경 엔티티 생성
-            DisplayBackground newBackground = DisplayBackground.builder()
-                    .display(newDisplay)
-                    .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
-                    .build();
-
-            // 디스플레이 배경 저장
-            DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
-
-            // 원본 배경의 색상 정보 조회
-            DisplayColor originalColor =  displayColorRepository.findByDisplayBackground(originalBackground)
-                    .orElse(null);
-
-            // 배경 색상 복제
-            if (originalColor != null) {
-                DisplayColor newColor = DisplayColor.builder()
-                        .displayBackground(savedBackground)
-                        .displayColorSolid(originalColor.getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(originalColor.getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(originalColor.getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(originalColor.getDisplayBackgroundGradationType())
+                // 새로운 배경 엔티티 생성
+                DisplayBackground newBackground = DisplayBackground.builder()
+                        .display(newDisplay)
+                        .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                        .displayColorSolid(originalBackground.getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
                         .build();
-
-
-                // 배경 색상 저장
-                displayColorRepository.save(newColor);
+    
+                // 디스플레이 배경 저장
+                displayBackgroundRepository.save(newBackground);
             }
+        } catch (Exception e) {
+            throw new RuntimeException("배경 복제 중 오류가 발생했습니다.");
         }
+       
     }
 
     @Override
@@ -398,7 +471,7 @@ public class DisplayServiceImpl implements DisplayService {
                     .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
             Display display = displayRepository.findById(displayId)
-                    .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
 
             if (!display.getCreatorUid().equals(user.getUserUid())) {
                 throw new IllegalStateException("디스플레이를 수정할 권한이 없습니다.");
@@ -413,7 +486,11 @@ public class DisplayServiceImpl implements DisplayService {
             List<DisplayImageDto> images = display.getImages().stream()
                     .map(image -> DisplayImageDto.builder()
                             .displayImgUrl(image.getDisplayImgUrl())
-                            .displayImgPosition(image.getDisplayImgPosition())
+                            .displayImgColor(image.getDisplayImgColor())
+                            .displayImgScale(image.getDisplayImgScale())
+                            .displayImgRotation(image.getDisplayImgRotation())
+                            .displayImgOffsetx(image.getDisplayImgOffsetx())
+                            .displayImgOffsety(image.getDisplayImgOffsety())
                             .build())
                     .collect(Collectors.toList());
 
@@ -422,37 +499,25 @@ public class DisplayServiceImpl implements DisplayService {
                     .map(text -> DisplayTextDto.builder()
                             .displayTextDetail(text.getDisplayTextDetail())
                             .displayTextColor(text.getDisplayTextColor())
-                            .displayTextPosition(text.getDisplayTextPosition())
-                            .displayTextRotation(text.getDisplayTextRotation())
                             .displayTextFont(text.getDisplayTextFont())
+                            .displayTextRotation(text.getDisplayTextRotation())
+                            .displayTextScale(text.getDisplayTextScale())
+                            .displayTextOffsetx(text.getDisplayTextOffsetx())
+                            .displayTextOffsety(text.getDisplayTextOffsety())
                             .build())
                     .collect(Collectors.toList());
 
-            // 배경 정보 변환
-            DisplayBackgroundDto background = null;
-            if (display.getBackground() != null) {
-                DisplayColor color = displayColorRepository.findByDisplayBackground(display.getBackground())
-                        .orElse(null);
 
-                DisplayColorDto colorDto = null;
-                if (color != null) {
-                    colorDto = DisplayColorDto.builder()
-                            .displayColorSolid(color.getDisplayColorSolid())
-                            .displayBackgroundGradationColor1(color.getDisplayBackgroundGradationColor1())
-                            .displayBackgroundGradationColor2(color.getDisplayBackgroundGradationColor2())
-                            .displayBackgroundGradationType(color.getDisplayBackgroundGradationType())
-                            .build();
-                }
-
-                background = DisplayBackgroundDto.builder()
-                        .displayBackgroundBrightness(display.getBackground().getDisplayBackgroundBrightness())
-                        .color(colorDto)
-                        .build();
-            }
+            DisplayBackgroundDto background = DisplayBackgroundDto.builder()
+                    .displayBackgroundBrightness(display.getBackground().getDisplayBackgroundBrightness())
+                    .displayColorSolid(display.getBackground().getDisplayColorSolid())
+                    .displayBackgroundGradationColor1(display.getBackground().getDisplayBackgroundGradationColor1())
+                    .displayBackgroundGradationColor2(display.getBackground().getDisplayBackgroundGradationColor2())
+                    .displayBackgroundGradationType(display.getBackground().getDisplayBackgroundGradationType())
+                    .build();
 
             // DisplayCreateRequest 생성 및 반환
             return DisplayCreateRequest.builder()
-//                    .creatorUid(display.getCreatorUid())
                     .displayName(display.getDisplayName())
                     .displayThumbnailUrl(display.getDisplayThumbnailUrl())
                     .displayIsPosted(display.getDisplayIsPosted())
@@ -463,23 +528,25 @@ public class DisplayServiceImpl implements DisplayService {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 수정 정보 조회 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("디스플레이 수정 정보 조회 중 오류가 발생했습니다.");
         }
     }
 
     @Override
     public DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId) {
+
+        // 1. 권한 확인
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        Display originalDisplay = displayRepository.findById(displayId)
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        if (!originalDisplay.getCreatorUid().equals(user.getUserUid())) {
+            throw new IllegalStateException("디스플레이를 수정할 권한이 없습니다.");
+        }
+
         try {
-            // 1. 권한 확인
-            User user = userRepository.findByUserId(userId)
-                    .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-
-            Display originalDisplay = displayRepository.findById(displayId)
-                    .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
-
-            if (!originalDisplay.getCreatorUid().equals(user.getUserUid())) {
-                throw new IllegalStateException("디스플레이를 수정할 권한이 없습니다.");
-            }
 
             // 2. 새로운 디스플레이 생성 (기존 정보 복사)
             Display newDisplay = Display.builder()
@@ -522,7 +589,11 @@ public class DisplayServiceImpl implements DisplayService {
                         .map(imageDto -> DisplayImage.builder()
                                 .display(savedDisplay)
                                 .displayImgUrl(imageDto.getDisplayImgUrl())
-                                .displayImgPosition(imageDto.getDisplayImgPosition())
+                                .displayImgColor(imageDto.getDisplayImgColor())
+                                .displayImgScale(imageDto.getDisplayImgScale())
+                                .displayImgRotation(imageDto.getDisplayImgRotation())
+                                .displayImgOffsetx(imageDto.getDisplayImgOffsetx())
+                                .displayImgOffsety(imageDto.getDisplayImgOffsety())
                                 .displayImgCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -531,7 +602,11 @@ public class DisplayServiceImpl implements DisplayService {
                         .map(image -> DisplayImage.builder()
                                 .display(savedDisplay)
                                 .displayImgUrl(image.getDisplayImgUrl())
-                                .displayImgPosition(image.getDisplayImgPosition())
+                                .displayImgColor(image.getDisplayImgColor())
+                                .displayImgScale(image.getDisplayImgScale())
+                                .displayImgRotation(image.getDisplayImgRotation())
+                                .displayImgOffsetx(image.getDisplayImgOffsetx())
+                                .displayImgOffsety(image.getDisplayImgOffsety())
                                 .displayImgCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -548,9 +623,11 @@ public class DisplayServiceImpl implements DisplayService {
                                 .display(savedDisplay)
                                 .displayTextDetail(textDto.getDisplayTextDetail())
                                 .displayTextColor(textDto.getDisplayTextColor())
-                                .displayTextPosition(textDto.getDisplayTextPosition())
-                                .displayTextRotation(textDto.getDisplayTextRotation())
                                 .displayTextFont(textDto.getDisplayTextFont())
+                                .displayTextRotation(textDto.getDisplayTextRotation())
+                                .displayTextScale(textDto.getDisplayTextScale())
+                                .displayTextOffsetx(textDto.getDisplayTextOffsetx())
+                                .displayTextOffsety(textDto.getDisplayTextOffsety())
                                 .displayTextCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -560,9 +637,11 @@ public class DisplayServiceImpl implements DisplayService {
                                 .display(savedDisplay)
                                 .displayTextDetail(text.getDisplayTextDetail())
                                 .displayTextColor(text.getDisplayTextColor())
-                                .displayTextPosition(text.getDisplayTextPosition())
-                                .displayTextRotation(text.getDisplayTextRotation())
                                 .displayTextFont(text.getDisplayTextFont())
+                                .displayTextRotation(text.getDisplayTextRotation())
+                                .displayTextScale(text.getDisplayTextScale())
+                                .displayTextOffsetx(text.getDisplayTextOffsetx())
+                                .displayTextOffsety(text.getDisplayTextOffsety())
                                 .displayTextCreatedAt(LocalDateTime.now())
                                 .build())
                         .collect(Collectors.toList());
@@ -577,6 +656,10 @@ public class DisplayServiceImpl implements DisplayService {
                 newBackground = DisplayBackground.builder()
                         .display(savedDisplay)
                         .displayBackgroundBrightness(request.getBackground().getDisplayBackgroundBrightness())
+                        .displayColorSolid(request.getBackground().getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(request.getBackground().getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(request.getBackground().getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(request.getBackground().getDisplayBackgroundGradationType())
                         .displayBackgroundCreatedAt(LocalDateTime.now())
                         .build();
             } else {
@@ -584,41 +667,18 @@ public class DisplayServiceImpl implements DisplayService {
                 newBackground = DisplayBackground.builder()
                         .display(savedDisplay)
                         .displayBackgroundBrightness(originalBackground.getDisplayBackgroundBrightness())
+                        .displayColorSolid(originalBackground.getDisplayColorSolid())
+                        .displayBackgroundGradationColor1(originalBackground.getDisplayBackgroundGradationColor1())
+                        .displayBackgroundGradationColor2(originalBackground.getDisplayBackgroundGradationColor2())
+                        .displayBackgroundGradationType(originalBackground.getDisplayBackgroundGradationType())
                         .displayBackgroundCreatedAt(LocalDateTime.now())
                         .build();
             }
             
             // 수정된 배경 저장
-            DisplayBackground savedBackground = displayBackgroundRepository.save(newBackground);
+            displayBackgroundRepository.save(newBackground);
 
-            // 색상 처리
-            DisplayColor originalColor = displayColorRepository.findByDisplayBackground(originalDisplay.getBackground()).orElse(null);
-            DisplayColor newColor;
-            if (request.getBackground() != null && request.getBackground().getColor() != null) {
-                newColor = DisplayColor.builder()
-                        .displayBackground(savedBackground)
-                        .displayColorSolid(request.getBackground().getColor().getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(request.getBackground().getColor().getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(request.getBackground().getColor().getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(request.getBackground().getColor().getDisplayBackgroundGradationType())
-                        .build();
-            } else if (originalColor != null) {
-                newColor = DisplayColor.builder()
-                        .displayBackground(savedBackground)
-                        .displayColorSolid(originalColor.getDisplayColorSolid())
-                        .displayBackgroundGradationColor1(originalColor.getDisplayBackgroundGradationColor1())
-                        .displayBackgroundGradationColor2(originalColor.getDisplayBackgroundGradationColor2())
-                        .displayBackgroundGradationType(originalColor.getDisplayBackgroundGradationType())
-                        .build();
-            } else {
-                newColor = null;
-            }
-
-            if (newColor != null) {
-
-                // 수정된 배경 색상 저장
-                displayColorRepository.save(newColor);
-            }
+            log.info("디스플레이 ID: {}의 수정이 완료되었습니다.", savedDisplay.getDisplayUid());
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -627,7 +687,7 @@ public class DisplayServiceImpl implements DisplayService {
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다: ");
+            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다.");
         }
     }
 
@@ -636,7 +696,7 @@ public class DisplayServiceImpl implements DisplayService {
     public void deleteDisplay(Long displayUid, String userId) {
         // 1. Display와 User 정보 확인
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
@@ -681,16 +741,14 @@ public class DisplayServiceImpl implements DisplayService {
             displayTextRepository.deleteByDisplay(display);
 
             // 배경 색상 삭제
-            DisplayBackground background = display.getBackground();
-            displayColorRepository.deleteByDisplayBackground(background);
-            displayBackgroundRepository.findByDisplay(display);
+            displayBackgroundRepository.deleteByDisplay(display);
 
             // 5. 디스플레이 삭제
             displayRepository.delete(display);
             eventPublisher.publishEvent(new DisplayEvent("DELETE", display));
-
+            log.info("디스플레이 삭제 완료: 디스플레이 ID {}", displayUid);
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다: " + e.getMessage());
+            throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다.");
         }
     }
 
@@ -722,14 +780,17 @@ public class DisplayServiceImpl implements DisplayService {
      * 디스플레이 저장소 (다운로드, 삭제)
      * */
     @Override
-    public void downloadDisplay(User user, long displayUid) {
+    public DisplayCreateResponse downloadDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 2. 이미 이 회원이 이 display를 저장했는지 확인
         if (displayStorageRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityExistsException("이미 저장한 디스플레이입니다.");
+            throw new IllegalStateException("이미 저장한 디스플레이입니다.");
         }
 
         // displayStorage 생성
@@ -748,56 +809,101 @@ public class DisplayServiceImpl implements DisplayService {
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() + 1);
         displayRepository.save(display);
 
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayName(display.getDisplayName())
+                .message("디스플레이가 성공적으로 다운로드되었습니다.")
+                .build();
     }
 
     @Override
-    public void deleteStoredDisplay(User user, long displayUid) {
+    public DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 2. 저장된 디스플레이가 존재하는지 확인
         if (!displayStorageRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.");
+            throw new IllegalStateException("저장된 디스플레이를 찾을 수 없습니다.");
         }
 
         // 3. 저장소에서 삭제
-        displayStorageRepository.deleteByUserAndDisplay(user, display);
+        DisplayStorage storedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
+                .orElseThrow(() -> new EntityNotFoundException("저장한 디스플레이가 아닙니다."));
+        displayStorageRepository.delete(storedDisplay);
 
         // 4. Display의 Display_download_count 횟수 -1
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
         displayRepository.save(display);
+
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayName(display.getDisplayName())
+                .message("저장소에서 디스플레이가 삭제되었습니다.")
+                .build();
     }
 
     @Override
-    public void updateDisplayFavorite(User user, long displayUid) {
+    public DisplayCreateResponse updateDisplayFavorite(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
-        // 2. 저장된 디스플레이가 존재하는지 확인
-        DisplayStorage storagedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
-                .orElseThrow(() -> new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
 
-        // 3. 현재 상태의 반대로 변경
-        boolean newFavoriteStatus = !storagedDisplay.getIsFavorites();
-        storagedDisplay.setIsFavorites(newFavoriteStatus);
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
-        // 3-1. false -> true로 변경될 때만 시간 업데이트
-        if (newFavoriteStatus) {
-            storagedDisplay.setFavoritesAt(LocalDateTime.now());
+        // 2-1. 내가 제작한 디스플레이인지 확인
+        boolean isCreator = display.getCreatorUid().equals(user.getUserUid());
+        // 2-2. 내가 저장한 디스플레이인지 확인
+        Optional<DisplayStorage> optionalStoragedDisplay = displayStorageRepository.findByUserAndDisplay(user, display);
+
+        // 3. 내가 제작한 디스플레이이거나 저장한 디스플레이라면 상태 업데이트 진행
+        if (isCreator || optionalStoragedDisplay.isPresent()) {
+            DisplayStorage storagedDisplay = optionalStoragedDisplay.orElseThrow(
+                    () -> new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.")
+            );
+
+            // 4. 현재 상태의 반대로 변경
+            boolean newFavoriteStatus = !storagedDisplay.getIsFavorites();
+            storagedDisplay.setIsFavorites(newFavoriteStatus);
+
+            // 4-1. false -> true로 변경될 때만 시간 업데이트
+            if (newFavoriteStatus) {
+                storagedDisplay.setFavoritesAt(LocalDateTime.now());
+            }
+
+            // 5. 저장
+            displayStorageRepository.save(storagedDisplay);
+
+            // 응답 객체 생성 및 반환
+            return DisplayCreateResponse.builder()
+                    .displayUid(display.getDisplayUid())
+                    .displayName(display.getDisplayName())
+                    .message("디스플레이의 즐겨찾기 정보를 토글합니다.")
+                    .build();
+
+        } else {
+            throw new IllegalStateException("해당 디스플레이에 대한 권한이 없습니다.");
         }
-
-        displayStorageRepository.save(storagedDisplay);
     }
 
     @Override
-    public void doLikeDisplay(User user, long displayUid) {
+    public void doLikeDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 2. 이미 이 회원이 이 display를 좋아요 했는지
         if (displayLikeRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityExistsException("이미 좋아요를 누른 디스플레이입니다.");
+            throw new IllegalStateException("이미 좋아요를 누른 디스플레이입니다.");
         }
 
         // DisplayLike 생성
@@ -812,41 +918,49 @@ public class DisplayServiceImpl implements DisplayService {
         // 4. Display의 Display_like_count 횟수 +1
         display.setDisplayLikeCount(display.getDisplayLikeCount() + 1);
         displayRepository.save(display);
+        log.info("디스플레이 좋아요: 디스플레이 ID {}", displayUid);
     }
 
-    public void cancelLikeDisplay(User user, long displayUid) {
+    public void cancelLikeDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 2. 저장된 디스플레이가 존재하는지 확인
         if (!displayLikeRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityNotFoundException("좋아요한 디스플레이가 아닙니다.");
+            throw new IllegalStateException("좋아요한 디스플레이가 아닙니다.");
         }
 
         // 3. displayLike 삭제
-        displayLikeRepository.deleteByUserAndDisplay(user, display);
+        DisplayLike displayLike = displayLikeRepository.findByUserAndDisplay(user, display)
+                .orElseThrow(() -> new IllegalStateException("좋아요한 디스플레이가 아닙니다."));
+        displayLikeRepository.delete(displayLike);
 
         // 4. Display의 Display_like_count 횟수 -1
         display.setDisplayLikeCount(display.getDisplayLikeCount() - 1);
         displayRepository.save(display);
+        log.info("디스플레이 좋아요 취소: 디스플레이 ID {}", displayUid);
     }
 
 
-    /*
-     * 댓글
-     * */
-
     // 해당 display에 있는 댓글 전체 조회
     @Override
-    public List<DisplayCommentResponse> getComments(User currentUser, long displayUid) {
+    public List<DisplayCommentResponse> getComments(String userId, long displayUid) {
         // 해당 display찾기
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User currentUser = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 부모 댓글들 다 찾기
         List<DisplayComment> comments = displayCommentRepository
                 .findByDisplayAndParentCommentIsNullOrderByCommentCreatedAt(display);
-
+        
+        log.info("디스플레이 댓글 조회: 디스플레이 ID {}", displayUid);
         return comments.stream()
                 .map(comment -> DisplayCommentResponse.convertToDTO(comment, currentUser))
                 .collect(Collectors.toList());
@@ -854,10 +968,13 @@ public class DisplayServiceImpl implements DisplayService {
 
     // display에 댓글 작성
     @Override
-    public void createComment(User user, Long displayId, DisplayCommentRequest requestDTO) {
+    public void createComment(String userId, Long displayId, DisplayCommentRequest requestDTO) {
         // 해당 display찾기
         Display display = displayRepository.findById(displayId)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 댓글 객체 생성
         DisplayComment comment = DisplayComment.builder()
@@ -868,10 +985,11 @@ public class DisplayServiceImpl implements DisplayService {
                 .commentUpdatedAt(LocalDateTime.now())
                 .build();
 
+        log.info("디스플레이 댓글 작성: 디스플레이 ID {} 댓글 ID {}", displayId, comment.getCommentUid());
         // 대댓글인 경우 - parentComment도 추가
         if (requestDTO.getParentCommentUid() != null) {
             DisplayComment parentComment = displayCommentRepository.findById(requestDTO.getParentCommentUid())
-                    .orElseThrow(() -> new EntityNotFoundException("부모 댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalStateException("부모 댓글을 찾을 수 없습니다."));
             comment.setParentComment(parentComment);
         }
 
@@ -880,14 +998,17 @@ public class DisplayServiceImpl implements DisplayService {
 
     // 내 댓글 수정
     @Override
-    public void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request) {
+    public void updateComment(String userId, Long displayId, DisplayCommentUpdateRequest request) {
         // display찾기
         Display display = displayRepository.findById(displayId)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // comment찾기
         DisplayComment comment = displayCommentRepository.findById(request.getCommentUid())
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("댓글을 찾을 수 없습니다."));
 
         // display에 달린 댓글인지 확인
         if (!comment.getDisplay().equals(display)) {
@@ -901,19 +1022,23 @@ public class DisplayServiceImpl implements DisplayService {
 
         comment.setCommentText(request.getNewCommentText());
         comment.setCommentUpdatedAt(LocalDateTime.now());
+        log.info("디스플레이 댓글 수정: 디스플레이 ID {} 댓글 ID {}", displayId, comment.getCommentUid());
         displayCommentRepository.save(comment);
     }
 
     // 내 댓글 삭제
     @Override
-    public void deleteComment(User user, Long displayUid, Long commentUid) {
+    public void deleteComment(String userId, Long displayUid, Long commentUid) {
         // display찾기
         Display display = displayRepository.findById(displayUid)
-                .orElseThrow(() -> new EntityNotFoundException("디스플레이를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // comment찾기
         DisplayComment comment = displayCommentRepository.findById(commentUid)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("댓글을 찾을 수 없습니다."));
 
         // display에 달린 댓글인지 확인
         if (!comment.getDisplay().equals(display)) {
@@ -927,6 +1052,65 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 삭제
         displayCommentRepository.deleteById(commentUid);
+        log.info("디스플레이 댓글 삭제: 디스플레이 ID {} 댓글 ID {}", displayUid, commentUid);
+    }
+
+    @Override
+    public DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId) {
+        // 사용자 검증
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 사용자입니다."));
+
+        // 디스플레이 조회
+        Display display = displayRepository.findById(displayUid)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 디스플레이입니다."));
+
+        // 권한 검증 (생성자만 수정 가능)
+        if (!display.getCreatorUid().equals(user.getUserUid())) {
+            throw new IllegalStateException("디스플레이 수정 권한이 없습니다.");
+        }
+
+        // 상태 업데이트
+        display.setDisplayIsPosted(!display.getDisplayIsPosted());
+        displayRepository.save(display);  // 변경사항 저장
+        log.info("디스플레이 상태 업데이트: 디스플레이 ID {} 상태 {}", displayUid, display.getDisplayIsPosted());
+
+        return DisplayPostedToggleResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayIsPosted(display.getDisplayIsPosted())
+                .build();
+    }
+
+    // 유효성 검사를 위한 private 메소드 추가
+    private void validateDisplayCreateRequest(DisplayCreateRequest request) {
+        if (request == null) {
+            throw new IllegalStateException("요청 데이터가 없습니다.");
+        }
+
+        if (request.getDisplayName() == null || request.getDisplayName().trim().isEmpty()) {
+            throw new IllegalStateException("디스플레이 이름은 필수입니다.");
+        }
+
+        if (request.getDisplayThumbnailUrl() == null || request.getDisplayThumbnailUrl().trim().isEmpty()) {
+            throw new IllegalStateException("썸네일 URL은 필수입니다.");
+        }
+
+
+        // 텍스트 유효성 검사
+        if (request.getTexts() != null) {
+            request.getTexts().forEach(text -> {
+                if (text.getDisplayTextDetail() == null || text.getDisplayTextDetail().trim().isEmpty()) {
+                    throw new IllegalStateException("텍스트 내용은 필수입니다.");
+                }
+            });
+        }
+
+        // 배경 유효성 검사
+        if (request.getBackground() != null) {
+            if (request.getBackground().getDisplayColorSolid() == null) {
+                throw new IllegalStateException("배경 색상은 필수입니다.");
+            }
+        }
     }
 }
 

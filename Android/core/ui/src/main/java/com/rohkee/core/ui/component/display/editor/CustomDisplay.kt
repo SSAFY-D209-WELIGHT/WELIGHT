@@ -1,5 +1,6 @@
 package com.rohkee.core.ui.component.display.editor
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -27,7 +28,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Immutable
 data class DisplayImageState(
     val isSelected: Boolean = false,
-    val imageSource: Any? = null,
+    val imageSource: Uri? = null,
     val color: CustomColor = CustomColor.Single(color = Color.Transparent),
     val scale: Float = 1f,
     val rotationDegree: Float = 0f,

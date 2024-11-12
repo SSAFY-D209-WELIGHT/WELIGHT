@@ -32,8 +32,14 @@ public class DisplayText {
     @Column(name = "DISPLAY_TEXT_ROTATION", nullable = false)
     private Float displayTextRotation;
 
-    @Column(name = "DISPLAY_TEXT_POSITION", nullable = false)
-    private String displayTextPosition;
+    @Column(name = "DISPLAY_TEXT_SCALE", nullable = false)
+    private Float displayTextScale;
+
+    @Column(name = "DISPLAY_TEXT_OFFSETX", nullable = false)
+    private Float displayTextOffsetx;
+
+    @Column(name = "DISPLAY_TEXT_OFFSETY", nullable = false)
+    private Float displayTextOffsety;
 
     @Builder.Default
     @Column(name = "DISPLAY_TEXT_CREATED_AT", nullable = false)

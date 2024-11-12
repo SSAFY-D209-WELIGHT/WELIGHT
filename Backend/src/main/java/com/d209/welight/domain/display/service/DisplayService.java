@@ -9,15 +9,15 @@ import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
-import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
+import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 
 import java.util.List;
 
 public interface DisplayService {
 
     // 디스플레이 정보 저장 (기본 정보, 배경, 이미지, 텍스트, 태그)
-    DisplayCreateResponse createDisplay(User user, DisplayCreateRequest request);
+    DisplayCreateResponse createDisplay(String userId, DisplayCreateRequest request);
 
     // 디스플레이 상세 보기
     DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request);
@@ -29,7 +29,7 @@ public interface DisplayService {
     DisplayListResponse getMyDisplayList(String userId, Pageable pageable);
 
     // 디스플레이 복제
-    Long duplicateDisplay(Long displayId, String userId);
+    DisplayCreateResponse duplicateDisplay(Long displayId, String userId);
     void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay);
     void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId);
     void duplicateBackground(DisplayBackground originalBackground, Display newDisplay);
@@ -44,19 +44,22 @@ public interface DisplayService {
     void deleteDisplay(Long displayUid, String userId);
 
     // 디스플레이 저장소 - 다운로드, 삭제
-    void downloadDisplay(User user, long displayUid);
-    void deleteStoredDisplay(User user, long displayUid);
+    DisplayCreateResponse downloadDisplay(String userId, long displayUid);
+    DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid);
 
-    // 디스플레이 즐겨찾기 (저장소에서)
-    void updateDisplayFavorite(User user, long displayUid);
+    // 디스플레이 즐겨찾기 (저장소에서 & 내가 제작)
+    DisplayCreateResponse updateDisplayFavorite(String userId, long displayUid);
 
     // 디스플레이 좋아요
-    void doLikeDisplay(User user, long displayUid);
-    void cancelLikeDisplay(User user, long displayUid);
+    void doLikeDisplay(String userId, long displayUid);
+    void cancelLikeDisplay(String userId, long displayUid);
 
     // 디스플레이 댓글
-    List<DisplayCommentResponse> getComments(User user, long displayUid);
-    void createComment(User user, Long displayId, DisplayCommentRequest request);
-    void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request);
-    void deleteComment(User user, Long displayId, Long commentUid);
+    List<DisplayCommentResponse> getComments(String userId, long displayUid);
+    void createComment(String userId, Long displayId, DisplayCommentRequest request);
+    void updateComment(String userId, Long displayId, DisplayCommentUpdateRequest request);
+    void deleteComment(String userId, Long displayId, Long commentUid);
+
+    DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId);
+
 }

@@ -18,6 +18,7 @@ public class CheerHistoryDetailResponse {
     private List<CheerDisplayInfo> displays;
     
     // 상세 정보 추가
+    private String cheerroomDescription; //응원방 설명
     private String totalDuration;        // 응원 시간 (분 단위)
     private Double latitude;           // 위도
     private Double longitude;          // 경도

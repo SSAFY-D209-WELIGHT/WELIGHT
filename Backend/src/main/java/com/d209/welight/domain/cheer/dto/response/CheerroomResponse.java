@@ -11,17 +11,21 @@ import java.time.LocalDateTime;
 public class CheerroomResponse {
     private Long cheerroomUid;
     private String cheerroomName;
+    private String cheerroomDescription;
     private Double latitude;
     private Double longitude;
     private LocalDateTime createdAt;
+    private int participantCount;
 
-    public static CheerroomResponse from(Cheerroom cheerroom) {
+    public static CheerroomResponse from(Cheerroom cheerroom, int participantCount) {
         return CheerroomResponse.builder()
                 .cheerroomUid(cheerroom.getId())
                 .cheerroomName(cheerroom.getName())
+                .cheerroomDescription(cheerroom.getDescription())
                 .latitude(cheerroom.getLatitude())
                 .longitude(cheerroom.getLongitude())
                 .createdAt(cheerroom.getCreatedAt())
+                .participantCount(participantCount)
                 .build();
     }
 }

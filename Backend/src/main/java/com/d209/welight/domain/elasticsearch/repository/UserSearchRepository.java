@@ -1,13 +1,11 @@
 package com.d209.welight.domain.elasticsearch.repository;
 
-import com.d209.welight.domain.elasticsearch.Document.UserDocument;
+import com.d209.welight.domain.elasticsearch.document.UserDocument;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface UserSearchRepository extends ElasticsearchRepository<UserDocument, String> {

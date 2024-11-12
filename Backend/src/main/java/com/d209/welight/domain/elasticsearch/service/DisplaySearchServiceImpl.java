@@ -1,7 +1,7 @@
 package com.d209.welight.domain.elasticsearch.service;
 
-import com.d209.welight.domain.elasticsearch.Document.DisplayDocument;
-import com.d209.welight.domain.elasticsearch.Document.UserDocument;
+import com.d209.welight.domain.elasticsearch.document.DisplayDocument;
+import com.d209.welight.domain.elasticsearch.document.UserDocument;
 import com.d209.welight.domain.elasticsearch.repository.DisplaySearchRepository;
 import com.d209.welight.domain.elasticsearch.repository.UserSearchRepository;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
@@ -37,24 +37,32 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
                         .map(UserDocument::getUserUid)
                         .collect(Collectors.toList());
 
-
+                log.info("creatorUids로 검색: {}", creatorUids);
+                
                 // keyword가 없는 경우 creatorUids로만 검색
-                return displaySearchRepository.findByCreatorUidIn(creatorUids, pageable);
+                return displaySearchRepository.findByCreatorUidInAndDisplayIsPostedTrue(creatorUids, pageable);
             }
 
             // 키워드로만 검색
             if (keyword != null && !keyword.isEmpty()) {
-                return displaySearchRepository.findByDisplayNameContainingOrTagsContaining(
+                Page<DisplayDocument> displayResults = displaySearchRepository.findByDisplayNameContainingOrTagsContainingAndDisplayIsPostedTrue(
                         keyword,  // displayName 검색용
                         keyword,  // tags 검색용
                         pageable
                 );
+                if (displayResults.isEmpty()) {
+                    throw new NoSearchResultException("해당하는 결과가 없습니다.");
+                }
+                
+                log.info("키워드로 검색: {}", displayResults);
+                return displayResults;
             }
-
-            return displaySearchRepository.findAll(pageable);
+            
+            log.info("게시된 모든 디스플레이 조회");
+            return displaySearchRepository.findByDisplayIsPostedTrue(pageable);
 
         } catch (NoSearchResultException e) {
-            log.warn("해당하는 결과가 없습니다");
+            log.error("해당하는 결과가 없습니다");
             throw new NoSearchResultException("해당하는 결과가 없습니다.");
         }
     }

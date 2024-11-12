@@ -6,6 +6,8 @@ import com.d209.welight.domain.elasticsearch.event.UserEvent;
 import com.d209.welight.domain.display.repository.DisplayRepository;
 import com.d209.welight.domain.elasticsearch.listener.DisplayEventListener;
 import com.d209.welight.domain.elasticsearch.listener.UserEventListener;
+import com.d209.welight.domain.elasticsearch.repository.DisplaySearchRepository;
+import com.d209.welight.domain.elasticsearch.repository.UserSearchRepository;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -23,9 +25,17 @@ public class ElasticsearchSyncService {
     private final UserRepository userRepository;
     private final DisplayEventListener displayEventListener;
     private final UserEventListener userEventListener;
+    private final DisplaySearchRepository displaySearchRepository;
+    private final UserSearchRepository userSearchRepository;
 
     @PostConstruct
     public void initialSync() {
+
+        // 기존 Elasticsearch 데이터 전체 삭제
+        displaySearchRepository.deleteAll();
+        userSearchRepository.deleteAll();
+        log.info("Elasticsearch 데이터 초기화 완료");
+
         syncUsers();
         syncDisplays();
     }

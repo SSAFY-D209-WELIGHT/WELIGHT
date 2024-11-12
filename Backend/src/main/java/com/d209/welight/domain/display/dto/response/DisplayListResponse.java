@@ -22,5 +22,6 @@ public class DisplayListResponse {
     public static class DisplayInfo {
         private Long displayUid;
         private String displayThumbnail;
+        private boolean isFavorite; // 즐겨찾기 여부
     }
 }

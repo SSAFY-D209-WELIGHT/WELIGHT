@@ -10,6 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DisplayImageDto {
-    private String displayImgUrl;  // 이미 URL
-    private String displayImgPosition;
+    private String displayImgUrl;
+    private String displayImgColor;
+    private Float displayImgScale;
+    private Float displayImgRotation;
+    private Float displayImgOffsetx;
+    private Float displayImgOffsety;
 }

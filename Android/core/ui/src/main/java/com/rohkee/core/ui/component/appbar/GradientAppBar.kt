@@ -2,6 +2,7 @@ package com.rohkee.core.ui.component.appbar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -55,7 +56,11 @@ fun GradientAppBar(
             tint = AppColor.OnBackground,
         )
         Spacer(modifier = Modifier.weight(1f))
-        Row(modifier = Modifier.wrapContentHeight()) {
+        Row(
+            modifier = Modifier.wrapContentHeight(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             content()
         }
         Spacer(modifier = Modifier.width(16.dp))
@@ -89,7 +94,7 @@ fun ConfirmAppBar(
 ) {
     GradientAppBar(
         modifier = modifier,
-        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
         onClick = onCloseClick,
     ) {
         Text(

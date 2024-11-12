@@ -1,5 +1,12 @@
 package com.rohkee.core.network.di
 
+import android.content.Context
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferNetworkLossHandler
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3Client
 import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.rohkee.core.network.BuildConfig
@@ -7,6 +14,7 @@ import com.rohkee.core.network.interceptor.AccessTokenInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -29,7 +37,6 @@ object NetworkModule {
                 ignoreUnknownKeys = true
                 coerceInputValues = true
             }
-        Log.d("NetworkModule", "Using BASE_URL: ${BuildConfig.BASE_URL}")
         return Retrofit
             .Builder()
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
@@ -40,31 +47,32 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(): OkHttpClient {
-        val loggingInterceptor = HttpLoggingInterceptor { message ->
-            Log.d("OkHttp", message)
-        }.apply {
-            level = HttpLoggingInterceptor.Level.BODY
+    fun provideOkHttpClient(accessTokenInterceptor: AccessTokenInterceptor) =
+        OkHttpClient.Builder().run {
+            addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+            addNetworkInterceptor(accessTokenInterceptor)
+            connectTimeout(20, TimeUnit.SECONDS)
+            readTimeout(20, TimeUnit.SECONDS)
+            writeTimeout(20, TimeUnit.SECONDS)
+            build()
         }
 
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .addInterceptor { chain ->
-                val original = chain.request()
-                Log.d("OkHttp", "Sending request: ${original.url}")
+    @Singleton
+    @Provides
+    fun provideTransferUtility(
+        @ApplicationContext context: Context,
+    ): TransferUtility {
+        val credentials = BasicAWSCredentials(BuildConfig.AWS_ACCESS_KEY, BuildConfig.AWS_SECRET_KEY)
+        val region = Region.getRegion(Regions.AP_NORTHEAST_2)
+        val awsClient = AmazonS3Client(credentials, region)
 
-                val request = original.newBuilder()
-                    .header("Content-Type", "application/json")
-                    .method(original.method, original.body)
-                    .build()
+        TransferNetworkLossHandler.getInstance(context)
 
-                chain.proceed(request)
-            }
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build().also {
-                Log.d("NetworkModule", "OkHttpClient created with logging")
-            }
+        return TransferUtility
+            .builder()
+            .context(context)
+            .defaultBucket(BuildConfig.BUCKET_NAME)
+            .s3Client(awsClient)
+            .build()
     }
 }

@@ -11,5 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DisplayBackgroundDto {
     private Float displayBackgroundBrightness;  // 배경 밝기 추가
-    private DisplayColorDto color;  // 배경 색상 정보
+    private String displayColorSolid;  // 단색 배경 (#RRGGBB 형식)
+    private String displayBackgroundGradationColor1;  // 그라데이션 색상 1 (#RRGGBB 형식)
+    private String displayBackgroundGradationColor2;  // 그라데이션 색상 2 (#RRGGBB 형식)
+    private String displayBackgroundGradationType;  // 그라데이션 타입 (VARCHAR(50))
 }

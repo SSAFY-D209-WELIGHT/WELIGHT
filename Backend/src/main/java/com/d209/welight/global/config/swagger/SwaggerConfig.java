@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-    public static final String URL = "";
+    public static final String URL = "https://k11d209.p.ssafy.io";
 
     @Bean
     public OpenAPI openAPI() {
@@ -30,9 +30,9 @@ public class SwaggerConfig {
                 .addList("bearerAuth");
 
         return new OpenAPI()
-                .addServersItem(new Server().url(URL) // 배포한 서버
+                .addServersItem(new Server().url(URL + "/api") // 배포한 서버
                         .description("Default Server URL"))
-                .addServersItem(new Server().url("http://localhost:8080")
+                .addServersItem(new Server().url("http://localhost:8080/api")
                         .description("Local Development Server"))
                 .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
                 .addSecurityItem(securityRequirement)

@@ -1,6 +1,6 @@
 package com.d209.welight.domain.elasticsearch.repository;
 
-import com.d209.welight.domain.elasticsearch.Document.DisplayDocument;
+import com.d209.welight.domain.elasticsearch.document.DisplayDocument;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
@@ -25,8 +25,10 @@ public interface DisplaySearchRepository extends ElasticsearchRepository<Display
             "]" +
             "}" +
             "}")
-    Page<DisplayDocument> findByDisplayNameContainingOrTagsContaining(String displayName, String tag, Pageable pageable);
 
-    Page<DisplayDocument> findByCreatorUidIn(List<Long> creatorUids, Pageable pageable);
+    Page<DisplayDocument> findByCreatorUidInAndDisplayIsPostedTrue(List<Long> creatorUids, Pageable pageable);
 
+    Page<DisplayDocument> findByDisplayNameContainingOrTagsContainingAndDisplayIsPostedTrue(String keyword, String keyword1, Pageable pageable);
+
+    Page<DisplayDocument> findByDisplayIsPostedTrue(Pageable pageable);
 }
