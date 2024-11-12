@@ -1,14 +1,19 @@
 package com.d209.welight.global.error;
 
+import com.d209.welight.global.exception.auth.InvalidTokenException;
 import com.d209.welight.global.exception.cheer.CheerAccessDeniedException;
 import com.d209.welight.global.exception.cheer.CheerNotFoundException;
 import com.d209.welight.global.exception.cheer.InvalidCheerDataException;
-import com.d209.welight.global.exception.display.DisplayNotFoundException;
+import com.d209.welight.global.exception.common.NotFoundException;
 import com.d209.welight.global.exception.display.InvalidDisplayDataException;
 import com.d209.welight.global.exception.elasticsearch.NoSearchResultException;
+import com.d209.welight.global.exception.user.UserCreationException;
+import com.d209.welight.global.exception.user.UserNicknameDuplicateException;
 import com.d209.welight.global.exception.user.UserNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +47,9 @@ public class GlobalExceptionHandler {
         return createErrorResponse(CommonErrorCode.NO_SEARCH_RESULT, e.getMessage());
     }
 
-    @ExceptionHandler(DisplayNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleDisplayNotFoundException(DisplayNotFoundException e) {
-        log.error("DisplayNotFoundException", e);
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException e) {
+        log.error("NotFoundException", e);
         return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT, e.getMessage());
     }
 
@@ -58,6 +63,36 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidDisplayDataException(InvalidDisplayDataException e) {
         log.error("InvalidDisplayDataException", e);
         return createErrorResponse(CommonErrorCode.INVALID_DISPLAY_DATA);
+    }
+
+    @ExceptionHandler(UserCreationException.class)
+    public ResponseEntity<ErrorResponse> handleUserCreationException(UserCreationException e) {
+        log.error("UserCreationException", e);
+        return createErrorResponse(CommonErrorCode.NO_FOUND_RESULT, e.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
+        log.error("BadCredentialsException", e);
+        return createErrorResponse(CommonErrorCode.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(UserNicknameDuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleUserNicknameDuplicateException(UserNicknameDuplicateException e) {
+        log.error("UserNicknameDuplicateException", e);
+        return createErrorResponse(CommonErrorCode.USER_CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException e) {
+        log.error("UsernameNotFoundException", e);
+        return createErrorResponse(CommonErrorCode.FORBIDDEN, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException e) {
+        log.error("InvalidTokenException", e);
+        return createErrorResponse(CommonErrorCode.UNAUTHORIZED, e.getMessage());
     }
 
     // cheerroom
