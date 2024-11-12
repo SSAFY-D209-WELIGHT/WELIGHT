@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.1"
+coilCompose = "2.0.0"
 converterGson = "2.9.0"
 googlePlayServicesAuth = "21.2.0"
 kotlin = "2.0.20"
@@ -70,6 +71,7 @@ lifecycleViewmodelKtx = "2.6.2"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose-v262 = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
+coil-compose-v200 = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 gms-play-services-auth-v2070 = { module = "com.google.android.gms:play-services-auth", version.ref = "googlePlayServicesAuth" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

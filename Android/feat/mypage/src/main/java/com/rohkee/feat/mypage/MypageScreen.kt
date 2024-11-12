@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.repository.UserRepository
 import com.rohkee.core.network.model.UserInfo
@@ -32,7 +33,7 @@ fun MypageScreen(userRepository: UserRepository) {
         coroutineScope.launch {
             val response = userRepository.getUserInfo()
             if (response is ApiResponse.Success) {
-                userInfo = response.data
+                userInfo = response.body
             }
         }
     }
@@ -59,26 +60,18 @@ fun MypageScreen(userRepository: UserRepository) {
         ) {
             Box(contentAlignment = Alignment.BottomEnd) {
                 Image(
-                    painter = painterResource(id = userInfo?.profileImg ?: R.drawable.profile_placeholder),
+                    painter = rememberImagePainter(data = userInfo?.userProfileImg ?: ""),
                     contentDescription = "Profile Image",
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_camera),
-                    contentDescription = "Edit Profile",
-                    modifier = Modifier
-                        .background(Color.Black, CircleShape)
-                        .padding(4.dp),
-                    tint = Color.White
-                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = userInfo?.nickname ?: "NICKNAME",
+                text = userInfo?.userNickname ?: "NICKNAME",
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
@@ -108,3 +101,4 @@ private fun StatRow(label: String, value: String) {
         Text(text = value, color = Color.White)
     }
 }
+

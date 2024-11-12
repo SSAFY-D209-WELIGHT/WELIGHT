@@ -11,4 +11,7 @@ android {
 dependencies {
     implementation(project(":core:network"))
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // coil
+    implementation(libs.coil.compose.v200)
 }
