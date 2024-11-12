@@ -157,47 +157,41 @@ public class DisplayController {
 
     @PostMapping("/{displayId}/storage")
     @Operation(summary = "디스플레이 다운로드", description = "디스플레이를 저장소에 저장합니다.")
-    public ResponseEntity<?> downloadDisplay(Authentication authentication,
-                                              @PathVariable("displayId") long displayUid) throws Exception {
-        User user = userService.findByUserId(authentication.getName());
-        DisplayCreateResponse response = displayService.downloadDisplay(user, displayUid);
+    public ResponseEntity<?> downloadDisplay( @AuthenticationPrincipal UserDetails userDetails,
+                                              @PathVariable("displayId") long displayUid) {
+        DisplayCreateResponse response = displayService.downloadDisplay(userDetails.getUsername(), displayUid);
         return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("/{displayId}/storage")
     @Operation(summary = "저장된 디스플레이 삭제", description = "사용자의 저장소에서 디스플레이를 삭제합니다.")
-    public ResponseEntity<?> deleteStoredDisplay(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid) throws Exception {
-        User user = userService.findByUserId(authentication.getName());
-        DisplayCreateResponse response = displayService.deleteStoredDisplay(user, displayUid);
+    public ResponseEntity<?> deleteStoredDisplay(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable("displayId") long displayUid) {
+        DisplayCreateResponse response = displayService.deleteStoredDisplay(userDetails.getUsername(), displayUid);
         return ResponseEntity.ok().body(response);
     }
 
     @PatchMapping("/{displayId}/favorite")
     @Operation(summary = "디스플레이 즐겨찾기 토글", description = "디스플레이의 즐겨찾기 상태를 변경합니다.")
-    public ResponseEntity<?> updateDisplayFavorite(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid) throws Exception {
-
-        User user = userService.findByUserId(authentication.getName());
-        DisplayCreateResponse response = displayService.updateDisplayFavorite(user, displayUid);
+    public ResponseEntity<?> updateDisplayFavorite(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable("displayId") long displayUid){
+        DisplayCreateResponse response = displayService.updateDisplayFavorite(userDetails.getUsername(), displayUid);
         return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/{displayId}/like")
     @Operation(summary = "디스플레이 좋아요", description = "디스플레이 좋아요 기능")
-    public ResponseEntity<?> doLikeDisplay(Authentication authentication,
-                                             @PathVariable("displayId") long displayUid) throws Exception {
-        User user = userService.findByUserId(authentication.getName());
-        displayService.doLikeDisplay(user, displayUid);
+    public ResponseEntity<?> doLikeDisplay(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable("displayId") long displayUid){
+        displayService.doLikeDisplay(userDetails.getUsername(), displayUid);
         return ResponseEntity.ok().body("디스플레이 좋아요 완료");
     }
 
     @DeleteMapping("/{displayId}/like")
     @Operation(summary = "디스플레이 좋아요 취소", description = "디스플레이 좋아요 취소 기능")
-    public ResponseEntity<?> cancelLikeDisplay(Authentication authentication,
-                                                 @PathVariable("displayId") long displayUid) throws Exception {
-        User user = userService.findByUserId(authentication.getName());
-        displayService.cancelLikeDisplay(user, displayUid);
+    public ResponseEntity<?> cancelLikeDisplay(@AuthenticationPrincipal UserDetails userDetails,
+                                                 @PathVariable("displayId") long displayUid) {
+        displayService.cancelLikeDisplay(userDetails.getUsername(), displayUid);
         return ResponseEntity.ok().body("디스플레이 좋아요 취소");
     }
 
@@ -206,91 +200,42 @@ public class DisplayController {
     * */
     @GetMapping("/{displayId}/comment")
     @Operation(summary = "댓글 목록 조회", description = "디스플레이의 모든 댓글을 조회합니다.")
-    public ResponseEntity<?> getComments(Authentication authentication,
-                                         @PathVariable("displayId") long displayUid)   {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            return ResponseEntity.ok(displayService.getComments(user, displayUid));
-
-        } catch (EntityNotFoundException e) { // 디스플레이 없음
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
+    public ResponseEntity<?> getComments(@AuthenticationPrincipal UserDetails userDetails,
+                                         @PathVariable("displayId") long displayUid) {
+        return ResponseEntity.ok(displayService.getComments(userDetails.getUsername(), displayUid));
     }
 
     @PostMapping("/{displayId}/comment")
     @Operation(summary = "댓글 작성", description = "디스플레이에 새 댓글을 작성합니다.")
     public ResponseEntity<?> createComment(
-            Authentication authentication,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("displayId") Long displayId,
             @RequestBody @Valid DisplayCommentRequest requestDTO) {
 
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            displayService.createComment(user, displayId, requestDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("댓글 생성 완료");
-        } catch (EntityNotFoundException e) { // 디스플레이 없음
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        displayService.createComment(userDetails.getUsername(), displayId, requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body("댓글 생성 완료");
     }
+
     @PatchMapping("/{displayId}/comment")
     @Operation(summary = "댓글 수정", description = "댓글을 수정합니다.")
     public ResponseEntity<?> updateComment(
-            Authentication authentication,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("displayId") Long displayId,
             @RequestBody @Valid DisplayCommentUpdateRequest requestDTO) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-            displayService.updateComment(user, displayId, requestDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("댓글 수정 완료");
-        } catch (EntityNotFoundException e) {
-            // 디스플레이나 댓글을 찾을 수 없는 경우
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // 디스플레이의 댓글이 아니거나, 자신의 댓글이 아닌 경우
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 수정 중 오류가 발생했습니다.");
-        }
+
+        displayService.updateComment(userDetails.getUsername(), displayId, requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body("댓글 수정 완료");
     }
 
     @DeleteMapping("/{displayId}/comment/{commentId}")
     @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다.")
     public ResponseEntity<?> deleteComment(
-            Authentication authentication,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("displayId") Long displayId,
             @PathVariable("commentId") Long commentId) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-            displayService.deleteComment(user, displayId, commentId);
-            return ResponseEntity.status(HttpStatus.CREATED).body("댓글 삭제 완료");
-        } catch (EntityNotFoundException e) {
-            // 디스플레이나 댓글을 찾을 수 없는 경우
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // 디스플레이의 댓글이 아니거나, 자신의 댓글이 아닌 경우
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("댓글 삭제 중 오류가 발생했습니다.");
-        }
+
+        displayService.deleteComment(userDetails.getUsername(), displayId, commentId);
+        return ResponseEntity.status(HttpStatus.CREATED).body("댓글 삭제 완료");
     }
 
     @PatchMapping("/{displayId}/isposted")
