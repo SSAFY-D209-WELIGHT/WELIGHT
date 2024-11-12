@@ -39,12 +39,12 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
 
 
                 // keyword가 없는 경우 creatorUids로만 검색
-                return displaySearchRepository.findByCreatorUidIn(creatorUids, pageable);
+                return displaySearchRepository.findByCreatorUidInAndDisplayIsPostedTrue(creatorUids, pageable);
             }
 
             // 키워드로만 검색
             if (keyword != null && !keyword.isEmpty()) {
-                Page<DisplayDocument> displayResults = displaySearchRepository.findByDisplayNameContainingOrTagsContaining(
+                Page<DisplayDocument> displayResults = displaySearchRepository.findByDisplayNameContainingOrTagsContainingAndDisplayIsPostedTrue(
                         keyword,  // displayName 검색용
                         keyword,  // tags 검색용
                         pageable
@@ -52,9 +52,11 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
                 if (displayResults.isEmpty()) {
                     throw new NoSearchResultException("해당하는 결과가 없습니다.");
                 }
+
+                return displayResults;
             }
 
-            return displaySearchRepository.findAll(pageable);
+            return displaySearchRepository.findByDisplayIsPostedTrue(pageable);
 
         } catch (NoSearchResultException e) {
             log.error("해당하는 결과가 없습니다");

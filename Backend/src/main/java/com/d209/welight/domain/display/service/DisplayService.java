@@ -9,7 +9,6 @@ import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
 import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
-import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 

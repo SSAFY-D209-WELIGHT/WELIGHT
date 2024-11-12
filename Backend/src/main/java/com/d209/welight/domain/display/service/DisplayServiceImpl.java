@@ -15,15 +15,12 @@ import com.d209.welight.domain.display.repository.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.global.exception.display.DisplayNotFoundException;
-import com.d209.welight.global.exception.display.InvalidDisplayDataException;
 import com.d209.welight.global.service.s3.S3Service;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -74,6 +71,7 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 1. 디스플레이 기본 정보 저장
             Display savedDisplay = displayRepository.save(display);
+            log.debug("디스플레이 ID: {}로 기본 정보 저장 완료", savedDisplay.getDisplayUid());
 
             // 이벤트 발행
             eventPublisher.publishEvent(new DisplayEvent("CREATE", display));
@@ -90,6 +88,7 @@ public class DisplayServiceImpl implements DisplayService {
                     })
                     .collect(Collectors.toList());
                 displayTagRepository.saveAll(tags);
+                log.debug("디스플레이 ID: {}에 대해 {} 개의 태그 저장 완료", savedDisplay.getDisplayUid(), tags.size());
             }
 
             // 3. 이미지 정보 저장
@@ -111,6 +110,7 @@ public class DisplayServiceImpl implements DisplayService {
 
                 displayImageRepository.saveAll(images);
                 savedDisplay.setImages(images);
+                log.debug("디스플레이 ID: {}에 대해 {} 개의 이미지 저장 완료", savedDisplay.getDisplayUid(), images.size());
             }
 
             // 4. 텍스트 정보 저장
@@ -133,6 +133,7 @@ public class DisplayServiceImpl implements DisplayService {
 
                 displayTextRepository.saveAll(texts);
                 savedDisplay.setTexts(texts);
+                log.debug("디스플레이 ID: {}에 대해 {} 개의 텍스트 저장 완료", savedDisplay.getDisplayUid(), texts.size());
             }
 
             // 5. 배경 정보 저장
@@ -148,6 +149,7 @@ public class DisplayServiceImpl implements DisplayService {
 
                 displayBackgroundRepository.save(background);
                 savedDisplay.setBackground(background);
+                log.debug("디스플레이 ID: {}에 대한 배경 정보 저장 완료", savedDisplay.getDisplayUid());
 
             }
 
@@ -160,7 +162,7 @@ public class DisplayServiceImpl implements DisplayService {
                     .favoritesAt(null)
                     .build();
             displayStorageRepository.save(displayStorage);
-
+            log.info("사용자 {}의 디스플레이 ID: {} 생성 완료", userId, savedDisplay.getDisplayUid());
 
             return DisplayCreateResponse.builder()
                     .displayUid(savedDisplay.getDisplayUid())
@@ -207,6 +209,8 @@ public class DisplayServiceImpl implements DisplayService {
                 }
             }
 
+            log.info("디스플레이 상세 정보 조회 완료: 디스플레이 ID {}", request.getDisplayUid());
+
             // Response 객체 생성 및 반환
             return DisplayDetailResponse.builder()
                     .creatorUid(display.getCreatorUid())
@@ -243,6 +247,8 @@ public class DisplayServiceImpl implements DisplayService {
                     .build())
                 .collect(Collectors.toList());
 
+            log.info("디스플레이 목록 조회 완료: {} 개의 디스플레이 반환", displayInfos.size());
+
             return DisplayListResponse.builder()
                 .currentPage(pageable.getPageNumber())
                 .displays(displayInfos)
@@ -277,6 +283,8 @@ public class DisplayServiceImpl implements DisplayService {
                                 .build();
                     })
                     .collect(Collectors.toList());
+
+            log.info("사용자 {}의 디스플레이 목록 조회 완료: {} 개의 디스플레이 반환", userId, displayInfos.size());
 
             return DisplayListResponse.builder()
                 .currentPage(pageable.getPageNumber())

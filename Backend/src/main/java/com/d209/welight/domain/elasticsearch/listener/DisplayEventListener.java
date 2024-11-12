@@ -32,11 +32,11 @@ public class DisplayEventListener {
                 case "UPDATE":
                     DisplayDocument document = convertToDocument(event.getDisplay());
                     searchRepository.save(document);
-                    log.info("Display document saved/updated: {}", event.getDisplay().getDisplayUid());
+                    log.info("Display document에서 해당 디스플레이를 저장/업데이트합니다: {}", event.getDisplay().getDisplayUid());
                     break;
                 case "DELETE":
                     searchRepository.deleteByDisplayUid(event.getDisplay().getDisplayUid());
-                    log.info("Display document deleted: {}", event.getDisplay().getDisplayUid());
+                    log.info("Display document에서 해당 디스플레이를 삭제합니다: {}", event.getDisplay().getDisplayUid());
                     break;
             }
         } catch (Exception e) {

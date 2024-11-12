@@ -3,22 +3,18 @@ package com.d209.welight.domain.display.controller;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
-import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityExistsException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 
 import com.d209.welight.domain.display.service.DisplayService;
 import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
@@ -28,7 +24,6 @@ import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.type.SortType;
 
 import lombok.RequiredArgsConstructor;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DisplayController {
 
-    private final UserService userService;
     private final DisplayService displayService;
 
     @PostMapping
