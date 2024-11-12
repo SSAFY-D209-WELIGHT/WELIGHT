@@ -3,7 +3,7 @@ package com.rohkee.core.datastore.repository
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class DataStoreRepositoryImpl
@@ -23,13 +23,10 @@ class DataStoreRepositoryImpl
             }
         }
 
-        override suspend fun getAccessToken(): String? =
-            dataStore.data
-                .firstOrNull { prefs ->
-                    prefs.contains(
-                        ACCESS_TOKEN_KEY,
-                    )
-                }?.get(ACCESS_TOKEN_KEY)
+        override suspend fun getAccessToken(): String? {
+            val prefs = dataStore.data.first()
+            return prefs[ACCESS_TOKEN_KEY]
+        }
 
         companion object {
             private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")

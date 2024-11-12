@@ -73,6 +73,13 @@ object Pretendard {
             fontFamily = pretendardFamily,
             fontWeight = FontWeight.Medium,
         )
+
+    val Regular14 =
+        TextStyle(
+            fontSize = 14.sp,
+            fontFamily = pretendardFamily,
+            fontWeight = FontWeight.Normal,
+        )
 }
 
 val Typography =
