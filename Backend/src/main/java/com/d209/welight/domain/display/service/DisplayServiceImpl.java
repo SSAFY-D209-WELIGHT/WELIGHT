@@ -771,14 +771,17 @@ public class DisplayServiceImpl implements DisplayService {
      * 디스플레이 저장소 (다운로드, 삭제)
      * */
     @Override
-    public DisplayCreateResponse downloadDisplay(User user, long displayUid) {
+    public DisplayCreateResponse downloadDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
 
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 2. 이미 이 회원이 이 display를 저장했는지 확인
         if (displayStorageRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityExistsException("이미 저장한 디스플레이입니다.");
+            throw new IllegalStateException("이미 저장한 디스플레이입니다.");
         }
 
         // displayStorage 생성
@@ -806,13 +809,17 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
-    public void deleteStoredDisplay(User user, long displayUid) {
+    public DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 2. 저장된 디스플레이가 존재하는지 확인
         if (!displayStorageRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityNotFoundException("저장된 디스플레이를 찾을 수 없습니다.");
+            throw new IllegalStateException("저장된 디스플레이를 찾을 수 없습니다.");
         }
 
         // 3. 저장소에서 삭제
@@ -823,13 +830,23 @@ public class DisplayServiceImpl implements DisplayService {
         // 4. Display의 Display_download_count 횟수 -1
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
         displayRepository.save(display);
+
+        // 응답 객체 생성 및 반환
+        return DisplayCreateResponse.builder()
+                .displayUid(display.getDisplayUid())
+                .displayName(display.getDisplayName())
+                .message("저장소에서 디스플레이가 삭제되었습니다.")
+                .build();
     }
 
     @Override
-    public void updateDisplayFavorite(User user, long displayUid) {
+    public DisplayCreateResponse updateDisplayFavorite(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 2-1. 내가 제작한 디스플레이인지 확인
         boolean isCreator = display.getCreatorUid().equals(user.getUserUid());
@@ -853,20 +870,31 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 5. 저장
             displayStorageRepository.save(storagedDisplay);
+
+            // 응답 객체 생성 및 반환
+            return DisplayCreateResponse.builder()
+                    .displayUid(display.getDisplayUid())
+                    .displayName(display.getDisplayName())
+                    .message("디스플레이의 즐겨찾기 정보를 토글합니다.")
+                    .build();
+
         } else {
-            throw new AccessDeniedException("해당 디스플레이에 대한 권한이 없습니다.");
+            throw new IllegalStateException("해당 디스플레이에 대한 권한이 없습니다.");
         }
     }
 
     @Override
-    public void doLikeDisplay(User user, long displayUid) {
+    public void doLikeDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
 
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 2. 이미 이 회원이 이 display를 좋아요 했는지
         if (displayLikeRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityExistsException("이미 좋아요를 누른 디스플레이입니다.");
+            throw new IllegalStateException("이미 좋아요를 누른 디스플레이입니다.");
         }
 
         // DisplayLike 생성
@@ -883,18 +911,22 @@ public class DisplayServiceImpl implements DisplayService {
         displayRepository.save(display);
     }
 
-    public void cancelLikeDisplay(User user, long displayUid) {
+    public void cancelLikeDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 2. 저장된 디스플레이가 존재하는지 확인
         if (!displayLikeRepository.existsByUserAndDisplay(user, display)) {
-            throw new EntityNotFoundException("좋아요한 디스플레이가 아닙니다.");
+            throw new IllegalStateException("좋아요한 디스플레이가 아닙니다.");
         }
 
         // 3. displayLike 삭제
         DisplayLike displayLike = displayLikeRepository.findByUserAndDisplay(user, display)
-                .orElseThrow(() -> new EntityNotFoundException("좋아요한 디스플레이가 아닙니다."));
+                .orElseThrow(() -> new IllegalStateException("좋아요한 디스플레이가 아닙니다."));
         displayLikeRepository.delete(displayLike);
 
         // 4. Display의 Display_like_count 횟수 -1
@@ -903,16 +935,15 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
 
-    /*
-     * 댓글
-     * */
-
     // 해당 display에 있는 댓글 전체 조회
     @Override
-    public List<DisplayCommentResponse> getComments(User currentUser, long displayUid) {
+    public List<DisplayCommentResponse> getComments(String userId, long displayUid) {
         // 해당 display찾기
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User currentUser = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 부모 댓글들 다 찾기
         List<DisplayComment> comments = displayCommentRepository
@@ -925,10 +956,13 @@ public class DisplayServiceImpl implements DisplayService {
 
     // display에 댓글 작성
     @Override
-    public void createComment(User user, Long displayId, DisplayCommentRequest requestDTO) {
+    public void createComment(String userId, Long displayId, DisplayCommentRequest requestDTO) {
         // 해당 display찾기
         Display display = displayRepository.findById(displayId)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 댓글 객체 생성
         DisplayComment comment = DisplayComment.builder()
@@ -942,7 +976,7 @@ public class DisplayServiceImpl implements DisplayService {
         // 대댓글인 경우 - parentComment도 추가
         if (requestDTO.getParentCommentUid() != null) {
             DisplayComment parentComment = displayCommentRepository.findById(requestDTO.getParentCommentUid())
-                    .orElseThrow(() -> new EntityNotFoundException("부모 댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalStateException("부모 댓글을 찾을 수 없습니다."));
             comment.setParentComment(parentComment);
         }
 
@@ -951,14 +985,17 @@ public class DisplayServiceImpl implements DisplayService {
 
     // 내 댓글 수정
     @Override
-    public void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request) {
+    public void updateComment(String userId, Long displayId, DisplayCommentUpdateRequest request) {
         // display찾기
         Display display = displayRepository.findById(displayId)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
 
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // comment찾기
         DisplayComment comment = displayCommentRepository.findById(request.getCommentUid())
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("댓글을 찾을 수 없습니다."));
 
         // display에 달린 댓글인지 확인
         if (!comment.getDisplay().equals(display)) {
@@ -977,14 +1014,17 @@ public class DisplayServiceImpl implements DisplayService {
 
     // 내 댓글 삭제
     @Override
-    public void deleteComment(User user, Long displayUid, Long commentUid) {
+    public void deleteComment(String userId, Long displayUid, Long commentUid) {
         // display찾기
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new DisplayNotFoundException("디스플레이를 찾을 수 없습니다."));
 
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
         // comment찾기
         DisplayComment comment = displayCommentRepository.findById(commentUid)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("댓글을 찾을 수 없습니다."));
 
         // display에 달린 댓글인지 확인
         if (!comment.getDisplay().equals(display)) {
@@ -1012,7 +1052,7 @@ public class DisplayServiceImpl implements DisplayService {
 
         // 권한 검증 (생성자만 수정 가능)
         if (!display.getCreatorUid().equals(user.getUserUid())) {
-            throw new InvalidDisplayDataException("디스플레이 수정 권한이 없습니다.");
+            throw new IllegalStateException("디스플레이 수정 권한이 없습니다.");
         }
 
         // 상태 업데이트
@@ -1028,15 +1068,15 @@ public class DisplayServiceImpl implements DisplayService {
     // 유효성 검사를 위한 private 메소드 추가
     private void validateDisplayCreateRequest(DisplayCreateRequest request) {
         if (request == null) {
-            throw new InvalidDisplayDataException("요청 데이터가 없습니다.");
+            throw new IllegalStateException("요청 데이터가 없습니다.");
         }
 
         if (request.getDisplayName() == null || request.getDisplayName().trim().isEmpty()) {
-            throw new InvalidDisplayDataException("디스플레이 이름은 필수입니다.");
+            throw new IllegalStateException("디스플레이 이름은 필수입니다.");
         }
 
         if (request.getDisplayThumbnailUrl() == null || request.getDisplayThumbnailUrl().trim().isEmpty()) {
-            throw new InvalidDisplayDataException("썸네일 URL은 필수입니다.");
+            throw new IllegalStateException("썸네일 URL은 필수입니다.");
         }
 
 
@@ -1044,7 +1084,7 @@ public class DisplayServiceImpl implements DisplayService {
         if (request.getTexts() != null) {
             request.getTexts().forEach(text -> {
                 if (text.getDisplayTextDetail() == null || text.getDisplayTextDetail().trim().isEmpty()) {
-                    throw new InvalidDisplayDataException("텍스트 내용은 필수입니다.");
+                    throw new IllegalStateException("텍스트 내용은 필수입니다.");
                 }
             });
         }
@@ -1052,7 +1092,7 @@ public class DisplayServiceImpl implements DisplayService {
         // 배경 유효성 검사
         if (request.getBackground() != null) {
             if (request.getBackground().getDisplayColorSolid() == null) {
-                throw new InvalidDisplayDataException("배경 색상은 필수입니다.");
+                throw new IllegalStateException("배경 색상은 필수입니다.");
             }
         }
     }

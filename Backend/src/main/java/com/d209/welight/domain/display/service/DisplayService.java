@@ -45,21 +45,21 @@ public interface DisplayService {
     void deleteDisplay(Long displayUid, String userId);
 
     // 디스플레이 저장소 - 다운로드, 삭제
-    DisplayCreateResponse downloadDisplay(User user, long displayUid);
-    void deleteStoredDisplay(User user, long displayUid);
+    DisplayCreateResponse downloadDisplay(String userId, long displayUid);
+    DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid);
 
     // 디스플레이 즐겨찾기 (저장소에서 & 내가 제작)
-    void updateDisplayFavorite(User user, long displayUid);
+    DisplayCreateResponse updateDisplayFavorite(String userId, long displayUid);
 
     // 디스플레이 좋아요
-    void doLikeDisplay(User user, long displayUid);
-    void cancelLikeDisplay(User user, long displayUid);
+    void doLikeDisplay(String userId, long displayUid);
+    void cancelLikeDisplay(String userId, long displayUid);
 
     // 디스플레이 댓글
-    List<DisplayCommentResponse> getComments(User user, long displayUid);
-    void createComment(User user, Long displayId, DisplayCommentRequest request);
-    void updateComment(User user, Long displayId, DisplayCommentUpdateRequest request);
-    void deleteComment(User user, Long displayId, Long commentUid);
+    List<DisplayCommentResponse> getComments(String userId, long displayUid);
+    void createComment(String userId, Long displayId, DisplayCommentRequest request);
+    void updateComment(String userId, Long displayId, DisplayCommentUpdateRequest request);
+    void deleteComment(String userId, Long displayId, Long commentUid);
 
     DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId);
 
