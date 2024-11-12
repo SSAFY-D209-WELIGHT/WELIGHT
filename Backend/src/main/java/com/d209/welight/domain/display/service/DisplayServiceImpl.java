@@ -188,6 +188,12 @@ public class DisplayServiceImpl implements DisplayService {
             // 현재 사용자의 userId를 userUid로 변환하여 비교
             boolean isOwner = false;
             boolean isFavorite = false;
+            boolean isLiked = false;
+
+            // 제작자 정보 조회
+            User creator = userRepository.findByUserUid(display.getCreatorUid())
+                  .orElseThrow(() -> new EntityNotFoundException("제작자 정보를 찾을 수 없습니다."));
+            String creatorName = creator.getUsername();
 
             if (request.getUserId() != null) {
                 Optional<User> currentUser = userRepository.findByUserId(request.getUserId());
@@ -195,13 +201,16 @@ public class DisplayServiceImpl implements DisplayService {
                     isOwner = display.getCreatorUid().equals(currentUser.get().getUserUid());
 
                     // 즐겨찾기 여부 확인
-                    isFavorite = displayStorageRepository.existsByUserAndDisplay(currentUser, display);
+                    isFavorite = displayStorageRepository.existsByUserAndDisplayAndIsFavoritesIsTrue(currentUser, display);
+                    // 좋아요 여부 확인
+                    isLiked = displayLikeRepository.existsByUserAndDisplay(currentUser, display);
                 }
             }
 
             // Response 객체 생성 및 반환
             return DisplayDetailResponse.builder()
                     .creatorUid(display.getCreatorUid())
+                    .creatorName(creatorName)
                     .displayName(display.getDisplayName())
                     .displayThumbnailUrl(display.getDisplayThumbnailUrl())
                     .displayIsPosted(display.getDisplayIsPosted())
@@ -209,7 +218,8 @@ public class DisplayServiceImpl implements DisplayService {
                             .map(DisplayTag::getDisplayTagText)
                             .collect(Collectors.toList()))
                     .isOwner(isOwner)
-                    .isFavourite(isFavorite)
+                    .isFavorite(isFavorite)
+                    .isLiked(isLiked)
                     .likeCount(display.getDisplayLikeCount())
                     .downloadCount(display.getDisplayDownloadCount())
                     .commentCount(displayCommentRepository.countByDisplay(display))

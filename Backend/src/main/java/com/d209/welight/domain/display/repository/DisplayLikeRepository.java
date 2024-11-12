@@ -15,4 +15,6 @@ public interface DisplayLikeRepository extends JpaRepository<DisplayLike, Displa
     boolean existsByUserAndDisplay(User user, Display display);
     void deleteByUserAndDisplay(User user, Display display);
     Optional<DisplayLike> findByUserAndDisplay(User user, Display display);
+
+    boolean existsByUserAndDisplay(Optional<User> currentUser, Display display);
 }
