@@ -5,6 +5,7 @@ import com.rohkee.core.network.api.UserApi
 import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.LoginRequest
 import com.rohkee.core.network.model.TokenHolder
+import com.rohkee.core.network.model.UserInfo
 import com.rohkee.core.network.repository.UserRepository
 import com.rohkee.core.network.util.simplify
 import javax.inject.Inject
@@ -23,5 +24,11 @@ class UserRepositoryImpl @Inject constructor(
                 userApi.login(LoginRequest(userId, userNickname, userProfileImg, userLogin))
             }
         return response
+    }
+
+    override suspend fun getUserInfo(): ApiResponse<UserInfo> {
+        return apiHandler {
+            userApi.getUserInfo()
+        }
     }
 }
