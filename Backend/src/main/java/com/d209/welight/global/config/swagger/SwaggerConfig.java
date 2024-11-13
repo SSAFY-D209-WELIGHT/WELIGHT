@@ -71,5 +71,13 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi fileApi() {
+        return GroupedOpenApi.builder()
+                .group("File")
+                .pathsToMatch("/file/**")
+                .build();
+    }
+
 }
 
