@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -46,12 +47,11 @@ enum class DisplayEffect(
     NONE("없음"),
     FLASH("점멸"),
     CROSS("교차점멸"),
-    WAVE("파도타기");
+    WAVE("파도타기"),
+    ;
 
     companion object {
-        fun parse(text: String): DisplayEffect {
-            return entries.find { it.text == text } ?: NONE
-        }
+        fun parse(text: String): DisplayEffect = entries.find { it.text == text } ?: NONE
     }
 }
 
@@ -61,27 +61,31 @@ fun HostContent(
     state: HostState,
     onIntent: (HostIntent) -> Unit = {},
 ) {
-    when (state) {
-        is HostState.Creation ->
-            CreationContent(
-                modifier = modifier,
-                onClose = { onIntent(HostIntent.Creation.Cancel) },
-                onConfirm = { title, description ->
-                    onIntent(
-                        HostIntent.Creation.Confirm(
-                            title,
-                            description,
-                        ),
-                    )
-                },
-            )
+    Scaffold(
+        modifier = modifier,
+    ) { innerPadding ->
+        when (state) {
+            is HostState.Creation ->
+                CreationContent(
+                    modifier = Modifier.padding(innerPadding),
+                    onClose = { onIntent(HostIntent.Creation.Cancel) },
+                    onConfirm = { title, description ->
+                        onIntent(
+                            HostIntent.Creation.Confirm(
+                                title,
+                                description,
+                            ),
+                        )
+                    },
+                )
 
-        is HostState.WaitingRoom ->
-            WaitingRoomContent(
-                modifier = modifier,
-                state = state,
-                onIntent = onIntent,
-            )
+            is HostState.WaitingRoom ->
+                WaitingRoomContent(
+                    modifier = modifier.padding(innerPadding),
+                    state = state,
+                    onIntent = onIntent,
+                )
+        }
     }
 }
 
@@ -155,15 +159,15 @@ fun WaitingRoomContent(
                 Switch(
                     checked = checked,
                     onCheckedChange = setChecked,
-                    colors = SwitchDefaults.colors().copy(
-                        checkedThumbColor = AppColor.OnConvex,
-                        checkedTrackColor = AppColor.Convex,
-                        checkedBorderColor = AppColor.OnConvex,
-                        uncheckedThumbColor = AppColor.Surface,
-                        uncheckedTrackColor = AppColor.Inactive,
-                        uncheckedBorderColor = AppColor.Surface,
-
-                    )
+                    colors =
+                        SwitchDefaults.colors().copy(
+                            checkedThumbColor = AppColor.OnConvex,
+                            checkedTrackColor = AppColor.Convex,
+                            checkedBorderColor = AppColor.OnConvex,
+                            uncheckedThumbColor = AppColor.Surface,
+                            uncheckedTrackColor = AppColor.Inactive,
+                            uncheckedBorderColor = AppColor.Surface,
+                        ),
                 )
             }
             Box(
