@@ -13,9 +13,12 @@ import com.google.android.gms.common.api.ApiException
 import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.api.UserApi
 import com.rohkee.core.network.model.LoginRequest
+import com.rohkee.core.network.repository.UserRepository
+import com.rohkee.core.network.util.handle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,8 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val userApi: UserApi,
+    private val userRepository: UserRepository,
     private val dataStoreRepository: DataStoreRepository,
-
 ) : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState = _loginState.asStateFlow()
@@ -68,13 +71,19 @@ class LoginViewModel @Inject constructor(
                 Log.d("LoginViewModel", "Sign in successful")
                 onSuccess(account)
                 // 로그인 성공 시 loginUser 호출
+//                loginUser(
+//                    LoginRequest(
+//                        userId = account.id ?: "",
+//                        userNickname = account.displayName ?: "",
+//                        userProfileImg = account.photoUrl.toString(),
+//                        userLogin = "Google",
+//                    ),
+//                )
                 loginUser(
-                    LoginRequest(
-                        userId = account.id ?: "",
-                        userNickname = account.displayName ?: "",
-                        userProfileImg = account.photoUrl.toString(),
-                        userLogin = "Google",
-                    ),
+                    userId = account.id ?: "",
+                    userNickname = account.displayName ?: "",
+                    userProfileImg = account.photoUrl.toString(),
+                    userLogin = "Google",
                 )
             }.addOnFailureListener { e ->
                 if (e is ApiException) {
@@ -96,10 +105,55 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    private fun loginUser(
+        userId: String,
+        userNickname: String,
+        userProfileImg: String,
+        userLogin: String,
+    ) {
+        _loginState.update { LoginState.Loading }
+        viewModelScope.launch {
+            dataStoreRepository.deleteAccessToken()
+            userRepository
+                .login(
+                    userId = userId,
+                    userNickname = userNickname,
+                    userProfileImg = userProfileImg,
+                    userLogin = userLogin,
+                ).handle(
+                    onSuccess = { tokenHolder ->
+                        _loginState.update {
+                            if (tokenHolder != null) {
+                                dataStoreRepository.saveAccessToken(tokenHolder.accessToken)
+                                userRepository.getUserInfo().handle(
+                                    onSuccess = { userResponse ->
+                                        userResponse?.let {
+                                            dataStoreRepository.saveUserId(userResponse.userId)
+                                        }
+                                        Log.d("TAG", "loginUser: $userResponse")
+                                    },
+                                    onError = { _, message ->
+                                        Log.d("TAG", "loginUser: $message")
+                                    },
+                                )
+                                LoginState.Success
+                            } else {
+                                LoginState.Error("TokenHolder is null")
+                            }
+                        }
+                    },
+                    onError = { _, message ->
+                        _loginState.update { LoginState.Error(message ?: "Login Failed") }
+                    },
+                )
+        }
+    }
+
     // 백엔드 통신
     private fun loginUser(loginRequest: LoginRequest) {
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
+
             try {
                 dataStoreRepository.deleteAccessToken()
                 val response = userApi.login(loginRequest)
@@ -110,6 +164,8 @@ class LoginViewModel @Inject constructor(
                         val tokenHolder = response.body()
                         Log.d("LoginViewModel", "TokenHolder received: $tokenHolder")
 
+                        // 유저 정보 저장
+
                         if (tokenHolder != null) {
                             dataStoreRepository.saveAccessToken(tokenHolder.accessToken)
                             Log.d("LoginViewModel", "Access token saved successfully")
@@ -118,6 +174,7 @@ class LoginViewModel @Inject constructor(
                             _loginState.value = LoginState.Error("TokenHolder is null")
                         }
                     }
+
                     else -> {
                         _loginState.value = LoginState.Error("Login failed: ${response.code()}")
                     }
@@ -131,7 +188,12 @@ class LoginViewModel @Inject constructor(
 
 sealed class LoginState {
     object Idle : LoginState()
+
     object Loading : LoginState()
+
     object Success : LoginState()
-    data class Error(val message: String) : LoginState()
+
+    data class Error(
+        val message: String,
+    ) : LoginState()
 }

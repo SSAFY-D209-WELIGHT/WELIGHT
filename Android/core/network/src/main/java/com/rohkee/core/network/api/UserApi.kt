@@ -1,10 +1,11 @@
 package com.rohkee.core.network.api
 
-import com.rohkee.core.network.ResponseBody
 import com.rohkee.core.network.model.LoginRequest
 import com.rohkee.core.network.model.TokenHolder
+import com.rohkee.core.network.model.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface UserApi {
@@ -13,4 +14,8 @@ interface UserApi {
     suspend fun login(
         @Body loginRequest: LoginRequest,
     ): Response<TokenHolder>
+
+    // /user/info
+    @GET("/api/user/info")
+    suspend fun getUserInfo(): Response<UserResponse>
 }
