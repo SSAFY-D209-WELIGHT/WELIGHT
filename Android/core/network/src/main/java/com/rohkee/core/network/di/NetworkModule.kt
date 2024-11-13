@@ -10,7 +10,10 @@ import com.amazonaws.services.s3.AmazonS3Client
 import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.rohkee.core.network.BuildConfig
+import com.rohkee.core.network.api.CheerApi
 import com.rohkee.core.network.interceptor.AccessTokenInterceptor
+import com.rohkee.core.network.repository.CheerRepository
+import com.rohkee.core.network.repositoryImpl.CheerRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -74,5 +77,17 @@ object NetworkModule {
             .defaultBucket(BuildConfig.BUCKET_NAME)
             .s3Client(awsClient)
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheerApi(retrofit: Retrofit): CheerApi {
+        return retrofit.create(CheerApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheerRepository(cheerApi: CheerApi): CheerRepository {
+        return CheerRepositoryImpl(cheerApi)
     }
 }

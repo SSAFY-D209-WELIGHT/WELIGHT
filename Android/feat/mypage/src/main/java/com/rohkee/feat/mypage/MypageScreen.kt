@@ -2,6 +2,7 @@ package com.rohkee.feat.mypage
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,15 +25,30 @@ import kotlinx.coroutines.launch
 @Composable
 fun MypageScreen(userRepository: UserRepository) {
     var selectedTab by remember { mutableStateOf(0) }
-    var userInfo by remember { mutableStateOf<UserInfo?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch user info on first composition
+    var userInfo by remember {
+        mutableStateOf(
+            UserInfo(
+                userId = "112504079148969382828",
+                userNickname = "곽대건",
+                userProfileImg = "https://cdn.pixabay.com/photo/2024/02/17/00/18/cat-8578562_1280.jpg",
+            ),
+        )
+    }
+
+    // 프로필 정보 받아오기
     LaunchedEffect(Unit) {
         coroutineScope.launch {
-            val response = userRepository.getUserInfo()
-            if (response is ApiResponse.Success) {
-                userInfo = response.body
+            when (val response = userRepository.getUserInfo()) {
+                is ApiResponse.Success -> {
+                    response.body?.let { userInfo = it }
+                }
+
+                is ApiResponse.Error -> {
+                    error = response.errorMessage
+                }
             }
         }
     }
@@ -42,51 +59,97 @@ fun MypageScreen(userRepository: UserRepository) {
                 .fillMaxSize()
                 .background(Color.Black),
     ) {
-        // Status Bar
+        // Profile and Stats Section
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-            horizontalArrangement = Arrangement.End,
-        ) {}
-
-        // Profile Picture and Nickname
-        Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                    .padding(20.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(contentAlignment = Alignment.BottomEnd) {
+            // Profile Image and Nickname
+            Box(
+                modifier =
+                    Modifier
+                        .width(150.dp),
+            ) {
                 Image(
-                    painter = rememberImagePainter(data = userInfo?.userProfileImg ?: ""),
+                    painter = rememberImagePainter(data = userInfo.userProfileImg),
                     contentDescription = "Profile Image",
                     modifier =
                         Modifier
-                            .size(80.dp)
+                            .size(150.dp)
                             .clip(CircleShape),
                     contentScale = ContentScale.Crop,
                 )
+
+                Row(
+                    modifier =
+                        Modifier
+                            .align(Alignment.Center)
+                            .padding(top = 160.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = userInfo.userNickname,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.edit),
+                        contentDescription = "Edit Profile",
+                        modifier =
+                            Modifier
+                                .padding(start = 8.dp)
+                                .size(20.dp)
+                                .clickable { /* Handle edit click */ },
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = userInfo?.userNickname ?: "NICKNAME",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
+            // Stats Section
+            Box(
+                modifier =
+                    Modifier
+                        .padding(start = 30.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    StatRow("참여 응원수", "4")
+                    StatRow("응원 보관함", "5")
+                    StatRow("즐겨찾기 수", "2")
+                }
+            }
+        }
+
+        // Tabs
+        TabRow(
+            selectedTabIndex = selectedTab,
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = Color.Black,
+            contentColor = Color.White,
+        ) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = { Text("응원내역", color = if (selectedTab == 0) Color.White else Color.Gray) },
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = { Text("좋아요", color = if (selectedTab == 1) Color.White else Color.Gray) },
             )
         }
 
-        // Stats Section
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-        ) {
-            StatRow("참여 응원수", "4")
-            StatRow("응원 보관함", "5")
-            StatRow("즐겨찾기 수", "2")
+        // Tab Content
+        when (selectedTab) {
+            0 -> CheerRecordScreen()
+            1 -> LikeRecordScreen()
         }
     }
 }
@@ -97,13 +160,23 @@ private fun StatRow(
     value: String,
 ) {
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = label, color = Color.White)
-        Text(text = value, color = Color.White)
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 18.sp,
+//            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
+
+
+

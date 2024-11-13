@@ -68,6 +68,14 @@ sealed interface DisplayResponse {
         @SerialName("message")
         val message: String,
     ) : DisplayResponse
+
+    @Serializable
+    data class Liked(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayThumbnail")
+        val thumbnailUrl: String,
+    ) : DisplayResponse
 }
 
 @Serializable

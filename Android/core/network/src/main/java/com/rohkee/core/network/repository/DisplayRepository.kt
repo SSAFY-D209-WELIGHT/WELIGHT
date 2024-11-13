@@ -2,6 +2,7 @@ package com.rohkee.core.network.repository
 
 import androidx.paging.PagingData
 import com.rohkee.core.network.ApiResponse
+import com.rohkee.core.network.model.Display
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 import kotlinx.coroutines.flow.Flow
@@ -44,4 +45,6 @@ interface DisplayRepository {
     suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<String>
 
     suspend fun unlikeDisplay(id: Long): ApiResponse<String>
+
+    suspend fun getLikedDisplays(): Flow<PagingData<DisplayResponse.Short>>
 }

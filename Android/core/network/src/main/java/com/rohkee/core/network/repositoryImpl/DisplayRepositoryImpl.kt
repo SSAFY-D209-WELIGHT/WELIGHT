@@ -1,6 +1,5 @@
 package com.rohkee.core.network.repositoryImpl
 
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -14,7 +13,6 @@ import com.rohkee.core.network.paging.DisplaySearchPagingSource
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DisplayRepositoryImpl @Inject constructor(
@@ -35,7 +33,6 @@ class DisplayRepositoryImpl @Inject constructor(
             },
         ).flow
 
-
     override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> = apiHandler { displayApi.getDisplayDetail(id) }
 
     override suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
@@ -55,7 +52,8 @@ class DisplayRepositoryImpl @Inject constructor(
 
     override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> = apiHandler { displayApi.getDisplayEdit(id) }
 
-    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted> = apiHandler { displayApi.importDisplayToMyStorage(id) }
+    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted> =
+        apiHandler { displayApi.importDisplayToMyStorage(id) }
 
     override suspend fun searchDisplayList(
         keyword: String,
@@ -93,4 +91,18 @@ class DisplayRepositoryImpl @Inject constructor(
     override suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<String> = apiHandler { displayApi.deleteDisplayFromStorage(id) }
 
     override suspend fun unlikeDisplay(id: Long): ApiResponse<String> = apiHandler { displayApi.unlikeDisplay(id) }
+
+    override suspend fun getLikedDisplays(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2,
+                ),
+            pagingSourceFactory = {
+                DisplayListPagingSource<DisplayResponse.Short>(
+                    displayApi::getLikeDisplay,
+                )
+            },
+        ).flow
 }
