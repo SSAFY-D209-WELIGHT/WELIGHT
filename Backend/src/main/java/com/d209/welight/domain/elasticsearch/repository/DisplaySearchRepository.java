@@ -25,8 +25,10 @@ public interface DisplaySearchRepository extends ElasticsearchRepository<Display
             "]" +
             "}" +
             "}")
-    Page<DisplayDocument> findByDisplayNameContainingOrTagsContaining(String displayName, String tag, Pageable pageable);
 
-    Page<DisplayDocument> findByCreatorUidIn(List<Long> creatorUids, Pageable pageable);
+    Page<DisplayDocument> findByCreatorUidInAndDisplayIsPostedTrue(List<Long> creatorUids, Pageable pageable);
 
+    Page<DisplayDocument> findByDisplayNameContainingOrTagsContainingAndDisplayIsPostedTrue(String keyword, String keyword1, Pageable pageable);
+
+    Page<DisplayDocument> findByDisplayIsPostedTrue(Pageable pageable);
 }

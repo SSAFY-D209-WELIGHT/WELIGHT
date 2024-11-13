@@ -1,7 +1,6 @@
 package com.d209.welight.domain.cheer.dto.response;
 
 import com.d209.welight.domain.cheer.entity.Cheerroom;
-import com.d209.welight.domain.cheer.repository.CheerParticipationRepository;
 import lombok.Builder;
 import lombok.Getter;
 

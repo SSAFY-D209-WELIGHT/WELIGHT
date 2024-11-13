@@ -14,6 +14,8 @@ import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.api.UserApi
 import com.rohkee.core.network.model.LoginRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,6 +26,8 @@ class LoginViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
 
 ) : ViewModel() {
+    private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
+    val loginState = _loginState.asStateFlow()
     private lateinit var googleSignInHandler: GoogleSignInHandler
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Void?>
 
@@ -93,11 +97,10 @@ class LoginViewModel @Inject constructor(
     }
 
     // 백엔드 통신
-    fun loginUser(loginRequest: LoginRequest) {
+    private fun loginUser(loginRequest: LoginRequest) {
         viewModelScope.launch {
-            Log.d("LoginViewModel", "Attempting login with request: $loginRequest")
+            _loginState.value = LoginState.Loading
             try {
-                // api 호출
                 val response = userApi.login(loginRequest)
                 Log.d("LoginViewModel", "Raw response: $response")
 
@@ -109,20 +112,25 @@ class LoginViewModel @Inject constructor(
                         if (tokenHolder != null) {
                             dataStoreRepository.saveAccessToken(tokenHolder.accessToken)
                             Log.d("LoginViewModel", "Access token saved successfully")
+                            _loginState.value = LoginState.Success
                         } else {
-                            Log.e("LoginViewModel", "TokenHolder is null")
+                            _loginState.value = LoginState.Error("TokenHolder is null")
                         }
                     }
                     else -> {
-                        val errorBody = response.errorBody()?.string()
-                        Log.e("LoginViewModel", "Login failed. Code: ${response.code()}")
-                        Log.e("LoginViewModel", "Error body: $errorBody")
+                        _loginState.value = LoginState.Error("Login failed: ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
-                Log.e("LoginViewModel", "Login request failed", e)
-                e.printStackTrace()
+                _loginState.value = LoginState.Error(e.message ?: "Unknown error")
             }
         }
     }
+}
+
+sealed class LoginState {
+    object Idle : LoginState()
+    object Loading : LoginState()
+    object Success : LoginState()
+    data class Error(val message: String) : LoginState()
 }

@@ -7,7 +7,9 @@ import com.d209.welight.domain.user.dto.response.UserInfoResponseDTO;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.repository.UserRepository;
 import com.d209.welight.global.exception.auth.InvalidTokenException;
+import com.d209.welight.global.exception.common.NotFoundException;
 import com.d209.welight.global.exception.user.UserNicknameDuplicateException;
+import com.d209.welight.global.exception.user.UserNotFoundException;
 import com.d209.welight.global.service.jwt.JwtTokenService;
 import com.d209.welight.global.service.redis.RedisService;
 //import com.d209.welight.global.service.s3.S3Service;
@@ -19,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 // import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -116,7 +117,7 @@ public class UserServiceImpl implements UserService{
     public UserInfoResponseDTO info(String userId) {
         // 사용자 찾기
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("해당 userProviderId의 맞는 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("해당 아이디에 맞는 회원을 찾을 수 없습니다."));
 
         // 필요한 정보만 UserInfoResponseDTO로 편집해 반환
 
@@ -133,6 +134,11 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional
     public void delete(String userProviderId) {
+
+        if(!userRepository.existsByUserId(userProviderId)) {
+            throw new NotFoundException("해당 아이디에 맞는 회원을 찾을 수 없습니다.");
+        }
+
         // Redis에서 refreshToken 삭제
         redisService.deleteRefreshToken(userProviderId);
         // DB에서 회원 삭제
@@ -141,45 +147,57 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public String updateImg(String userName, MultipartFile image) throws Exception {
+    public String updateImg(String userName, MultipartFile image){
         // 사용자 조회
         User user = userRepository.findByUserId(userName)
-                .orElseThrow(() -> new UsernameNotFoundException("해당 userProviderId의 맞는 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("해당 아이디에 맞는 회원을 찾을 수 없습니다."));
 
-        String beforeImg = user.getUserProfileImg(); // 사용자의 변경전 이미지
-        String newImgUrl = null; // 사용자가 변경할 이미지
+        try {
+            String beforeImg = user.getUserProfileImg(); // 사용자의 변경전 이미지
+            String newImgUrl = null; // 사용자가 변경할 이미지
 
-        if (image != null && !image.isEmpty()) {
-            // 기존 이미지 S3에서 삭제
-            s3Service.deleteS3(beforeImg);
-            // 새 이미지 S3의 업로드
-            newImgUrl = s3Service.uploadS3(image, "profileImg");
+            if (image != null && !image.isEmpty()) {
+                // 기존 이미지 S3에서 삭제
+                s3Service.deleteS3(beforeImg);
+                // 새 이미지 S3의 업로드
+                newImgUrl = s3Service.uploadS3(image, "profileImg");
+            }
+
+            // 새 이미지 DB에 업데이트
+            user.setUserProfileImg(newImgUrl);
+
+            // DB 저장
+            userRepository.save(user);
+
+            return newImgUrl;
+
+        } catch (Exception e) {
+            throw new RuntimeException("프로필을 업데이트 하는데 에러가 발생했습니다.");
         }
-
-        // 새 이미지 DB에 업데이트
-        user.setUserProfileImg(newImgUrl);
-
-        // DB 저장
-        userRepository.save(user);
-
-        return newImgUrl;
     }
 
     @Override
-    public void deleteImg(String userName) throws Exception {
+    public void deleteImg(String userName){
         // 사용자 조회
         User user = userRepository.findByUserId(userName)
-                .orElseThrow(() -> new UsernameNotFoundException("해당 userId의 맞는 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("해당 userId의 맞는 회원을 찾을 수 없습니다."));
 
-        String beforeImg = user.getUserProfileImg(); // 사용자의 변경전 이미지
-        s3Service.deleteS3(beforeImg); // S3에서 변경 전 이미지 삭제
+        try {
 
-        // 기본 이미지 DB에 업데이트
-        String basicImgUrl = "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
-        user.setUserProfileImg(basicImgUrl);
+            String beforeImg = user.getUserProfileImg(); // 사용자의 변경전 이미지
+            s3Service.deleteS3(beforeImg); // S3에서 변경 전 이미지 삭제
 
-        // DB 저장
-        userRepository.save(user);
+            // 기본 이미지 DB에 업데이트
+            String basicImgUrl = "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
+            user.setUserProfileImg(basicImgUrl);
+
+            // DB 저장
+            userRepository.save(user);
+
+        } catch (Exception e) {
+            throw new RuntimeException("프로필 이미지를 삭제하는데 에러가 발생했습니다.");
+        }
+
     }
 
     @Override
@@ -188,7 +206,7 @@ public class UserServiceImpl implements UserService{
         if (!userRepository.existsByUserNickname(nickName)) {
             // 사용자 조회
             User user = userRepository.findByUserId(userName)
-                    .orElseThrow(() -> new UsernameNotFoundException("해당 userId의 맞는 회원을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new NotFoundException("해당 userId의 맞는 회원을 찾을 수 없습니다."));
 
             // 새로운 닉네임 DB에 업데이트
             user.setUserNickname(nickName);
@@ -202,17 +220,26 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public boolean chkuserId(String userId) {
-        return userRepository.existsByUserId(userId);
+
+        if (userRepository.existsByUserId(userId)) {
+            throw new UserNicknameDuplicateException("이미 사용중인 아이디입니다.");
+        }
+
+        return true;
     }
 
     @Override
-    public User findByUserId(String userId) throws Exception {
-        return userRepository.findByUserId(userId).get();
+    public User findByUserId(String userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format("사용자를 찾을 수 없습니다. (ID: %s)", userId)));
     }
 
     @Override
-    public User findByUserUid(Long userUid) throws Exception {
-        return userRepository.findByUserUid(userUid).get();
+    public User findByUserUid(Long userUid) {
+        return userRepository.findByUserUid(userUid)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format("사용자를 찾을 수 없습니다. (UID: %d)", userUid)));
     }
 }
 

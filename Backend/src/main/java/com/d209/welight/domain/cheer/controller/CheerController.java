@@ -50,122 +50,58 @@ public class CheerController {
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam double radius) {
-        try {
-            FindByGeoRequest geoDTO = new FindByGeoRequest(latitude, longitude, radius);
-            List<CheerroomResponse> cheerRooms = cheerService.getAllCheerroomsByGeo(geoDTO);
-            return ResponseEntity.status(HttpStatus.OK).body(cheerRooms);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        FindByGeoRequest geoDTO = new FindByGeoRequest(latitude, longitude, radius);
+        List<CheerroomResponse> cheerRooms = cheerService.getAllCheerroomsByGeo(geoDTO);
+        return ResponseEntity.ok(cheerRooms);
     }
 
     @PatchMapping("/{cheerId}/delegate")
     @Operation(summary = "방장 위임")
-    public ResponseEntity<?> delegateLeader(Authentication authentication,
+    public ResponseEntity<String> delegateLeader(Authentication authentication,
                                                             @PathVariable(name="cheerId") long cheerId,
                                                             @RequestBody LeaderDelegateRequest leaderDelegateRequest) {
-        try {
-            User currentLeader = userService.findByUserId(authentication.getName());
-            if (currentLeader == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-            User newLeader = userService.findByUserUid(leaderDelegateRequest.getUserUid());
-            if (newLeader == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            cheerService.delegateLeader(cheerId, currentLeader, newLeader);
-
-            return ResponseEntity.ok().body("그룹 방장 위임 완료");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        User currentLeader = userService.findByUserId(authentication.getName());
+        User newLeader = userService.findByUserUid(leaderDelegateRequest.getUserUid());
+        cheerService.delegateLeader(cheerId, currentLeader, newLeader);
+        return ResponseEntity.ok("그룹 방장 위임 완료");
     }
 
     @GetMapping("/{cheerId}/participants")
     @Operation(summary = "해당 응원방에 참여 중인 유저 리스트")
-    public ResponseEntity<?> getParticipants(Authentication authentication,
+    public ResponseEntity<List<ParticipantsResponse>> getParticipants(Authentication authentication,
                                              @PathVariable(name="cheerId") long cheerId) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            List<ParticipantsResponse> participantsResponseList = cheerService.getParticipants(cheerId);
-
-            return ResponseEntity.ok().body(participantsResponseList);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        User user = userService.findByUserId(authentication.getName());
+        List<ParticipantsResponse> participantsResponseList = cheerService.getParticipants(cheerId);
+        return ResponseEntity.ok().body(participantsResponseList);
     }
 
     @PatchMapping("/{cheerId}/end")
     @Operation(summary = "응원 종료 (방장)")
-    public ResponseEntity<?> endCheering(Authentication authentication,
+    public ResponseEntity<String> endCheering(Authentication authentication,
                                             @PathVariable(name="cheerId") long cheerId) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            cheerService.endCheering(user, cheerId);
-
-            return ResponseEntity.ok().body("응원 종료 성공");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (AccessDeniedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        User user = userService.findByUserId(authentication.getName());
+        cheerService.endCheering(user, cheerId);
+        return ResponseEntity.ok("응원 종료 성공");
     }
 
     /* 기록 */
     @PostMapping("{cheerId}/records")
     @Operation(summary = "응원 기록 생성")
-    public ResponseEntity<?> createRecords(Authentication authentication,
+    public ResponseEntity<String> createRecords(Authentication authentication,
                                            @PathVariable(name="cheerId") long cheerId,
                                            @RequestBody CheerRecordRequest cheerRecordRequest) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            cheerService.createRecords(user, cheerId, cheerRecordRequest);
-
-            return ResponseEntity.ok().body("응원 기록 생성 완료");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        User user = userService.findByUserId(authentication.getName());
+        cheerService.createRecords(user, cheerId, cheerRecordRequest);
+        return ResponseEntity.ok("응원 기록 생성 완료");
     }
 
     @DeleteMapping("{cheerId}/records")
     @Operation(summary = "응원 기록 삭제")
-    public ResponseEntity<?> createRecords(Authentication authentication,
+    public ResponseEntity<String> createRecords(Authentication authentication,
                                            @PathVariable(name="cheerId") long cheerId) {
-        try {
-            User user = userService.findByUserId(authentication.getName());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저를 찾을 수 없습니다.");
-            }
-
-            cheerService.deleteRecords(user, cheerId);
-
-            return ResponseEntity.ok().body("응원 기록 삭제 완료");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        User user = userService.findByUserId(authentication.getName());
+        cheerService.deleteRecords(user, cheerId);
+        return ResponseEntity.ok("응원 기록 삭제 완료");
     }
 
     @PostMapping("/{cheerId}/enter")
@@ -180,7 +116,7 @@ public class CheerController {
 
     @PatchMapping("/{cheerId}/leave")
     @Operation(summary = "응원방 나가기", description = "응원방에서 나갑니다.")
-    public ResponseEntity<?> leaveCheerroom(
+    public ResponseEntity<String> leaveCheerroom(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long cheerId) {
         cheerService.leaveCheerroom(userDetails.getUsername(), cheerId);
@@ -211,7 +147,7 @@ public class CheerController {
     }
 
     @PutMapping("/{cheerId}/{displayId}")
-    @Operation(summary = "응원방 디스플레이 설정", description = "응원방에 사용할 디스플레이를 설정합니다.")
+    @Operation(summary = "응원방 디스플레이 설정 (방장)", description = "응원방에 사용할 디스플레이를 설정합니다.")
     public ResponseEntity<?> updateCheerroomDisplay(
             @PathVariable Long cheerId,
             @PathVariable Long displayId,
