@@ -1,9 +1,13 @@
 package com.rohkee.feature.websocketclient
 
+import ChatMessage
 import Client
 import Location
+import Message
+import MessageType
 import Room
 import RoomInfo
+import RoomUpdate
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.socket.client.IO
@@ -28,7 +32,7 @@ class WebSocketClientViewModel @Inject constructor(
     private val _connectionStatus = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Disconnected)
     val connectionStatus: StateFlow<ConnectionStatus> = _connectionStatus
 
-    private val _messages = MutableStateFlow<List<String>>(emptyList())
+    private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages = _messages.asStateFlow()
 
     private val _roomInfo = MutableStateFlow<RoomInfo?>(null)
@@ -49,6 +53,18 @@ class WebSocketClientViewModel @Inject constructor(
 
     private val _showCreateRoomDialog = MutableStateFlow(false)
     val showCreateRoomDialog = _showCreateRoomDialog.asStateFlow()
+
+    private val _selectedMessageType = MutableStateFlow(MessageType.SYSTEM)
+    val selectedMessageType = _selectedMessageType.asStateFlow()
+
+    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val chatMessages = _chatMessages.asStateFlow()
+
+    private val _currentRoomInfo = MutableStateFlow<RoomInfo?>(null)
+    val currentRoomInfo = _currentRoomInfo.asStateFlow()
+
+    private val _roomUpdate = MutableStateFlow<RoomUpdate?>(null)
+    val roomUpdate = _roomUpdate.asStateFlow()
 
     init {
         initializeSocket()
@@ -76,21 +92,6 @@ class WebSocketClientViewModel @Inject constructor(
                 on(Socket.EVENT_CONNECT_ERROR) {
                     _connectionStatus.value = ConnectionStatus.Error
                 }
-                on("initInfo") { args ->
-                    handleInitInfo(args)
-                }
-                on("roomUpdate") { args ->
-                    handleRoomUpdate(args)
-                }
-                on("updateDisplay") { args ->
-                    handleUpdateDisplay(args)
-                }
-                on("roomClosed") { args ->
-                    handleRoomClosed(args)
-                }
-                on("roomList") { args ->
-                    handleRoomList(args)
-                }
             }
             socket?.connect()
         } catch (e: Exception) {
@@ -98,25 +99,41 @@ class WebSocketClientViewModel @Inject constructor(
         }
     }
 
-    private fun handleInitInfo(args: Array<Any>) {
-        args.firstOrNull()?.toString()?.let { info ->
+    private fun handleError(args: Array<Any>) {
+        args.firstOrNull()?.toString()?.let { errorData ->
             try {
-                val jsonObject = JSONObject(info)
-                val location = jsonObject.getJSONObject("location")
-                _roomInfo.value = RoomInfo(
-                    location = Location(
-                        latitude = location.optDouble("latitude", 0.0),
-                        longitude = location.optDouble("longitude", 0.0)
-                    ),
-                    address = jsonObject.optString("address", ""),
-                    groupNumber = jsonObject.optInt("groupNumber", -1),
-                    clientNumber = jsonObject.optInt("clientNumber", -1),
-                    isOwner = jsonObject.optBoolean("isOwner", false)
-                )
-                addMessage("roomInfo: ${_roomInfo.value}")
-                addMessage("방 정보가 초기화되었습니다.")
+                val jsonObject = JSONObject(errorData)
+                when (jsonObject.optString("code")) {
+                    "ROOM_NOT_FOUND" -> {
+                        _showCreateRoomDialog.value = true
+                        addMessage(jsonObject.optString("message", "존재하지 않는 방입니다."))
+                    }
+                    else -> addMessage(jsonObject.optString("message", "알 수 없는 오류가 발생했습니다."))
+                }
             } catch (e: Exception) {
-                addMessage("방 정보 파싱 오류: ${e.message}")
+                addMessage("오류 처리 중 문제가 발생했습니다: ${e.message}")
+            }
+        }
+    }
+
+    private fun handleInitInfo(args: Array<Any>) {
+        args.firstOrNull()?.toString()?.let { data ->
+            try {
+                val jsonObject = JSONObject(data)
+                val roomInfo = RoomInfo(
+                    location = Location(
+                        latitude = jsonObject.getJSONObject("location").getDouble("latitude"),
+                        longitude = jsonObject.getJSONObject("location").getDouble("longitude")
+                    ),
+                    address = jsonObject.getString("address"),
+                    groupNumber = jsonObject.getInt("groupNumber"),
+                    clientNumber = jsonObject.getInt("clientNumber"),
+                    isOwner = jsonObject.getBoolean("isOwner")
+                )
+                _currentRoomInfo.value = roomInfo
+                addMessage("방에 입장했습니다.")
+            } catch (e: Exception) {
+                addMessage("초기 정보 처리 중 오류 발생: ${e.message}")
             }
         }
     }
@@ -126,24 +143,22 @@ class WebSocketClientViewModel @Inject constructor(
             try {
                 val jsonObject = JSONObject(data)
                 val clientsArray = jsonObject.getJSONArray("clients")
-                val clientsList = mutableListOf<Client>()
+                val clients = mutableListOf<Client>()
                 
                 for (i in 0 until clientsArray.length()) {
                     val clientObject = clientsArray.getJSONObject(i)
-                    clientsList.add(
+                    clients.add(
                         Client(
-                            socketId = clientObject.optString("socketId", ""),
-                            groupNumber = clientObject.optInt("groupNumber", -1),
-                            clientNumber = clientObject.optInt("clientNumber", -1),
-                            isOwner = clientObject.optBoolean("isOwner", false)
+                            socketId = clientObject.getString("socketId"),
+                            groupNumber = clientObject.getInt("groupNumber"),
+                            clientNumber = clientObject.getInt("clientNumber"),
+                            isOwner = clientObject.getBoolean("isOwner")
                         )
                     )
                 }
-                _clients.value = clientsList
-                addMessage("clients: $clientsList")
-                addMessage("방 정보가 업데이트되었습니다.")
+                _roomUpdate.value = RoomUpdate(clients)
             } catch (e: Exception) {
-                addMessage("클라이언트 정보 파싱 오류: ${e.message}")
+                addMessage("방 업데이트 처리 중 오류 발생: ${e.message}")
             }
         }
     }
@@ -152,69 +167,83 @@ class WebSocketClientViewModel @Inject constructor(
         args.firstOrNull()?.toString()?.let { data ->
             try {
                 val jsonObject = JSONObject(data)
-                val message = jsonObject.optString("message", "")
-                val command = jsonObject.optString("command", "")
-                
-                when (command) {
-                    "startCheer" -> addMessage("응원이 시작되었습니다!")
-                    "stopCheer" -> addMessage("응원이 일시정지되었습니다.")
-                    "closeCheer" -> addMessage("응원이 종료되었습니다.")
-                    "effectChange" -> {
-                        val effect = jsonObject.optString("effect", "")
-                        addMessage("$effect 효과가 적용되었습니다.")
-                    }
-                    else -> addMessage(message)
-                }
+                // 디스플레이 업데이트 처리
+                addMessage("디스플레이 업데이트: $data")
             } catch (e: Exception) {
-                addMessage(data)
+                addMessage("디스플레이 업데이트 처리 중 오류 발생: ${e.message}")
             }
         }
     }
 
     private fun handleRoomClosed(args: Array<Any>) {
         args.firstOrNull()?.toString()?.let { data ->
-            addMessage("방이 종료되었습니다.")
+            try {
+                val jsonObject = JSONObject(data)
+                val message = jsonObject.optString("message", "방이 닫혔습니다.")
+                _currentRoomInfo.value = null
+                _roomUpdate.value = null
+                addMessage(message)
+            } catch (e: Exception) {
+                addMessage("방 종료 처리 중 오류 발생: ${e.message}")
+            }
         }
     }
 
     private fun handleRoomList(args: Array<Any>) {
         args.firstOrNull()?.toString()?.let { data ->
             try {
-                addMessage(data)
                 val jsonObject = JSONObject(data)
                 val roomsArray = jsonObject.getJSONArray("rooms")
                 val roomsList = mutableListOf<Room>()
                 
                 for (i in 0 until roomsArray.length()) {
                     val roomObject = roomsArray.getJSONObject(i)
-                    val locationObject = roomObject.optJSONObject("location")
-                    
+                    val locationObject = roomObject.getJSONObject("location")
                     roomsList.add(
                         Room(
-                            roomId = roomObject.optString("roomId", ""),
-                            clientCount = roomObject.optInt("clientCount", 0),
-                            address = roomObject.optString("address", ""),
-                            description = roomObject.optString("description", ""),
-                            location = locationObject.let {
-                                Location(
-                                    latitude = it.optDouble("latitude", 0.0),
-                                    longitude = it.optDouble("longitude", 0.0)
-                                )
-                            }
+                            roomId = roomObject.getString("roomId"),
+                            clientCount = roomObject.getInt("clientCount"),
+                            location = Location(
+                                latitude = locationObject.getDouble("latitude"),
+                                longitude = locationObject.getDouble("longitude")
+                            ),
+                            address = roomObject.getString("address"),
+                            description = roomObject.optString("description", "")
                         )
                     )
                 }
                 _rooms.value = roomsList
-                addMessage("rooms: $roomsList")
                 addMessage("방 목록이 업데이트되었습니다.")
             } catch (e: Exception) {
-                addMessage("방 목록 파싱 오류: ${e.message}")
+                addMessage("방 목록 처리 중 오류 발생: ${e.message}")
             }
         }
     }
 
-    private fun addMessage(message: String) {
-        _messages.value = _messages.value + message
+    private fun handleChat(args: Array<Any>) {
+        args.firstOrNull()?.toString()?.let { data ->
+            try {
+                val jsonObject = JSONObject(data)
+                val message = jsonObject.getString("message")
+                val sender = jsonObject.getJSONObject("sender")
+                val socketId = sender.getString("socketId")
+                val groupNumber = sender.getInt("groupNumber")
+                val clientNumber = sender.getInt("clientNumber")
+                
+                val shortSocketId = socketId.takeLast(6)
+                
+                addMessage(
+                    "👤 ${groupNumber}-${clientNumber} [$shortSocketId]: $message",
+                    MessageType.CHAT
+                )
+            } catch (e: Exception) {
+                addMessage("채팅 메시지 처리 중 오류 발생: ${e.message}", MessageType.SYSTEM)
+            }
+        }
+    }
+
+    private fun addMessage(content: String, type: MessageType = MessageType.SYSTEM) {
+        _messages.value = _messages.value + Message(content, type)
     }
 
     private fun requestLocationPermission() {
@@ -251,21 +280,14 @@ class WebSocketClientViewModel @Inject constructor(
     }
 
     private fun setupSocketEvents() {
-        socket?.on("error") { args ->
-            args.firstOrNull()?.toString()?.let { errorData ->
-                try {
-                    val jsonObject = JSONObject(errorData)
-                    when (jsonObject.optString("code")) {
-                        "ROOM_NOT_FOUND" -> {
-                            _showCreateRoomDialog.value = true
-                            addMessage(jsonObject.optString("message", "존재하지 않는 방입니다."))
-                        }
-                        else -> addMessage(jsonObject.optString("message", "알 수 없는 오류가 발생했습니다."))
-                    }
-                } catch (e: Exception) {
-                    addMessage("오류 처리 중 문제가 발생했습니다: ${e.message}")
-                }
-            }
+        socket?.apply {
+            on("error") { args -> handleError(args) }
+            on("initInfo") { args -> handleInitInfo(args) }
+            on("roomUpdate") { args -> handleRoomUpdate(args) }
+            on("updateDisplay") { args -> handleUpdateDisplay(args) }
+            on("roomClosed") { args -> handleRoomClosed(args) }
+            on("roomList") { args -> handleRoomList(args) }
+            on("chatUpdate") { args -> handleChat(args) }
         }
     }
 
@@ -287,6 +309,17 @@ class WebSocketClientViewModel @Inject constructor(
 
     fun dismissCreateRoomDialog() {
         _showCreateRoomDialog.value = false
+    }
+
+    fun sendChat(message: String) {
+        socket?.emit("chat", JSONObject().apply {
+            put("message", message)
+            put("timestamp", System.currentTimeMillis())
+        })
+    }
+
+    fun setMessageType(type: MessageType) {
+        _selectedMessageType.value = type
     }
 
     override fun onCleared() {

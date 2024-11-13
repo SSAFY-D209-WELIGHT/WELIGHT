@@ -1,6 +1,9 @@
 package com.rohkee.feature.websocketclient
 
+import Message
+import MessageType
 import Room
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,7 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,22 +42,18 @@ fun WebSocketClientScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 상태 표시줄
         StatusBar(connectionStatus)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 방 목록
-        RoomList(
-            rooms = rooms,
-            onRoomClick = { viewModel.joinRoom(it.roomId) }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 방 입장 입력
+        
+        Box(modifier = Modifier.weight(0.4f)) {
+            RoomList(
+                rooms = rooms,
+                onRoomClick = { viewModel.joinRoom(it.roomId) }
+            )
+        }
+        
         RoomJoinInput(
             roomId = roomId.value,
             onRoomIdChange = { roomId.value = it },
@@ -64,51 +63,22 @@ fun WebSocketClientScreen(
                 }
             }
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 메시지 목록
-        MessageList(messages = messages)
+        
+        Box(modifier = Modifier.weight(0.6f)) {
+            MessageList(
+                messages = messages,
+                selectedType = viewModel.selectedMessageType.collectAsState().value,
+                onTypeChange = { viewModel.setMessageType(it) }
+            )
+        }
 
         if (showCreateRoomDialog) {
-            var description by remember { mutableStateOf("") }
-            
-            AlertDialog(
-                onDismissRequest = { viewModel.dismissCreateRoomDialog() },
-                title = { Text("방 생성") },
-                text = {
-                    Column {
-                        Text("입력하신 번호로 새로운 방을 생성하시겠습니까?")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedTextField(
-                            value = description,
-                            onValueChange = { description = it },
-                            label = { Text("방 설명 (선택사항)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                            )
-                        )
-                    }
+            CreateRoomDialog(
+                roomId = roomId.value,
+                onConfirm = { description -> 
+                    viewModel.createRoom(roomId.value, description)
                 },
-                confirmButton = {
-                    TextButton(
-                        onClick = { 
-                            if (roomId.value.isNotBlank()) {
-                                viewModel.createRoom(roomId.value, description)
-                            }
-                        }
-                    ) {
-                        Text("생성")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { viewModel.dismissCreateRoomDialog() }) {
-                        Text("취소")
-                    }
-                }
+                onDismiss = { viewModel.dismissCreateRoomDialog() }
             )
         }
     }
@@ -171,9 +141,14 @@ private fun RoomList(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+            contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -273,19 +248,17 @@ private fun RoomJoinInput(
             )
         )
 
-        Button(
+        TextButton(
             onClick = onJoinClick,
             modifier = Modifier
                 .height(56.dp)
                 .width(56.dp),
-            shape = MaterialTheme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary,
             )
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "입장",
                 modifier = Modifier.size(24.dp)
             )
@@ -294,36 +267,69 @@ private fun RoomJoinInput(
 }
 
 @Composable
-private fun MessageList(messages: List<String>) {
+private fun MessageList(
+    messages: List<Message>,
+    selectedType: MessageType,
+    onTypeChange: (MessageType) -> Unit
+) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+            contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "메시지",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "메시지",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = selectedType == MessageType.SYSTEM,
+                        onClick = { onTypeChange(MessageType.SYSTEM) },
+                        label = { Text("시스템") }
+                    )
+                    FilterChip(
+                        selected = selectedType == MessageType.CHAT,
+                        onClick = { onTypeChange(MessageType.CHAT) },
+                        label = { Text("채팅") }
+                    )
+                }
+            }
+            
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 reverseLayout = true
             ) {
-                items(messages.asReversed()) { message ->
+                items(messages.filter { it.type == selectedType }.asReversed()) { message ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+                            containerColor = when(message.type) {
+                                MessageType.SYSTEM -> MaterialTheme.colorScheme.secondaryContainer
+                                MessageType.CHAT -> MaterialTheme.colorScheme.tertiaryContainer
+                            }.copy(alpha = 0.7f)
                         )
                     ) {
                         Text(
-                            text = message,
+                            text = message.content,
                             modifier = Modifier.padding(12.dp),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -332,4 +338,47 @@ private fun MessageList(messages: List<String>) {
             }
         }
     }
+}
+
+@Composable
+private fun CreateRoomDialog(
+    roomId: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var description by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("방 생성") },
+        text = {
+            Column {
+                Text("'$roomId'번 방을 생성하시겠습니까?")
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("방 설명 (선택사항)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(description) }
+            ) {
+                Text("생성")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("취소")
+            }
+        }
+    )
 }
