@@ -8,21 +8,21 @@ sealed interface DisplayResponse {
     val id: Long
 
     @Serializable
-    data class Short(
-        @SerialName("displayUid")
-        override val id: Long,
-        @SerialName("displayThumbnail")
-        val thumbnailUrl: String,
-    ) : DisplayResponse
-
-    @Serializable
-    data class Default(
+    data class WithFavorite(
         @SerialName("displayUid")
         override val id: Long,
         @SerialName("displayThumbnail")
         val thumbnailUrl: String,
         @SerialName("favorite")
         val favorite: Boolean,
+    ) : DisplayResponse
+
+    @Serializable
+    data class Simple(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayThumbnail")
+        val thumbnailUrl: String,
     ) : DisplayResponse
 
     @Serializable

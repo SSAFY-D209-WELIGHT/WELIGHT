@@ -17,7 +17,7 @@ import javax.inject.Inject
 class DisplayRepositoryImpl @Inject constructor(
     private val displayApi: DisplayApi,
 ) : DisplayRepository {
-    override suspend fun getMyDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
+    override suspend fun getMyDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.WithFavorite>> =
         Pager(
             config =
                 PagingConfig(
@@ -25,7 +25,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                ListPagingSource<DisplayResponse.Short>(
+                ListPagingSource<DisplayResponse.WithFavorite>(
                     api = { page, size ->
                         displayApi.getMyDisplayList(
                             page,
@@ -39,7 +39,7 @@ class DisplayRepositoryImpl @Inject constructor(
 
     override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> = apiHandler { displayApi.getDisplayDetail(id) }
 
-    override suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>> =
+    override suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.WithFavorite>> =
         Pager(
             config =
                 PagingConfig(
@@ -47,7 +47,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                ListPagingSource<DisplayResponse.Short>(
+                ListPagingSource<DisplayResponse.WithFavorite>(
                     api = { page, size -> displayApi.getDisplayList(page, size, sort = sort.name) },
                 )
             },
@@ -61,7 +61,7 @@ class DisplayRepositoryImpl @Inject constructor(
     override suspend fun searchDisplayList(
         keyword: String,
         sort: SortType,
-    ): Flow<PagingData<DisplayResponse.Short>> =
+    ): Flow<PagingData<DisplayResponse.WithFavorite>> =
         Pager(
             config =
                 PagingConfig(
@@ -69,7 +69,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                ListPagingSource<DisplayResponse.Short>(
+                ListPagingSource<DisplayResponse.WithFavorite>(
                     api = { page, size ->
                         displayApi.searchDisplayList(
                             keyword,
@@ -82,7 +82,7 @@ class DisplayRepositoryImpl @Inject constructor(
             },
         ).flow
 
-    override suspend fun getLikedDisplayList(): Flow<PagingData<DisplayResponse.Short>> =
+    override suspend fun getLikedDisplayList(): Flow<PagingData<DisplayResponse.Simple>> =
         Pager(
             config =
                 PagingConfig(
@@ -90,7 +90,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                ListPagingSource<DisplayResponse.Short>(
+                ListPagingSource<DisplayResponse.Simple>(
                     api = { page, size -> displayApi.getLikedDisplayList(page, size) },
                 )
             },

@@ -23,7 +23,7 @@ interface DisplayApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.WithFavorite>>
 
     // /display/{displayId}
     @GET("display/{displayId}")
@@ -37,7 +37,7 @@ interface DisplayApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.WithFavorite>>
 
     // /display/{displayId}/edit
     @GET("display/{displayId}/edit")
@@ -52,14 +52,14 @@ interface DisplayApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.WithFavorite>>
 
     // /display/like
     @GET("display/like")
     suspend fun getLikedDisplayList(
         @Query("page") page: Int,
         @Query("size") size: Int,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.Simple>>
 
     // TODO : /display/{displayId}/comment
 
