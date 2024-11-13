@@ -22,8 +22,13 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.net.HttpURLConnection
+import java.net.URL
 
 @HiltViewModel
 class WebSocketClientViewModel @Inject constructor(
@@ -65,6 +70,12 @@ class WebSocketClientViewModel @Inject constructor(
 
     private val _roomUpdate = MutableStateFlow<RoomUpdate?>(null)
     val roomUpdate = _roomUpdate.asStateFlow()
+
+    private val _flashEffect = MutableStateFlow(false)
+    val flashEffect = _flashEffect.asStateFlow()
+
+    private val _catImageUrl = MutableStateFlow<String?>(null)
+    val catImageUrl = _catImageUrl.asStateFlow()
 
     init {
         initializeSocket()
@@ -226,7 +237,7 @@ class WebSocketClientViewModel @Inject constructor(
                 val jsonObject = JSONObject(data)
                 val message = jsonObject.getString("message")
                 val sender = jsonObject.getJSONObject("sender")
-                val socketId = sender.getString("socketId")
+                val socketId = sender.getString("socketId").takeLast(6)
                 val groupNumber = sender.getInt("groupNumber")
                 val clientNumber = sender.getInt("clientNumber")
                 
@@ -236,6 +247,8 @@ class WebSocketClientViewModel @Inject constructor(
                     "👤 ${groupNumber}-${clientNumber} [$shortSocketId]: $message",
                     MessageType.CHAT
                 )
+                checkAndShowCatImage(message)
+                triggerFlashEffect()
             } catch (e: Exception) {
                 addMessage("채팅 메시지 처리 중 오류 발생: ${e.message}", MessageType.SYSTEM)
             }
@@ -326,6 +339,31 @@ class WebSocketClientViewModel @Inject constructor(
         socket?.disconnect()
         socket?.close()
         super.onCleared()
+    }
+
+    private fun triggerFlashEffect() {
+        viewModelScope.launch {
+            _flashEffect.value = true
+            delay(100) // 깜빡임 지속 시간
+            _flashEffect.value = false
+        }
+    }
+
+    private fun checkAndShowCatImage(message: String) {
+        if (message.contains("테스트", ignoreCase = true)) {
+            viewModelScope.launch {
+                try {
+                    addMessage("이미지 표시 시작", MessageType.SYSTEM)
+                    _catImageUrl.value = "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/101064681283825260369/thumbnails/123456-1731480017315_20241113072824.png"
+                    delay(3000)
+                    _catImageUrl.value = null
+                    addMessage("이미지 표시 종료", MessageType.SYSTEM)
+                } catch (e: Exception) {
+                    addMessage("이미지 처리 실패: ${e.message}", MessageType.SYSTEM)
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 }
 
