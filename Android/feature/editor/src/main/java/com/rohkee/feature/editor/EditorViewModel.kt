@@ -12,6 +12,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.model.DisplayBackground
 import com.rohkee.core.network.model.DisplayImage
 import com.rohkee.core.network.model.DisplayRequest
@@ -58,6 +59,7 @@ class EditorViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val displayRepository: DisplayRepository,
     private val uploadRepository: UploadRepository,
+    private val datastoreRepository: DataStoreRepository,
 ) : ViewModel() {
     private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().displayId
 
@@ -300,7 +302,6 @@ class EditorViewModel @Inject constructor(
         context: Context,
         bitmap: GraphicsLayer,
     ) {
-        val userId = 2 // TODO : userId
         val editorData = editorStateHolder.value
 
         if (editorData.editorInfoState.title
@@ -310,6 +311,7 @@ class EditorViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
+            val userId = datastoreRepository.getUserId()
             val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
             val thumbnailName =
                 "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
