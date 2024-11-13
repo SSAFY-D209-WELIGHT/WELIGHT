@@ -50,8 +50,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.gms.play.services.auth.v2070)
+    implementation(libs.play.services.auth)
     implementation(project(":feat:login"))
+    implementation(project(":feat:mypage"))
+    implementation(project(":core:network"))
 
 //    implementation(libs.androidx.lifecycle.viewmodel.compose.v262)
 //    implementation(libs.androidx.core.ktx)
