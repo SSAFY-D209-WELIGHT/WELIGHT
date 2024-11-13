@@ -26,6 +26,9 @@ import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/display")
 @RequiredArgsConstructor
@@ -190,7 +193,11 @@ public class DisplayController {
     public ResponseEntity<?> doLikeDisplay(@AuthenticationPrincipal UserDetails userDetails,
                                              @PathVariable("displayId") long displayUid){
         displayService.doLikeDisplay(userDetails.getUsername(), displayUid);
-        return ResponseEntity.ok().body("디스플레이 좋아요 완료");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "디스플레이 좋아요 완료");
+
+        return ResponseEntity.ok().body(response);
     }
 
     @DeleteMapping("/{displayId}/like")
@@ -198,7 +205,11 @@ public class DisplayController {
     public ResponseEntity<?> cancelLikeDisplay(@AuthenticationPrincipal UserDetails userDetails,
                                                  @PathVariable("displayId") long displayUid) {
         displayService.cancelLikeDisplay(userDetails.getUsername(), displayUid);
-        return ResponseEntity.ok().body("디스플레이 좋아요 취소");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "디스플레이 좋아요 취소");
+
+        return ResponseEntity.ok().body(response);
     }
 
     /*
