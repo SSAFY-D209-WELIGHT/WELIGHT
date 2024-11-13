@@ -22,6 +22,8 @@ data class DisplayEditorData(
     val bottomBarState: EditingState = EditingState.None,
     val dialogState: DialogState = DialogState.Closed,
 ) {
+    val isEditMode = displayId != null
+
     fun toState(): EditorState =
         EditorState.Edit(
             displayId = displayId,
