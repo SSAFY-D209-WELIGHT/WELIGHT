@@ -11,13 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class SocialLoginRequestDTO {
-    @Schema(description = "회원 아이디", example = "2")
+    @Schema(description = "회원 소셜 아이디", example = "1234123412341234567")
     private String userId;
-    @Schema(description = "회원 닉네임", example = "TEST")
+    @Schema(description = "회원 구글 프로필 이름", example = "이재영")
     private String userNickname;
-    @Schema(description = "회원 프로필 사진", example = "S3에 저장된 이미지 url")
+    @Schema(description = "회원 프로필 사진", example = "구글에서 받아온 이미지 url")
     private String userProfileImg;
-    @Schema(description = "회원 로그인처", example = "Form")
+    @Schema(description = "회원 로그인처", example = "Google")
     private String userLogin;
 }
 
