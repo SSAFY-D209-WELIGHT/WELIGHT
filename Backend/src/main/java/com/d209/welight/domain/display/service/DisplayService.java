@@ -30,9 +30,6 @@ public interface DisplayService {
 
     // 디스플레이 복제
     DisplayCreateResponse duplicateDisplay(Long displayId, String userId);
-    void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay);
-    void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId);
-    void duplicateBackground(DisplayBackground originalBackground, Display newDisplay);
 
     // 수정하는 디스플레이 정보 전송
     public DisplayCreateRequest getDisplayForEdit(Long displayId, String userId);

@@ -25,7 +25,7 @@ public interface DisplayRepository extends JpaRepository<Display, Long> {
     @Query("SELECT DISTINCT d FROM Display d " +
             "LEFT JOIN DisplayStorage ds ON d = ds.display " +
             "WHERE d.creatorUid = :userUid OR ds.user = :user")
-    Page<Display> findAllByCreatorUidOrStoredByUser(Long userUid, Optional<User> user, Pageable pageable);
+    Page<Display> findAllByCreatorUidOrStoredByUser(Long userUid, User user, Pageable pageable);
 
     @Query("SELECT d FROM Display d " +
             "JOIN DisplayStorage ds ON d = ds.display " +
