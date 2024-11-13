@@ -4,6 +4,8 @@ import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 import com.d209.welight.domain.display.dto.response.DisplayListResponse;
+import com.d209.welight.domain.user.entity.User;
+import com.d209.welight.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DisplayController {
 
     private final DisplayService displayService;
+    private final UserService userService;
 
     @PostMapping
     @Operation(summary = "디스플레이 생성", description = "디스플레이를 생성합니다.")
@@ -170,6 +174,18 @@ public class DisplayController {
                                              @PathVariable("displayId") long displayUid){
         DisplayCreateResponse response = displayService.updateDisplayFavorite(userDetails.getUsername(), displayUid);
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/like")
+    @Operation(summary = "디스플레이 좋아요 목록", description = "좋아요를 누른 디스플레이 목록 보기")
+    public ResponseEntity getLikedDisplayList(@AuthenticationPrincipal UserDetails userDetails,
+                                              @RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        DisplayListResponse response = displayService.getLikedDisplayList(userDetails.getUsername(), pageable);
+
+        return ResponseEntity.ok().body(response);
+
     }
 
     @PostMapping("/{displayId}/like")

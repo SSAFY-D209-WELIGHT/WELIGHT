@@ -53,6 +53,8 @@ public interface DisplayService {
     // 디스플레이 좋아요
     void doLikeDisplay(String userId, long displayUid);
     void cancelLikeDisplay(String userId, long displayUid);
+    DisplayListResponse getLikedDisplayList(String userId, Pageable pageable);
+
 
     // 디스플레이 댓글
     List<DisplayCommentResponse> getComments(String userId, long displayUid);

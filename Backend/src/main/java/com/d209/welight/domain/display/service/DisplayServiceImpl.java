@@ -945,6 +945,35 @@ public class DisplayServiceImpl implements DisplayService {
         log.info("디스플레이 좋아요 취소: 디스플레이 ID {}", displayUid);
     }
 
+    @Override
+    public DisplayListResponse getLikedDisplayList(String userId, Pageable pageable) {
+        try {
+            // 사용자 id를 통해 userUid 조회
+            Optional<User> userOptional = userRepository.findByUserId(userId);
+            User user = userOptional.get();
+
+            // 내 좋아요 디스플레이 목록 조회
+            Page<DisplayLike> likedDisplays = displayLikeRepository.findAllByUser(user, pageable);
+            List<DisplayListResponse.DisplayInfo> displayInfos = likedDisplays.getContent().stream()
+                    .map(displayLike -> DisplayListResponse.DisplayInfo.builder()
+                            .displayUid(displayLike.getDisplay().getDisplayUid())
+                            .displayThumbnail(displayLike.getDisplay().getDisplayThumbnailUrl())
+                            .isFavorite(true) // 좋아요한 항목이므로 항상 true
+                            .build())
+                    .collect(Collectors.toList());
+
+            return DisplayListResponse.builder()
+                    .currentPage(likedDisplays.getNumber())
+                    .displays(displayInfos)
+                    .build();
+
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("사용자를 찾을 수 없습니다.");
+        } catch (Exception e) {
+            throw new RuntimeException("내가 좋아요한 디스플레이 목록 조회 중 오류가 발생했습니다.");
+        }
+    }
+
 
     // 해당 display에 있는 댓글 전체 조회
     @Override
