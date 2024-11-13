@@ -1,6 +1,5 @@
 package com.rohkee.feature.detail
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,6 +58,7 @@ class DetailViewModel @Inject constructor(
             DetailIntent.ToggleUI -> {
                 // TODO : UI 토글
             }
+
             DetailIntent.ExitPage -> emitEvent(DetailEvent.ExitPage)
         }
     }
@@ -95,7 +95,7 @@ class DetailViewModel @Inject constructor(
                 }
             },
             onError = { errorCode, message ->
-                Log.d("TAG", "loadData: $message")
+                // TODO : 에러처리
             },
         )
     }
@@ -111,7 +111,7 @@ class DetailViewModel @Inject constructor(
                     )
                 },
                 onError = { _, message ->
-                    Log.d("TAG", "toggleFavorite: $message")
+                    // TODO : 에러처리
                 },
             )
         }
@@ -129,7 +129,9 @@ class DetailViewModel @Inject constructor(
                             )
                         }
                     },
-                    onError = { _, _ -> },
+                    onError = { _, message ->
+                        // TODO : 에러처리
+                    },
                 )
             } else {
                 displayRepository.likeDisplay(id).handle(
@@ -141,7 +143,9 @@ class DetailViewModel @Inject constructor(
                             )
                         }
                     },
-                    onError = { _, _ -> },
+                    onError = { _, message ->
+                        // TODO : 에러처리
+                    },
                 )
             }
         }
@@ -169,7 +173,15 @@ class DetailViewModel @Inject constructor(
 
     private fun postToBoard() {
         viewModelScope.launch {
-            // TODO : post to board
+            displayRepository.publishDisplay(id).handle(
+                onSuccess = {
+                    detailStateHolder.update { data -> data.copy(isPublished = true) }
+                    if (it != null) {
+                        detailEvent.emit(DetailEvent.Publish.Success(it.id))
+                    }
+                },
+                onError = { _, _ -> detailEvent.emit(DetailEvent.Publish.Error) },
+            )
         }
     }
 

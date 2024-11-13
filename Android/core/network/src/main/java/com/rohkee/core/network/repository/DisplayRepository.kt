@@ -39,9 +39,11 @@ interface DisplayRepository {
 
     suspend fun likeDisplay(id: Long): ApiResponse<String>
 
+    suspend fun publishDisplay(id: Long): ApiResponse<DisplayResponse.Published>
+
     suspend fun favoriteDisplay(id: Long): ApiResponse<DisplayResponse.Posted>
 
-    suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<String>
+    suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<DisplayResponse.Deleted>
 
     suspend fun unlikeDisplay(id: Long): ApiResponse<String>
 }

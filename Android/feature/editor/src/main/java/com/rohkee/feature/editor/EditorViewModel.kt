@@ -482,7 +482,7 @@ private fun DisplayEditorData.toDisplayRequest(
                                 .toHexString(),
                         font = this.editorTextState.font.toFontName(),
                         rotation = this.editorTextState.rotationDegree,
-                        scale = this.editorImageState.scale,
+                        scale = this.editorTextState.scale,
                         offsetX = this.editorTextState.offsetPercentX,
                         offsetY = this.editorTextState.offsetPercentY,
                     ),

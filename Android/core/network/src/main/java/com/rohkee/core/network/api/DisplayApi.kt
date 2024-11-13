@@ -95,6 +95,11 @@ interface DisplayApi {
 
     // TODO : /display/{display}
 
+    @PATCH("display/{displayId}/isposted")
+    suspend fun publishDisplay(
+        @Path("displayId") displayId: Long,
+    ): Response<DisplayResponse.Published>
+
     // /display/{displayId}/favorite
     @PATCH("display/{displayId}/favorite")
     suspend fun favoriteDisplay(
@@ -106,7 +111,7 @@ interface DisplayApi {
     @DELETE("display/{displayId}/storage")
     suspend fun deleteDisplayFromStorage(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Deleted>
 
     // /display/{displayId} <- not needed
 

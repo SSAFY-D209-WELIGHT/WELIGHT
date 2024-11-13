@@ -74,6 +74,24 @@ sealed interface DisplayResponse {
         @SerialName("message")
         val message: String,
     ) : DisplayResponse
+
+    @Serializable
+    data class Published(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayIsPosted")
+        val published: Boolean,
+    ) : DisplayResponse
+
+    @Serializable
+    data class Deleted(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayName")
+        val title: String,
+        @SerialName("message")
+        val message: String,
+    ) : DisplayResponse
 }
 
 @Serializable
