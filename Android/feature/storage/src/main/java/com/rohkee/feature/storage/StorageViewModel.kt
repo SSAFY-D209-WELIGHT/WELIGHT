@@ -81,6 +81,7 @@ class StorageViewModel @Inject constructor(
                             DisplayCardState(
                                 cardId = display.id,
                                 imageSource = display.thumbnailUrl,
+                                selected = display.favorite,
                             )
                         }
                     },
