@@ -101,6 +101,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             try {
+                dataStoreRepository.deleteAccessToken()
                 val response = userApi.login(loginRequest)
                 Log.d("LoginViewModel", "Raw response: $response")
 

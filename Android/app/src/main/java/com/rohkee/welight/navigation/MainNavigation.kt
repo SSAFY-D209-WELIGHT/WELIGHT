@@ -25,7 +25,7 @@ fun MainNavigation(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Home,
+        startDestination = Login,
     ) {
         composable<Login> {
             LoginRoute(
