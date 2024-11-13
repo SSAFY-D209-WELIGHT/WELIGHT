@@ -11,4 +11,5 @@ android {
 dependencies {
     implementation("io.socket:socket.io-client:2.1.0")
     implementation("org.json:json:20210307")
+    implementation(libs.play.services.location)
 }
