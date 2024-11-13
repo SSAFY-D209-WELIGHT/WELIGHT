@@ -1,6 +1,5 @@
 package com.rohkee.core.network.repositoryImpl
 
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -9,12 +8,10 @@ import com.rohkee.core.network.api.DisplayApi
 import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
-import com.rohkee.core.network.paging.DisplayListPagingSource
-import com.rohkee.core.network.paging.DisplaySearchPagingSource
+import com.rohkee.core.network.paging.ListPagingSource
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class DisplayRepositoryImpl @Inject constructor(
@@ -28,13 +25,17 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                DisplayListPagingSource<DisplayResponse.Short>(
-                    displayApi::getMyDisplayList,
-                    sortType = sort,
+                ListPagingSource<DisplayResponse.Short>(
+                    api = { page, size ->
+                        displayApi.getMyDisplayList(
+                            page,
+                            size,
+                            sort = sort.name,
+                        )
+                    },
                 )
             },
         ).flow
-
 
     override suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail> = apiHandler { displayApi.getDisplayDetail(id) }
 
@@ -46,16 +47,16 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                DisplayListPagingSource<DisplayResponse.Short>(
-                    displayApi::getDisplayList,
-                    sortType = sort,
+                ListPagingSource<DisplayResponse.Short>(
+                    api = { page, size -> displayApi.getDisplayList(page, size, sort = sort.name) },
                 )
             },
         ).flow
 
     override suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable> = apiHandler { displayApi.getDisplayEdit(id) }
 
-    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted> = apiHandler { displayApi.importDisplayToMyStorage(id) }
+    override suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted> =
+        apiHandler { displayApi.importDisplayToMyStorage(id) }
 
     override suspend fun searchDisplayList(
         keyword: String,
@@ -68,10 +69,29 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                DisplaySearchPagingSource<DisplayResponse.Short>(
-                    displayApi::searchDisplayList,
-                    keyword,
-                    sortType = sort,
+                ListPagingSource<DisplayResponse.Short>(
+                    api = { page, size ->
+                        displayApi.searchDisplayList(
+                            keyword,
+                            page,
+                            size,
+                            sort = SortType.LATEST.name,
+                        )
+                    },
+                )
+            },
+        ).flow
+
+    override suspend fun getLikedDisplayList(): Flow<PagingData<DisplayResponse.Short>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 2,
+                ),
+            pagingSourceFactory = {
+                ListPagingSource<DisplayResponse.Short>(
+                    api = { page, size -> displayApi.getLikedDisplayList(page, size) },
                 )
             },
         ).flow
@@ -92,7 +112,8 @@ class DisplayRepositoryImpl @Inject constructor(
 
     override suspend fun favoriteDisplay(id: Long): ApiResponse<DisplayResponse.Posted> = apiHandler { displayApi.favoriteDisplay(id) }
 
-    override suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<DisplayResponse.Deleted> = apiHandler { displayApi.deleteDisplayFromStorage(id) }
+    override suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<DisplayResponse.Deleted> =
+        apiHandler { displayApi.deleteDisplayFromStorage(id) }
 
     override suspend fun unlikeDisplay(id: Long): ApiResponse<String> = apiHandler { displayApi.unlikeDisplay(id) }
 }

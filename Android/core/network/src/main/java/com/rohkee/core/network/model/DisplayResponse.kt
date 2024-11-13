@@ -16,6 +16,16 @@ sealed interface DisplayResponse {
     ) : DisplayResponse
 
     @Serializable
+    data class Default(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayThumbnail")
+        val thumbnailUrl: String,
+        @SerialName("favorite")
+        val favorite: Boolean,
+    ) : DisplayResponse
+
+    @Serializable
     data class Detail(
         @Transient
         override val id: Long = 0,
@@ -63,6 +73,14 @@ sealed interface DisplayResponse {
         val texts: List<DisplayText> = emptyList(),
         @SerialName("background")
         val background: DisplayBackground,
+    ) : DisplayResponse
+
+    @Serializable
+    data class Liked(
+        @Transient
+        override val id: Long = 0,
+        @SerialName("message")
+        val message: String,
     ) : DisplayResponse
 
     @Serializable

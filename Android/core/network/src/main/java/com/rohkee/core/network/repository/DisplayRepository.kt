@@ -26,6 +26,8 @@ interface DisplayRepository {
         sort: SortType,
     ): Flow<PagingData<DisplayResponse.Short>>
 
+    suspend fun getLikedDisplayList(): Flow<PagingData<DisplayResponse.Short>>
+
     suspend fun createDisplay(display: DisplayRequest): ApiResponse<DisplayResponse.Posted>
 
     suspend fun duplicateDisplay(id: Long): ApiResponse<DisplayResponse.Posted>

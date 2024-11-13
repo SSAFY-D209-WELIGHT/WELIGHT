@@ -54,6 +54,13 @@ interface DisplayApi {
         @Query("sortType") sort: String,
     ): Response<PageResponse<DisplayResponse.Short>>
 
+    // /display/like
+    @GET("display/like")
+    suspend fun getLikedDisplayList(
+        @Query("page") page: Int,
+        @Query("size") size: Int,
+    ): Response<PageResponse<DisplayResponse.Short>>
+
     // TODO : /display/{displayId}/comment
 
     // POST
