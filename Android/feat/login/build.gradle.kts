@@ -41,6 +41,7 @@ dependencies {
     // Google Oauth 관련
     implementation(libs.play.services.auth)
 
+    implementation(project(":core:ui"))
     implementation(project(":core:datastore"))
     implementation(project(":core:network"))
 }
