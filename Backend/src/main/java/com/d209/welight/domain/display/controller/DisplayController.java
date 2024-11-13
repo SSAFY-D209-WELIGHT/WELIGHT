@@ -2,8 +2,7 @@ package com.d209.welight.domain.display.controller;
 
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
-import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
-import com.d209.welight.domain.display.dto.response.DisplayListResponse;
+import com.d209.welight.domain.display.dto.response.*;
 import com.d209.welight.domain.user.entity.User;
 import com.d209.welight.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,8 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.d209.welight.domain.display.service.DisplayService;
-import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
-import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
 import com.d209.welight.domain.display.type.SortType;
@@ -182,7 +179,7 @@ public class DisplayController {
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
-        DisplayListResponse response = displayService.getLikedDisplayList(userDetails.getUsername(), pageable);
+        DisplayLikedListResponse response = displayService.getLikedDisplayList(userDetails.getUsername(), pageable);
 
         return ResponseEntity.ok().body(response);
 

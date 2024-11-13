@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayLikedResponse {
+public class DisplayLikedListResponse {
     private int currentPage;
     private List<DisplayInfo> displays;
 

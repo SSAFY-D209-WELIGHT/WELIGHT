@@ -579,7 +579,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
-    public DisplayListResponse getLikedDisplayList(String userId, Pageable pageable) {
+    public DisplayLikedListResponse getLikedDisplayList(String userId, Pageable pageable) {
         try {
             // 사용자 id를 통해 userUid 조회
             Optional<User> userOptional = userRepository.findByUserId(userId);
@@ -587,15 +587,14 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 내 좋아요 디스플레이 목록 조회
             Page<DisplayLike> likedDisplays = displayLikeRepository.findAllByUser(user, pageable);
-            List<DisplayListResponse.DisplayInfo> displayInfos = likedDisplays.getContent().stream()
-                    .map(displayLike -> DisplayListResponse.DisplayInfo.builder()
+            List<DisplayLikedListResponse.DisplayInfo> displayInfos = likedDisplays.getContent().stream()
+                    .map(displayLike -> DisplayLikedListResponse.DisplayInfo.builder()
                             .displayUid(displayLike.getDisplay().getDisplayUid())
                             .displayThumbnail(displayLike.getDisplay().getDisplayThumbnailUrl())
-                            .isFavorite(true) // 좋아요한 항목이므로 항상 true
                             .build())
                     .collect(Collectors.toList());
 
-            return DisplayListResponse.builder()
+            return DisplayLikedListResponse.builder()
                     .currentPage(likedDisplays.getNumber())
                     .displays(displayInfos)
                     .build();
