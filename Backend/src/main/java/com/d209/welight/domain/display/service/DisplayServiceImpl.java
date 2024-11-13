@@ -299,6 +299,7 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Transactional
     @Override
     public DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId) {
 
@@ -329,7 +330,7 @@ public class DisplayServiceImpl implements DisplayService {
             // 수정된(새로운) 디스플레이 저장
             Display savedDisplay = displayRepository.save(newDisplay);
 
-            eventPublisher.publishEvent(new DisplayEvent("CREATE",savedDisplay));
+            eventPublisher.publishEvent(new DisplayEvent("UPDATE",savedDisplay));
 
             // 3. 컨텐츠 복사 또는 업데이트
             // 3-1. 태그 처리 및 저장
