@@ -24,7 +24,13 @@ fun MainNavigation(
         startDestination = Login,
     ) {
         composable<Login> {
-            LoginRoute()
+            LoginRoute(
+                onLoginSuccess = {
+                    navController.navigate(Home) {
+                        popUpTo(Login) { inclusive = true }
+                    }
+                },
+            )
         }
 
         composable<Home> {
