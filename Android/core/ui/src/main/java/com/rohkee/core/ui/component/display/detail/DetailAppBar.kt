@@ -82,7 +82,7 @@ fun DefaultDetailAppBar(
     onDeleteClick: () -> Unit = {},
 ) {
     val favorite =
-        remember { if (state.isFavorite) R.drawable.favorite_star else R.drawable.favorite_star_filled }
+        remember(state.isFavorite) { if (state.isFavorite) R.drawable.favorite_star else R.drawable.favorite_star_filled }
 
     val (openDropdown, setOpenDropdown) = remember { mutableStateOf(false) }
 

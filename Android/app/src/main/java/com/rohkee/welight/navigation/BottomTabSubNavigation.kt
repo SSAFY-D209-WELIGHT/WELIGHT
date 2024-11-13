@@ -48,12 +48,12 @@ fun BottomTabSubNavigation(
                         icon = painterResource(R.drawable.ic_group_unselected),
                         selectedIcon = painterResource(R.drawable.ic_group_selected),
                     ),
-                    BottomNavigationItemState(
-                        route = "board",
-                        label = "게시판",
-                        icon = painterResource(R.drawable.ic_board_unselected),
-                        selectedIcon = painterResource(R.drawable.ic_board_selected),
-                    ),
+//                    BottomNavigationItemState(
+//                        route = Unit,
+//                        label = "게시판",
+//                        icon = painterResource(R.drawable.ic_board_unselected),
+//                        selectedIcon = painterResource(R.drawable.ic_board_selected),
+//                    ),
                 ),
             onSelected = { route ->
                 navController.navigate(route) {

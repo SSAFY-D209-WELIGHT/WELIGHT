@@ -99,7 +99,7 @@ interface DisplayApi {
     @PATCH("display/{displayId}/favorite")
     suspend fun favoriteDisplay(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Posted>
 
     // DELETE
     // /display/{displayId}/storage

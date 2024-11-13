@@ -88,7 +88,7 @@ class DisplayRepositoryImpl @Inject constructor(
 
     override suspend fun likeDisplay(id: Long): ApiResponse<String> = apiHandler { displayApi.likeDisplay(id) }
 
-    override suspend fun favoriteDisplay(id: Long): ApiResponse<String> = apiHandler { displayApi.favoriteDisplay(id) }
+    override suspend fun favoriteDisplay(id: Long): ApiResponse<DisplayResponse.Posted> = apiHandler { displayApi.favoriteDisplay(id) }
 
     override suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<String> = apiHandler { displayApi.deleteDisplayFromStorage(id) }
 

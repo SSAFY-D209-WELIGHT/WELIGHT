@@ -73,7 +73,7 @@ fun MainNavigation(
                 onNavigateToDisplayDetail = { id ->
                     navController.navigate(DetailRoute(displayId = id)) {
                         popUpTo(Home) {
-                            inclusive = true
+                            inclusive = false
                         }
                         launchSingleTop = true
                     }

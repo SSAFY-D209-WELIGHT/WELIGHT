@@ -1,5 +1,6 @@
 package com.rohkee.feature.detail
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -81,8 +82,8 @@ class DetailViewModel @Inject constructor(
                             isFavorite = data.favorite,
                             title = data.title,
                             tags = data.tags.toPersistentList(),
-                            author = "", // TODO : author name
-                            liked = false, // TODO : liked,
+                            author = data.authorName,
+                            liked = data.liked,
                             like = data.likes,
                             download = data.downloads,
                             comment = data.comments,
@@ -94,7 +95,7 @@ class DetailViewModel @Inject constructor(
                 }
             },
             onError = { errorCode, message ->
-                //Log.d("TAG", "loadData: $message")
+                Log.d("TAG", "loadData: $message")
             },
         )
     }
@@ -109,7 +110,9 @@ class DetailViewModel @Inject constructor(
                         ),
                     )
                 },
-                onError = { _, _ -> },
+                onError = { _, message ->
+                    Log.d("TAG", "toggleFavorite: $message")
+                },
             )
         }
     }

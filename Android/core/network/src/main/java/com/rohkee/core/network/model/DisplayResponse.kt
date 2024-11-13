@@ -19,6 +19,10 @@ sealed interface DisplayResponse {
     data class Detail(
         @Transient
         override val id: Long = 0,
+        @SerialName("creatorUid")
+        val authorId: Long,
+        @SerialName("creatorName")
+        val authorName: String,
         @SerialName("displayThumbnailUrl")
         val thumbnailUrl: String,
         @SerialName("displayName")
@@ -35,7 +39,9 @@ sealed interface DisplayResponse {
         val downloads: Int,
         @SerialName("commentCount")
         val comments: Int,
-        @SerialName("favourite")
+        @SerialName("liked")
+        val liked: Boolean,
+        @SerialName("favorite")
         val favorite: Boolean,
     ) : DisplayResponse
 
