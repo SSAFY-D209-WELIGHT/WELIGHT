@@ -3,6 +3,8 @@ package com.d209.welight.domain.display.dto.request;
 import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
 import com.d209.welight.domain.display.dto.DisplayImageDto;
 import com.d209.welight.domain.display.dto.DisplayTextDto;
+import com.d209.welight.domain.display.entity.DisplayImage;
+import com.d209.welight.domain.display.entity.DisplayText;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
