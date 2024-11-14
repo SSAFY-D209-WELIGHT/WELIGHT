@@ -34,6 +34,48 @@ data class DisplayCardState(
 )
 
 @Composable
+fun SmallDisplayCard(
+    modifier: Modifier = Modifier,
+    state: DisplayCardState,
+    onCardSelected: () -> Unit = {},
+) {
+    var imageState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
+
+    Box(
+        modifier =
+        modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(4.dp))
+            .clickable { onCardSelected() }
+            .background(color = AppColor.Surface),
+    ) {
+        AsyncImage(
+            modifier =
+            Modifier,
+            model = state.imageSource,
+            contentScale = ContentScale.Crop,
+            contentDescription = null,
+            onLoading = { imageState = it },
+            onSuccess = { imageState = it },
+            onError = { imageState = it },
+        )
+        when (imageState) {
+            is AsyncImagePainter.State.Success -> {}
+            else -> {
+                Box(
+                    modifier =
+                    Modifier.fillMaxSize().animateGradientBackground(
+                        startColor = AppColor.LoadLight,
+                        endColor = AppColor.LoadDark,
+                    ),
+                ) {
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun DisplayCard(
     modifier: Modifier = Modifier,
     state: DisplayCardState,
