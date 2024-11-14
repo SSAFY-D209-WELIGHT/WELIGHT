@@ -9,6 +9,7 @@ import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 import com.rohkee.core.network.paging.ListPagingSource
+import com.rohkee.core.network.paging.SearchPagingSource
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
 import kotlinx.coroutines.flow.Flow
@@ -69,7 +70,7 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                ListPagingSource<DisplayResponse.Search>(
+                SearchPagingSource<DisplayResponse.Search>(
                     api = { page, size ->
                         displayApi.searchDisplayList(userId, keyword, page, size)
                     },
