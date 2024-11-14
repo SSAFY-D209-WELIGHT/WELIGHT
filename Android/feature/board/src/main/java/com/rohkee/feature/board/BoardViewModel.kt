@@ -3,6 +3,7 @@ package com.rohkee.feature.board
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import androidx.paging.map
 import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.repository.DisplayRepository
@@ -11,6 +12,7 @@ import com.rohkee.core.ui.component.storage.DisplayCardState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -91,7 +93,7 @@ class BoardViewModel @Inject constructor(
         }
 
         searchJob?.cancel()
-        if (userId == null) return
+        if (userId == null || query.isEmpty()) return
         searchJob =
             viewModelScope.launch {
                 delay(1000)
@@ -116,6 +118,8 @@ class BoardViewModel @Inject constructor(
             }
     }
 
+    private var temp: Flow<PagingData<DisplayCardState>>? = null
+
     private fun toggleSearch() {
         val currentState = _uiState.value
         if (currentState is BoardState.Loaded) {
@@ -124,17 +128,23 @@ class BoardViewModel @Inject constructor(
                     isSearchVisible = !currentState.isSearchVisible,
                 )
             }
+            temp = currentState.boards
         }
     }
 
     private fun closeSearch() {
         val currentState = _uiState.value
+
         if (currentState is BoardState.Loaded) {
-            _uiState.update {
-                currentState.copy(
-                    isSearchVisible = false,
-                    searchQuery = "",
-                )
+            if (currentState.boards == temp) {
+                _uiState.update {
+                    currentState.copy(
+                        isSearchVisible = false,
+                        searchQuery = "",
+                    )
+                }
+            } else {
+                loadBoards()
             }
         }
     }
