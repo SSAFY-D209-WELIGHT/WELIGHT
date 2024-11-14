@@ -17,6 +17,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -144,6 +145,7 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Cacheable(value = "allDisplays", key = "#pageable")
     @Override
     public DisplayListResponse getDisplayList(Pageable pageable) {
         try {
