@@ -88,6 +88,8 @@ class DisplayRepositoryImpl @Inject constructor(
                 PagingConfig(
                     pageSize = 10,
                     prefetchDistance = 2,
+                    initialLoadSize = 10,
+                    enablePlaceholders = false,
                 ),
             pagingSourceFactory = {
                 ListPagingSource<DisplayResponse.Simple>(

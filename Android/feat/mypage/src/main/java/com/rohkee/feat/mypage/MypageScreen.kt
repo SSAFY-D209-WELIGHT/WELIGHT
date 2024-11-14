@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import com.rohkee.core.network.ApiResponse
-import com.rohkee.core.network.model.UserInfo
+import com.rohkee.core.network.model.UserResponse
 import com.rohkee.core.network.repository.UserRepository
 import kotlinx.coroutines.launch
 
@@ -26,12 +26,13 @@ import kotlinx.coroutines.launch
 fun MypageScreen(userRepository: UserRepository) {
     var selectedTab by remember { mutableStateOf(0) }
     var error by remember { mutableStateOf<String?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     var userInfo by remember {
         mutableStateOf(
-            UserInfo(
-                userId = "112504079148969382828",
+            UserResponse(
+                userId = 1L,
                 userNickname = "곽대건",
                 userProfileImg = "https://cdn.pixabay.com/photo/2024/02/17/00/18/cat-8578562_1280.jpg",
             ),
@@ -51,6 +52,14 @@ fun MypageScreen(userRepository: UserRepository) {
                 }
             }
         }
+    }
+
+    // 프로필 수정 다이얼로그
+    if (showEditDialog) {
+        EditProfileDialog(
+            userInfo = userInfo,
+            onDismiss = { showEditDialog = false },
+        )
     }
 
     Column(
@@ -104,7 +113,7 @@ fun MypageScreen(userRepository: UserRepository) {
                             Modifier
                                 .padding(start = 8.dp)
                                 .size(20.dp)
-                                .clickable { /* Handle edit click */ },
+                                .clickable { showEditDialog = true },
                     )
                 }
             }
@@ -177,6 +186,3 @@ private fun StatRow(
         )
     }
 }
-
-
-

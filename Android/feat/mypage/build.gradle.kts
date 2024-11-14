@@ -10,8 +10,12 @@ android {
 
 dependencies {
     implementation(project(":core:network"))
+    implementation(project(":core:ui"))
+    implementation(libs.androidx.paging.common.android)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+
+    implementation(libs.androidx.paging.compose)
     // coil
     implementation(libs.coil.compose.v200)
 }
