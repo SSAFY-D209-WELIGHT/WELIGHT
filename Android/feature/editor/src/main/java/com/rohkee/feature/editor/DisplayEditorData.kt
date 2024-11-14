@@ -11,7 +11,6 @@ import com.rohkee.core.ui.model.CustomColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
-
 @Immutable
 data class DisplayEditorData(
     val displayId: Long? = null,
@@ -46,16 +45,16 @@ data class DisplayEditorData(
         offsetPercentY: Float = editorTextState.offsetPercentY,
     ) = copy(
         editorTextState =
-        editorTextState.copy(
-            isSelected = isSelected,
-            text = text,
-            color = color,
-            font = font,
-            scale = scale,
-            rotationDegree = rotationDegree,
-            offsetPercentX = offsetPercentX,
-            offsetPercentY = offsetPercentY,
-        ),
+            editorTextState.copy(
+                isSelected = isSelected,
+                text = text,
+                color = color,
+                font = font,
+                scale = scale,
+                rotationDegree = rotationDegree,
+                offsetPercentX = offsetPercentX,
+                offsetPercentY = offsetPercentY,
+            ),
     )
 
     fun copyWithImage(
@@ -68,15 +67,15 @@ data class DisplayEditorData(
         offsetPercentY: Float = editorImageState.offsetPercentY,
     ) = copy(
         editorImageState =
-        editorImageState.copy(
-            isSelected = isSelected,
-            imageSource = imageSource,
-            color = color,
-            scale = scale,
-            rotationDegree = rotationDegree,
-            offsetPercentX = offsetPercentX,
-            offsetPercentY = offsetPercentY,
-        ),
+            editorImageState.copy(
+                isSelected = isSelected,
+                imageSource = imageSource,
+                color = color,
+                scale = scale,
+                rotationDegree = rotationDegree,
+                offsetPercentX = offsetPercentX,
+                offsetPercentY = offsetPercentY,
+            ),
     )
 
     fun copyWithBackground(
@@ -84,10 +83,10 @@ data class DisplayEditorData(
         brightness: Float = editorBackgroundState.brightness,
     ) = copy(
         editorBackgroundState =
-        editorBackgroundState.copy(
-            color = color,
-            brightness = brightness,
-        ),
+            editorBackgroundState.copy(
+                color = color,
+                brightness = brightness,
+            ),
     )
 }
 
@@ -202,6 +201,14 @@ internal fun MutableStateFlow<DisplayEditorData>.selectImageObject() =
             .copy(bottomBarState = EditingState.Image)
             .copyWithImage(isSelected = true)
             .copyWithText(isSelected = false)
+    }
+
+internal fun MutableStateFlow<DisplayEditorData>.selectBackground() =
+    update {
+        this.value
+            .copy(bottomBarState = EditingState.Background)
+            .copyWithText(isSelected = false)
+            .copyWithImage(isSelected = false)
     }
 
 internal fun MutableStateFlow<DisplayEditorData>.deselectObject() =

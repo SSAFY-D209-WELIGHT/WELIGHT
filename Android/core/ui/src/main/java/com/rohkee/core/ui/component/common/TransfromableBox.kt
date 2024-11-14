@@ -67,17 +67,17 @@ fun TransformableBox(
         Box(
             modifier
                 .align(Alignment.Center)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = { onTap() },
-                    )
-                }.graphicsLayer(
+                .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
                     rotationZ = rotation,
                     translationX = (offset.x * width),
                     translationY = (offset.y * height),
-                ).transformable(state = state),
+                ).pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { onTap() },
+                    )
+                }.transformable(state = state),
         ) {
             content()
         }

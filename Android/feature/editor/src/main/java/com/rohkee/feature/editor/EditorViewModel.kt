@@ -98,7 +98,7 @@ class EditorViewModel @Inject constructor(
                     editingState = EditingState.Image,
                 )
 
-            is EditorIntent.ImageObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Image)
+            is EditorIntent.ImageObject.Tapped -> editorStateHolder.selectImageObject()
 
             // TextObject
             is EditorIntent.TextObject.Transform ->
@@ -107,9 +107,9 @@ class EditorViewModel @Inject constructor(
                     editingState = EditingState.Text,
                 )
 
-            is EditorIntent.TextObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Text)
+            is EditorIntent.TextObject.Tapped -> editorStateHolder.selectTextObject()
 
-            is EditorIntent.Background.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Background)
+            is EditorIntent.Background.Tapped -> editorStateHolder.selectBackground()
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()
