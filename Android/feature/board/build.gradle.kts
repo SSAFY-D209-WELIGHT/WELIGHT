@@ -13,5 +13,5 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
     //추가
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation(libs.coil.compose)
 }
