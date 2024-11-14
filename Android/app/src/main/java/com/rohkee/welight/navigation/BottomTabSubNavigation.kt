@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rohkee.core.ui.component.common.BottomNavigationBar
 import com.rohkee.core.ui.component.common.BottomNavigationItemState
 import com.rohkee.feature.group.GroupRoute
+import com.rohkee.feature.group.GroupScreen
 import com.rohkee.feature.storage.StorageRoute
 import com.rohkee.feature.storage.StorageScreen
 import com.rohkee.welight.R
@@ -25,6 +26,8 @@ fun BottomTabSubNavigation(
     navController: NavHostController = rememberNavController(),
     onNavigateToDisplayDetail: (id: Long) -> Unit,
     onNavigateToCreateNewDisplay: () -> Unit,
+    onNavigateToGroupRoom: (id: Long) -> Unit,
+    onNavigateToCreateGroupRoom: () -> Unit,
 ) {
     val bottomRoute by navController.currentBackStackEntryAsState()
 
@@ -45,12 +48,12 @@ fun BottomTabSubNavigation(
                         icon = painterResource(R.drawable.ic_group_unselected),
                         selectedIcon = painterResource(R.drawable.ic_group_selected),
                     ),
-                    BottomNavigationItemState(
-                        route = "board",
-                        label = "게시판",
-                        icon = painterResource(R.drawable.ic_board_unselected),
-                        selectedIcon = painterResource(R.drawable.ic_board_selected),
-                    ),
+//                    BottomNavigationItemState(
+//                        route = Unit,
+//                        label = "게시판",
+//                        icon = painterResource(R.drawable.ic_board_unselected),
+//                        selectedIcon = painterResource(R.drawable.ic_board_selected),
+//                    ),
                 ),
             onSelected = { route ->
                 navController.navigate(route) {
@@ -75,13 +78,13 @@ fun BottomTabSubNavigation(
                 )
             }
 
-            composable<GroupRoute> { }
-//            composable<BoardRoute> {
-        //      BoardScreen(
-        //      onNavigateToDisplayDetail = onNavigateToDisplayDetail, // 다른화면이동용.. 제목다르게
-//                    onNavigateToCreateNewDisplay = onNavigateToCreateNewDisplay, // 구멍뚫기
-        //      )
-        //            }
+            composable<GroupRoute> {
+                GroupScreen(
+                    onPopBackStack = {},
+                    onNavigateToGroupRoom = onNavigateToGroupRoom,
+                    onNavigateToCreateGroupRoom = onNavigateToCreateGroupRoom,
+                )
+            }
         }
     }
 }

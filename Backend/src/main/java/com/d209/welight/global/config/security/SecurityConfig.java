@@ -3,14 +3,9 @@ package com.d209.welight.global.config.security;
 import com.d209.welight.global.config.jwt.JwtAuthenticationFilter;
 import com.d209.welight.global.error.CommonErrorCode;
 import com.d209.welight.global.error.ErrorResponse;
-import com.d209.welight.global.exception.display.DisplayNotFoundException;
 import com.d209.welight.global.util.jwt.JwtTokenProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,10 +17,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 
 @Configuration // 이 클래스가 Spring의 Configuration 클래스를 정의함을 나타냄

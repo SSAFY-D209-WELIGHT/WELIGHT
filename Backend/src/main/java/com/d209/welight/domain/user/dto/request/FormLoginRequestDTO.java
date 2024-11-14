@@ -8,7 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class FormLoginRequestDTO {
-    @Schema(description = "회원 아이디", example = "1")
+    @Schema(description = "회원 아이디", example = "test1212")
     private String userId;
     @Schema(description = "회원 PW", example = "1234")
     private String userPassword;

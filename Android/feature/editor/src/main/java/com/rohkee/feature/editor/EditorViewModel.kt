@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.core.net.toUri
@@ -11,7 +12,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.rohkee.core.network.ApiResponse
+import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.model.DisplayBackground
 import com.rohkee.core.network.model.DisplayImage
 import com.rohkee.core.network.model.DisplayRequest
@@ -21,6 +22,7 @@ import com.rohkee.core.network.model.Upload
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.UploadRepository
 import com.rohkee.core.network.util.handle
+import com.rohkee.core.network.util.process
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
@@ -39,7 +41,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -55,10 +59,12 @@ class EditorViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val displayRepository: DisplayRepository,
     private val uploadRepository: UploadRepository,
+    private val datastoreRepository: DataStoreRepository,
 ) : ViewModel() {
     private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().displayId
 
-    private val editorStateHolder = MutableStateFlow<DisplayEditorData>(DisplayEditorData())
+    private val editorStateHolder =
+        MutableStateFlow<DisplayEditorData>(DisplayEditorData(displayId = displayId))
 
     val editorState: StateFlow<EditorState> =
         editorStateHolder
@@ -92,12 +98,18 @@ class EditorViewModel @Inject constructor(
                     editingState = EditingState.Image,
                 )
 
+            is EditorIntent.ImageObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Image)
+
             // TextObject
             is EditorIntent.TextObject.Transform ->
                 editorStateHolder.updateState(
                     displayTextState = intent.textState,
                     editingState = EditingState.Text,
                 )
+
+            is EditorIntent.TextObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Text)
+
+            is EditorIntent.Background.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Background)
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()
@@ -259,12 +271,12 @@ class EditorViewModel @Inject constructor(
                 onSuccess = { display ->
                     display?.let {
                         editorStateHolder.update {
-                            display.toDisplayEditorData()
+                            display.toDisplayEditorData(it.displayId!!)
                         }
                     }
                 },
                 onError = { _, message ->
-                    //Log.d("TAG", "loadData: $message")
+                    // Log.d("TAG", "loadData: $message")
                 },
             )
         }
@@ -297,16 +309,16 @@ class EditorViewModel @Inject constructor(
         context: Context,
         bitmap: GraphicsLayer,
     ) {
-        val userId = 2 // TODO : userId
+        val editorData = editorStateHolder.value
 
-        if (editorStateHolder.value.editorInfoState.title
+        if (editorData.editorInfoState.title
                 .isEmpty()
         ) {
-            editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorStateHolder.value.editorInfoState))
+            editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorData.editorInfoState))
             return
         }
-
         viewModelScope.launch {
+            val userId = datastoreRepository.getUserId()
             val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
             val thumbnailName =
                 "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
@@ -317,60 +329,70 @@ class EditorViewModel @Inject constructor(
                     getFileFromUri(context, uri)
                 }
 
-            imageFile?.let {
-                uploadRepository
-                    .upload("$userId/images/${imageFile.name}", imageFile)
-                    .combine(
-                        uploadRepository.upload("$userId/thumbnails/$thumbnailName", file),
-                    ) { imageResponse, thumbnailResponse ->
-                        if (imageResponse is ApiResponse.Error) {
-                            ApiResponse.Error(imageResponse.errorCode, imageResponse.errorMessage)
-                        } else if (thumbnailResponse is ApiResponse.Error) {
-                            ApiResponse.Error(
-                                thumbnailResponse.errorCode,
-                                thumbnailResponse.errorMessage,
-                            )
-                        } else {
-                            ApiResponse.Success(imageResponse to thumbnailResponse)
-                        }
-                    }.collect { response ->
-                        when (response) {
-                            is ApiResponse.Success -> {
-                                response.body?.let { pair ->
+            Log.d("TAG", "saveDisplay: $imageFile")
 
-                                    val image = (pair.first as ApiResponse.Success).body
-                                    val thumbnailUrl = (pair.second as ApiResponse.Success).body
-
-                                    if (image is Upload.Completed && thumbnailUrl is Upload.Completed) {
-                                        editorStateHolder.value.let { data ->
-                                            displayRepository
-                                                .createDisplay(
-                                                    display =
-                                                        data.toDisplayRequest(
-                                                            thumbnailUrl = thumbnailUrl.uploadedFile,
-                                                            imageUrl = image.uploadedFile,
-                                                        ),
-                                                ).handle(
-                                                    onSuccess = {
-                                                        it?.let {
-                                                            emitEvent(EditorEvent.Save.Success(it.id))
-                                                        }
-                                                    },
-                                                    onError = { _, _ ->
-                                                        emitEvent(EditorEvent.Save.Failure)
-                                                    },
-                                                )
-                                        }
+            uploadRepository
+                .upload("$userId/thumbnails/$thumbnailName", file)
+                .map {
+                    it.process(
+                        onSuccess = { upload ->
+                            when (upload) {
+                                is Upload.Completed -> upload.uploadedFile
+                                else -> ""
+                            }
+                        },
+                        onError = { _, _ -> "" },
+                    )
+                }.combine(
+                    // 이미지 정보를 내부 저장소에서 가져왔을 경우
+                    if (imageFile != null) {
+                        uploadRepository.upload("$userId/images/${imageFile.name}", imageFile).map {
+                            it.process(
+                                onSuccess = { upload ->
+                                    when (upload) {
+                                        is Upload.Completed -> upload.uploadedFile
+                                        else -> ""
                                     }
-                                }
-                            }
-
-                            is ApiResponse.Error -> {
-                                // TODO : Error
-                            }
+                                },
+                                onError = { _, _ -> "" },
+                            )
                         }
+                    } else {
+                        flow {
+                            // 외부 저장소에서 가져온 경우
+                            emit(editorData.editorImageState.imageSource?.toString() ?: "")
+                        }
+                    },
+                ) { thumbnailUrl, imageUrl ->
+                    if (editorData.isEditMode) {
+                        displayRepository.editDisplay(
+                            id = editorData.displayId!!,
+                            display =
+                                editorData.toDisplayRequest(
+                                    thumbnailUrl = thumbnailUrl,
+                                    imageUrl = imageUrl,
+                                ),
+                        )
+                    } else {
+                        displayRepository.createDisplay(
+                            display =
+                                editorData.toDisplayRequest(
+                                    thumbnailUrl = thumbnailUrl,
+                                    imageUrl = imageUrl,
+                                ),
+                        )
                     }
-            }
+                }.collectLatest { response ->
+                    response.handle(
+                        onSuccess = {
+                            // 저장 성공
+                            emitEvent(EditorEvent.ExitPage)
+                        },
+                        onError = { _, message ->
+                            // TODO 저장 실패
+                        },
+                    )
+                }
         }
     }
 }
@@ -467,7 +489,7 @@ private fun DisplayEditorData.toDisplayRequest(
                                 .toHexString(),
                         font = this.editorTextState.font.toFontName(),
                         rotation = this.editorTextState.rotationDegree,
-                        scale = this.editorImageState.scale,
+                        scale = this.editorTextState.scale,
                         offsetX = this.editorTextState.offsetPercentX,
                         offsetY = this.editorTextState.offsetPercentY,
                     ),
@@ -498,9 +520,9 @@ private fun DisplayEditorData.toDisplayRequest(
             },
     )
 
-private fun DisplayResponse.Editable.toDisplayEditorData() =
+private fun DisplayResponse.Editable.toDisplayEditorData(displayId: Long) =
     DisplayEditorData(
-        displayId = this.id,
+        displayId = displayId,
         editorInfoState =
             EditorInfoState(
                 title = this.title,

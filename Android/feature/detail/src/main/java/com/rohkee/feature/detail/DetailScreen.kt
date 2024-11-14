@@ -34,6 +34,12 @@ fun DetailScreen(
                 // TODO: 에러 처리
             }
             is DetailEvent.EditDisplay -> onEditDisplay(event.displayId)
+            DetailEvent.Publish.Error -> {
+                // TODO: 에러 처리
+            }
+            is DetailEvent.Publish.Success -> {
+                // TODO: 게시판에 게시
+            }
         }
     }
 

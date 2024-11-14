@@ -15,6 +15,13 @@ sealed interface DetailEvent {
         val displayId: Long,
     ) : DetailEvent
 
+    sealed interface Publish : DetailEvent {
+        data class Success(
+            val displayId: Long,
+        ) : Publish
+        data object Error : Publish
+    }
+
     sealed interface Duplicate : DetailEvent {
         data class Success(
             val displayId: Long,
