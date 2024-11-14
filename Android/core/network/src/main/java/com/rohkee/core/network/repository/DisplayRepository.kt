@@ -22,9 +22,9 @@ interface DisplayRepository {
     suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable>
 
     suspend fun searchDisplayList(
+        userId: Long,
         keyword: String,
-        sort: SortType,
-    ): Flow<PagingData<DisplayResponse.WithFavorite>>
+    ): Flow<PagingData<DisplayResponse.Search>>
 
     suspend fun getLikedDisplayList(): Flow<PagingData<DisplayResponse.Simple>>
 
