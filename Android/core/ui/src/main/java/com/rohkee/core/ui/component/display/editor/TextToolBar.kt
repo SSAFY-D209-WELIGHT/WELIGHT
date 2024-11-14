@@ -1,17 +1,16 @@
 package com.rohkee.core.ui.component.display.editor
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,15 +18,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.rohkee.core.ui.component.common.ButtonType
-import com.rohkee.core.ui.component.common.ChipGroup
-import com.rohkee.core.ui.component.common.CommonCircleButton
+import com.rohkee.core.ui.R
 import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.theme.AppColor
 import kotlinx.collections.immutable.persistentListOf
+
+private enum class TextOptions(
+    val icon: Int,
+) {
+    Color(R.drawable.ic_color_paint),
+    Font(R.drawable.ic_text_font),
+}
 
 @Composable
 fun TextToolBar(
@@ -40,35 +46,29 @@ fun TextToolBar(
     onSelectFont: (FontFamily) -> Unit = {},
     onTextChange: () -> Unit = {},
 ) {
-    val options = remember { persistentListOf("색상", "폰트", "입력") }
-    val (selected, setSelected) = remember { mutableStateOf(options[0]) }
+    val (selected, setSelected) = remember { mutableStateOf(TextOptions.Color) }
 
     Column(
         modifier = modifier,
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
+        OptionsToolBar(
+            modifier = Modifier.padding(8.dp),
+            title = "텍스트",
+            onClose = onClose,
         ) {
-            CommonCircleButton(icon = Icons.Rounded.Close, onClick = onClose)
-            ChipGroup(
-                list = options,
-                selected = selected,
-                onChipSelected = {
-                    when (it) {
-                        "입력" -> onTextChange()
-                        else -> setSelected(it)
-                    }
-                },
-            )
-            CommonCircleButton(
-                icon = Icons.Default.Delete,
-                buttonType = ButtonType.Warning,
-                onClick = onDelete,
+            OptionsButton(icon = rememberVectorPainter(Icons.Default.KeyboardArrowDown))
+            for (option in TextOptions.entries) {
+                OptionsButton(
+                    icon = painterResource(option.icon),
+                )
+            }
+            VerticalDivider(modifier = Modifier.height(28.dp))
+            OptionsButton(
+                icon = rememberVectorPainter(Icons.Outlined.Delete),
+                optionsColor =
+                    OptionsButtonDefault.color.copy(
+                        contentColor = AppColor.Warning,
+                    ),
             )
         }
         Box(
@@ -89,7 +89,7 @@ fun TextToolBar(
                     ).padding(horizontal = 16.dp),
         ) {
             when (selected) {
-                "색상" ->
+                TextOptions.Color ->
                     ColorRow(
                         modifier = Modifier.align(Alignment.Center),
                         selectedColor = state.color,
@@ -98,7 +98,7 @@ fun TextToolBar(
                         onSelectCustomColor = { onSelectCustomColor(state.color) },
                     )
 
-                "폰트" ->
+                TextOptions.Font ->
                     FontRow(
                         modifier = Modifier.align(Alignment.Center),
                         selectedFont = state.font,
