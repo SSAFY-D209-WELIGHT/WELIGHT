@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +46,7 @@ fun OptionsToolBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            modifier = Modifier.padding(2.dp).size(24.dp).clickable { onClose() },
+            modifier = Modifier.padding(2.dp).size(28.dp).clickable { onClose() },
             imageVector = Icons.Default.KeyboardArrowDown,
             contentDescription = "close tool bar",
             tint = AppColor.OnSurface,
@@ -54,10 +55,29 @@ fun OptionsToolBar(
             text = title,
             modifier = Modifier,
             color = AppColor.OnSurface,
-            style = Pretendard.SemiBold16,
+            style = Pretendard.Medium20,
         )
         Spacer(modifier = Modifier)
         options()
+    }
+}
+
+@Composable
+fun OptionsButton(
+    modifier: Modifier = Modifier,
+    containerColor: Color,
+    onClick: () -> Unit = {},
+    content: @Composable() (BoxScope.() -> Unit),
+) {
+    Box(
+        modifier =
+            modifier
+                .background(color = containerColor, shape = CircleShape)
+                .padding(6.dp)
+                .clickable { onClick() },
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
     }
 }
 
@@ -69,20 +89,19 @@ fun OptionsButton(
     contentDescription: String? = null,
     onClick: () -> Unit = {},
 ) {
-    Box(
-        modifier =
-            modifier
-                .background(color = optionsColor.containerColor, shape = CircleShape)
-                .padding(6.dp)
-                .clickable { onClick() },
-    ) {
-        Icon(
-            modifier = Modifier.align(Alignment.Center).size(16.dp),
-            painter = icon,
-            contentDescription = contentDescription,
-            tint = optionsColor.contentColor,
-        )
-    }
+    OptionsButton(
+        modifier = modifier,
+        content = {
+            Icon(
+                modifier = Modifier.align(Alignment.Center).size(20.dp),
+                painter = icon,
+                contentDescription = contentDescription,
+                tint = optionsColor.contentColor,
+            )
+        },
+        containerColor = optionsColor.containerColor,
+        onClick = onClick,
+    )
 }
 
 object OptionsButtonDefault {
@@ -108,9 +127,9 @@ private fun OptionsToolBarPreview() {
         OptionsButton(
             icon = rememberVectorPainter(Icons.Outlined.Delete),
             optionsColor =
-                OptionsButtonDefault.color.copy(
-                    contentColor = AppColor.Warning,
-                ),
+            OptionsButtonDefault.color.copy(
+                contentColor = AppColor.Warning,
+            ),
         )
     }
 }

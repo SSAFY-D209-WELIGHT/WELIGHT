@@ -83,7 +83,12 @@ class EditorViewModel @Inject constructor(
     fun onIntent(intent: EditorIntent) {
         when (intent) {
             is EditorIntent.AttemptExitPage -> {
-                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+                if (editorStateHolder.value.dialogState !is DialogState.Closed) {
+                    Log.d("TAG", "onIntent: ${editorStateHolder.value.dialogState}")
+                    editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+                } else {
+                    editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+                }
             }
 
             is EditorIntent.Save -> {

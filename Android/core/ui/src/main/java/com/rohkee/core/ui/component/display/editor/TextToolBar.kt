@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -56,20 +56,26 @@ fun TextToolBar(
             title = "텍스트",
             onClose = onClose,
         ) {
-            OptionsButton(icon = rememberVectorPainter(Icons.Default.KeyboardArrowDown))
-            for (option in TextOptions.entries) {
-                OptionsButton(
-                    icon = painterResource(option.icon),
-                )
+            OptionsButton(
+                containerColor = AppColor.Contrast,
+                onClick = { setSelected(TextOptions.Color) },
+            ) {
+                ColorChip(modifier = Modifier.size(20.dp), color = state.color, isSelected = false)
             }
-            VerticalDivider(modifier = Modifier.height(28.dp))
+            OptionsButton(
+                icon = painterResource(TextOptions.Font.icon),
+            ) { setSelected(TextOptions.Font) }
+            OptionsButton(
+                icon = painterResource(R.drawable.ic_text_edit),
+            ) { onTextChange() }
+            VerticalDivider(modifier = Modifier.height(32.dp), color = AppColor.Contrast)
             OptionsButton(
                 icon = rememberVectorPainter(Icons.Outlined.Delete),
                 optionsColor =
                     OptionsButtonDefault.color.copy(
                         contentColor = AppColor.Warning,
                     ),
-            )
+            ) { onDelete() }
         }
         Box(
             modifier =
