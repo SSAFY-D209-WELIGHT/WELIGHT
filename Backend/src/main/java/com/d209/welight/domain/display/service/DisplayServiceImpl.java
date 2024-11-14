@@ -17,6 +17,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse createDisplay(String userId, DisplayCreateRequest request) {
 
         displayHelper.validateDisplayCreateRequest(request);
@@ -215,6 +217,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse duplicateDisplay(Long displayId, String userId) {
         // 원본 디스플레이 조회
         Display originalDisplay = displayRepository.findById(displayId)
@@ -305,6 +308,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Transactional
     @Override
+    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId) {
 
         // 1. 권한 확인
@@ -364,6 +368,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
     public void deleteDisplay(Long displayUid, String userId) {
         // 1. Display와 User 정보 확인
         Display display = displayRepository.findById(displayUid)
@@ -417,6 +422,7 @@ public class DisplayServiceImpl implements DisplayService {
      * 디스플레이 저장소 (다운로드, 삭제)
      * */
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse downloadDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
@@ -455,6 +461,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
@@ -486,6 +493,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse updateDisplayFavorite(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
@@ -530,6 +538,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public void doLikeDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
@@ -558,6 +567,8 @@ public class DisplayServiceImpl implements DisplayService {
         log.info("디스플레이 좋아요: 디스플레이 ID {}", displayUid);
     }
 
+    @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public void cancelLikeDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
@@ -633,6 +644,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     // display에 댓글 작성
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public void createComment(String userId, Long displayId, DisplayCommentRequest requestDTO) {
         // 해당 display찾기
         Display display = displayRepository.findById(displayId)
@@ -663,6 +675,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     // 내 댓글 수정
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public void updateComment(String userId, Long displayId, DisplayCommentUpdateRequest request) {
         // display찾기
         Display display = displayRepository.findById(displayId)
@@ -693,6 +706,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     // 내 댓글 삭제
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public void deleteComment(String userId, Long displayUid, Long commentUid) {
         // display찾기
         Display display = displayRepository.findById(displayUid)
@@ -721,6 +735,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
 
     @Override
+    @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayPostedToggleResponse updateDisplayStatus(Long displayUid, String userId) {
         // 사용자 검증
         User user = userRepository.findByUserId(userId)
