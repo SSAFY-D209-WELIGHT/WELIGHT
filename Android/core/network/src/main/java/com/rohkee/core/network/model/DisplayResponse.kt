@@ -76,6 +76,30 @@ sealed interface DisplayResponse {
     ) : DisplayResponse
 
     @Serializable
+    data class Search(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("creatorUid")
+        val authorId: Long,
+        @SerialName("displayName")
+        val title: String,
+        @SerialName("displayThumbnailUrl")
+        val thumbnailUrl: String,
+        @SerialName("displayIsPosted")
+        val posted: Boolean,
+        @SerialName("displayCreatedAt")
+        val createdAt: String,
+        @SerialName("displayDownloadCount")
+        val downloads: Int,
+        @SerialName("displayLikeCount")
+        val likes: Int,
+        @SerialName("tags")
+        val tags: List<String> = emptyList(),
+        @SerialName("displayTexts")
+        val texts: List<String> = emptyList(),
+    ) : DisplayResponse
+
+    @Serializable
     data class Liked(
         @Transient
         override val id: Long = 0,

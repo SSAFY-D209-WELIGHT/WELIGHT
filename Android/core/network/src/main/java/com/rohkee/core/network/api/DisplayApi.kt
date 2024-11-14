@@ -46,13 +46,13 @@ interface DisplayApi {
     ): Response<DisplayResponse.Editable>
 
     // /display/search
-    @GET("display/search")
+    @GET("elasticsearch")
     suspend fun searchDisplayList(
+        @Query("userId") userId: Long,
         @Query("keyword") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
-        @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.WithFavorite>>
+    ): Response<PageResponse<DisplayResponse.Search>>
 
     // /display/like
     @GET("display/like")

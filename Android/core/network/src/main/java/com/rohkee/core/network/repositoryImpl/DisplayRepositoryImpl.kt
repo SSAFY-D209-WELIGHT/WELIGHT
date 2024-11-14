@@ -59,9 +59,9 @@ class DisplayRepositoryImpl @Inject constructor(
         apiHandler { displayApi.importDisplayToMyStorage(id) }
 
     override suspend fun searchDisplayList(
+        userId: Long,
         keyword: String,
-        sort: SortType,
-    ): Flow<PagingData<DisplayResponse.WithFavorite>> =
+    ): Flow<PagingData<DisplayResponse.Search>> =
         Pager(
             config =
                 PagingConfig(
@@ -69,14 +69,9 @@ class DisplayRepositoryImpl @Inject constructor(
                     prefetchDistance = 2,
                 ),
             pagingSourceFactory = {
-                ListPagingSource<DisplayResponse.WithFavorite>(
+                ListPagingSource<DisplayResponse.Search>(
                     api = { page, size ->
-                        displayApi.searchDisplayList(
-                            keyword,
-                            page,
-                            size,
-                            sort = SortType.LATEST.name,
-                        )
+                        displayApi.searchDisplayList(userId, keyword, page, size)
                     },
                 )
             },
