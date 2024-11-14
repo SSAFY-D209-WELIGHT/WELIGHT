@@ -51,7 +51,8 @@ android {
 
 dependencies {
     implementation(libs.gms.play.services.auth.v2070)
-    implementation(project(":feat:login"))
+//    implementation(project(":feat:login"))
+    implementation(project(":feature:board"))
 
 //    implementation(libs.androidx.lifecycle.viewmodel.compose.v262)
 //    implementation(libs.androidx.core.ktx)

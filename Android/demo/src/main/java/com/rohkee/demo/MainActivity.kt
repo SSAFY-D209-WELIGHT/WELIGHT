@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
-import com.rohkee.feat.login.LoginRoute
+//import com.rohkee.feat.login.LoginRoute
+import com.rohkee.feature.board.BoardRoute
+import com.rohkee.feature.board.BoardScreen // 또는 BoardScreen
+
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -14,7 +17,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                LoginRoute()
+//                LoginRoute()
+//                BoardRoute()
+                BoardScreen()
             }
         }
     }

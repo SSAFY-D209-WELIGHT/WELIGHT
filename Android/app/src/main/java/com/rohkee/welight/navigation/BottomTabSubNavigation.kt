@@ -76,6 +76,12 @@ fun BottomTabSubNavigation(
             }
 
             composable<GroupRoute> { }
+//            composable<BoardRoute> {
+        //      BoardScreen(
+        //      onNavigateToDisplayDetail = onNavigateToDisplayDetail, // 다른화면이동용.. 제목다르게
+//                    onNavigateToCreateNewDisplay = onNavigateToCreateNewDisplay, // 구멍뚫기
+        //      )
+        //            }
         }
     }
 }
