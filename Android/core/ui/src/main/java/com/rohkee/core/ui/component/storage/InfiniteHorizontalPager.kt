@@ -35,14 +35,15 @@ fun InfiniteHorizontalPager(
     modifier: Modifier = Modifier,
     initialPage: Int = 0,
     pageCount: Int,
+    pageRatio: Float = 0.7f,
     onPageChanged: (Int) -> Unit = {},
     itemContent: @Composable (index: Int) -> Unit,
 ) {
     if (pageCount == 0) return
 
     val config = LocalConfiguration.current
-    val width = remember { (config.screenWidthDp * 0.7).dp }
-    val padding = remember { (config.screenWidthDp * 0.15).dp }
+    val width = remember { (config.screenWidthDp * pageRatio).dp }
+    val padding = remember { (config.screenWidthDp * (1 - pageRatio) / 2f).dp }
 
     val pagerState =
         rememberPagerState(

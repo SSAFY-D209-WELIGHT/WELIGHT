@@ -23,7 +23,7 @@ interface DisplayApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.WithFavorite>>
 
     // /display/{displayId}
     @GET("display/{displayId}")
@@ -37,7 +37,7 @@ interface DisplayApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.WithFavorite>>
 
     // /display/{displayId}/edit
     @GET("display/{displayId}/edit")
@@ -52,7 +52,14 @@ interface DisplayApi {
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.Short>>
+    ): Response<PageResponse<DisplayResponse.WithFavorite>>
+
+    // /display/like
+    @GET("display/like")
+    suspend fun getLikedDisplayList(
+        @Query("page") page: Int,
+        @Query("size") size: Int,
+    ): Response<PageResponse<DisplayResponse.Simple>>
 
     // TODO : /display/{displayId}/comment
 
@@ -88,25 +95,30 @@ interface DisplayApi {
     @POST("display/{displayId}/like")
     suspend fun likeDisplay(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Liked>
 
     // PATCH
     // TODO : /display/{displayId}/comment
 
     // TODO : /display/{display}
 
+    @PATCH("display/{displayId}/isposted")
+    suspend fun publishDisplay(
+        @Path("displayId") displayId: Long,
+    ): Response<DisplayResponse.Published>
+
     // /display/{displayId}/favorite
     @PATCH("display/{displayId}/favorite")
     suspend fun favoriteDisplay(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Posted>
 
     // DELETE
     // /display/{displayId}/storage
     @DELETE("display/{displayId}/storage")
     suspend fun deleteDisplayFromStorage(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Deleted>
 
     // /display/{displayId} <- not needed
 
@@ -116,5 +128,5 @@ interface DisplayApi {
     @DELETE("display/{displayId}/like")
     suspend fun unlikeDisplay(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Liked>
 }

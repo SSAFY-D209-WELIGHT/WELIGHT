@@ -13,18 +13,20 @@ enum class SortType {
 }
 
 interface DisplayRepository {
-    suspend fun getMyDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>>
+    suspend fun getMyDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.WithFavorite>>
 
     suspend fun getDisplayDetail(id: Long): ApiResponse<DisplayResponse.Detail>
 
-    suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.Short>>
+    suspend fun getDisplayList(sort: SortType): Flow<PagingData<DisplayResponse.WithFavorite>>
 
     suspend fun getDisplayEdit(id: Long): ApiResponse<DisplayResponse.Editable>
 
     suspend fun searchDisplayList(
         keyword: String,
         sort: SortType,
-    ): Flow<PagingData<DisplayResponse.Short>>
+    ): Flow<PagingData<DisplayResponse.WithFavorite>>
+
+    suspend fun getLikedDisplayList(): Flow<PagingData<DisplayResponse.Simple>>
 
     suspend fun createDisplay(display: DisplayRequest): ApiResponse<DisplayResponse.Posted>
 
@@ -37,11 +39,13 @@ interface DisplayRepository {
 
     suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted>
 
-    suspend fun likeDisplay(id: Long): ApiResponse<String>
+    suspend fun likeDisplay(id: Long): ApiResponse<DisplayResponse.Liked>
 
-    suspend fun favoriteDisplay(id: Long): ApiResponse<String>
+    suspend fun publishDisplay(id: Long): ApiResponse<DisplayResponse.Published>
 
-    suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<String>
+    suspend fun favoriteDisplay(id: Long): ApiResponse<DisplayResponse.Posted>
 
-    suspend fun unlikeDisplay(id: Long): ApiResponse<String>
+    suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<DisplayResponse.Deleted>
+
+    suspend fun unlikeDisplay(id: Long): ApiResponse<DisplayResponse.Liked>
 }

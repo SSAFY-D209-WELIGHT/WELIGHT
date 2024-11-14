@@ -1,11 +1,13 @@
 package com.rohkee.feature.storage
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
+import com.rohkee.core.network.util.handle
 import com.rohkee.core.ui.component.storage.DisplayCardState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -51,7 +53,15 @@ class StorageViewModel @Inject constructor(
             }
             is StorageIntent.ToggleFavorite -> {
                 viewModelScope.launch {
-                    displayRepository.favoriteDisplay(intent.displayId)
+                    displayRepository.favoriteDisplay(intent.displayId).handle(
+                        onSuccess = {
+                            loadData()
+                        },
+                        onError = { _, message ->
+                            // TODO : 에러 처리
+                            Log.d("TAG", "onIntent: $message")
+                        },
+                    )
                 }
             }
         }
@@ -71,6 +81,7 @@ class StorageViewModel @Inject constructor(
                             DisplayCardState(
                                 cardId = display.id,
                                 imageSource = display.thumbnailUrl,
+                                selected = display.favorite,
                             )
                         }
                     },

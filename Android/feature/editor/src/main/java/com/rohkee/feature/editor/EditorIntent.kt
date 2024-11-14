@@ -18,6 +18,8 @@ sealed interface EditorIntent {
 
     // Text Object
     sealed interface TextObject : EditorIntent {
+        data object Tapped : TextObject
+
         data class Transform(
             val textState: DisplayTextState,
         ) : TextObject
@@ -25,9 +27,15 @@ sealed interface EditorIntent {
 
     // Image Object
     sealed interface ImageObject : EditorIntent {
+        data object Tapped : ImageObject
+
         data class Transform(
             val imageState: DisplayImageState,
         ) : ImageObject
+    }
+
+    sealed interface Background : EditorIntent {
+        data object Tapped : ImageObject
     }
 
     // Info ToolBar

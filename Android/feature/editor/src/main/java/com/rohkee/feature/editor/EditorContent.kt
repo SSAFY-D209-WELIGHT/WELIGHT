@@ -158,6 +158,9 @@ private fun EditContent(
                     backgroundState = state.displayBackgroundState,
                     onImageTransformed = { onIntent(EditorIntent.ImageObject.Transform(it)) },
                     onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
+                    onImageTapped = { onIntent(EditorIntent.ImageObject.Tapped) },
+                    onTextTapped = { onIntent(EditorIntent.TextObject.Tapped) },
+                    onBackgroundTapped = { onIntent(EditorIntent.Background.Tapped) },
                 )
             }
 
@@ -261,6 +264,7 @@ private fun ErrorContent(modifier: Modifier = Modifier) {
 private fun EditorContentPreview() {
     Scaffold { innerPadding ->
         EditorContent(
+            modifier = Modifier.padding(innerPadding),
             state =
                 EditorState.Edit(
                     editingState = EditingState.None,

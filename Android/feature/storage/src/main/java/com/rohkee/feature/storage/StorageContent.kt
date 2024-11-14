@@ -4,13 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingState
@@ -19,7 +19,6 @@ import com.rohkee.core.ui.component.appbar.LogoAppBar
 import com.rohkee.core.ui.component.storage.CreateDisplayButton
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
-import com.rohkee.core.ui.component.storage.DisplayCardWithFavorite
 import com.rohkee.core.ui.component.storage.InfiniteHorizontalPager
 import com.rohkee.core.ui.component.storage.NoContentCard
 
@@ -32,42 +31,40 @@ fun StorageContent(
     state: StorageState,
     onIntent: (StorageIntent) -> Unit = {},
 ) {
-    Scaffold { innerPadding ->
-        Column(
-            modifier = modifier.padding(innerPadding).padding(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            LogoAppBar()
-            when (state) {
-                is StorageState.Loading -> {
-                    LoadingContent(modifier = Modifier.weight(1f))
-                }
-
-                is StorageState.Loaded -> {
-                    LoadedContent(
-                        modifier = Modifier.weight(1f),
-                        state = state,
-                        onIntent = onIntent,
-                    )
-                }
-
-                is StorageState.NoData -> {
-                    NoContent(modifier = Modifier.weight(1f))
-                }
-
-                is StorageState.Error -> {
-                    LoadingContent(modifier = Modifier.weight(1f))
-                }
+    Column(
+        modifier = modifier.padding(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        LogoAppBar()
+        when (state) {
+            is StorageState.Loading -> {
+                LoadingContent(modifier = Modifier.weight(1f))
             }
-            CreateDisplayButton(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                onClick = { onIntent(StorageIntent.CreateNewDisplay) },
-            )
+
+            is StorageState.Loaded -> {
+                LoadedContent(
+                    modifier = Modifier.weight(1f),
+                    state = state,
+                    onIntent = onIntent,
+                )
+            }
+
+            is StorageState.NoData -> {
+                NoContent(modifier = Modifier.weight(1f))
+            }
+
+            is StorageState.Error -> {
+                LoadingContent(modifier = Modifier.weight(1f))
+            }
         }
+        CreateDisplayButton(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+        )
     }
 }
 
@@ -89,17 +86,24 @@ private fun LoadedContent(
 ) {
     val displayList = state.displayListFlow.collectAsLazyPagingItems()
 
-    if (displayList.itemCount == 0) return NoContent(modifier = modifier)
+    if (displayList.loadState.refresh is LoadState.Loading ||
+        displayList.loadState.append is LoadState.Loading
+    ) {
+        return LoadingContent(modifier = modifier)
+    } else if (displayList.itemCount == 0) {
+        return NoContent(modifier = modifier)
+    }
 
     InfiniteHorizontalPager(
         modifier = modifier,
         pageCount = displayList.itemCount,
     ) { index ->
         displayList[index]?.let { item ->
-            DisplayCardWithFavorite(
+            // DisplayCardWithFavorite(
+            DisplayCard(
                 state = item,
                 onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
-                onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
+                // onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
             )
         }
     }
