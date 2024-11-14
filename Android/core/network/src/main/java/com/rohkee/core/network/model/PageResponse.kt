@@ -10,3 +10,9 @@ data class PageResponse<T>(
     @SerialName("displays")
     val displays: List<T>,
 )
+
+@Serializable
+data class PageSearchResponse<T>(
+    @SerialName("content")
+    val content: List<T>,
+)

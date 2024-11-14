@@ -3,6 +3,7 @@ package com.rohkee.core.network.api
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 import com.rohkee.core.network.model.PageResponse
+import com.rohkee.core.network.model.PageSearchResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -52,7 +53,7 @@ interface DisplayApi {
         @Query("keyword") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
-    ): Response<PageResponse<DisplayResponse.Search>>
+    ): Response<PageSearchResponse<DisplayResponse.Search>>
 
     // /display/like
     @GET("display/like")

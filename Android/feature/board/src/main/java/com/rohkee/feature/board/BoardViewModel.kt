@@ -4,10 +4,13 @@ package com.rohkee.feature.board
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.map
+import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.repository.SortType
 import com.rohkee.core.ui.component.storage.DisplayCardState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,14 +23,22 @@ import javax.inject.Inject
 @HiltViewModel
 class BoardViewModel @Inject constructor(
     private val displayRepository: DisplayRepository,
+    private val dataStoreRepository: DataStoreRepository,
 ) : ViewModel() {
+    private var userId: Long? = null
+
     private val _uiState = MutableStateFlow<BoardState>(BoardState.Loading)
     val uiState: StateFlow<BoardState> = _uiState.asStateFlow()
 
     val boardEvent = MutableSharedFlow<BoardEvent>()
 
+    private var searchJob: Job? = null
+
     init {
         loadBoards()
+        viewModelScope.launch {
+            userId = dataStoreRepository.getUserId()
+        }
     }
 
     fun onIntent(intent: BoardIntent) {
@@ -78,6 +89,31 @@ class BoardViewModel @Inject constructor(
                 )
             }
         }
+
+        searchJob?.cancel()
+        if (userId == null) return
+        searchJob =
+            viewModelScope.launch {
+                delay(1000)
+                val state = _uiState.value
+                if (state is BoardState.Loaded) {
+                    _uiState.update {
+                        state.copy(
+                            boards =
+                                displayRepository
+                                    .searchDisplayList(userId = userId!!, keyword = query)
+                                    .map { page ->
+                                        page.map { data ->
+                                            DisplayCardState(
+                                                cardId = data.id,
+                                                imageSource = data.thumbnailUrl,
+                                            )
+                                        }
+                                    },
+                        )
+                    }
+                }
+            }
     }
 
     private fun toggleSearch() {

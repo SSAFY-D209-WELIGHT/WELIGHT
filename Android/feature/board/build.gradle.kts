@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.androidx.paging.compose.android)
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
+    implementation(project(":core:datastore"))
     //추가
     implementation(libs.coil.compose)
 }
