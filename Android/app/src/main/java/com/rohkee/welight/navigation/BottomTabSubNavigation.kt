@@ -50,12 +50,6 @@ fun BottomTabSubNavigation(
                         icon = painterResource(R.drawable.ic_group_unselected),
                         selectedIcon = painterResource(R.drawable.ic_group_selected),
                     ),
-//                    BottomNavigationItemState(
-//                        route = Unit,
-//                        label = "게시판",
-//                        icon = painterResource(R.drawable.ic_board_unselected),
-//                        selectedIcon = painterResource(R.drawable.ic_board_selected),
-//                    ),
                     BottomNavigationItemState(
                         route = MypageRoute,
                         label = "마이페이지",
