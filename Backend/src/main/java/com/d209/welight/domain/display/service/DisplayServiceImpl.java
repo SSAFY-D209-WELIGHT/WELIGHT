@@ -86,6 +86,7 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Cacheable(value = "displayDetails", key = "#request.displayUid")
     @Override
     public DisplayDetailResponse getDisplayDetail(DisplayDetailRequest request) {
 
@@ -169,6 +170,7 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Cacheable(value = "myDisplays", key = "{#userId, #pageable}")
     @Override
     public DisplayListResponse getMyDisplayList(String userId, Pageable pageable) {
 
