@@ -35,11 +35,11 @@ fun CardButton(
     Row(
         modifier =
             modifier
+                .clickable { onClick() }
                 .background(
                     color = AppColor.Surface,
                     shape = RoundedCornerShape(16.dp),
-                ).padding(16.dp)
-                .clickable { onClick() },
+                ).padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -53,6 +53,7 @@ fun CardButton(
                 modifier = Modifier.size(24.dp),
                 painter = icon,
                 contentDescription = "icon",
+                tint = AppColor.OnContrast,
             )
         }
         Column(
@@ -80,7 +81,7 @@ fun CardButton(
 
 @Preview
 @Composable
-fun CardButtonPreview() {
+private fun CardButtonPreview() {
     CardButton(
         icon = rememberVectorPainter(Icons.Default.AccountCircle),
         title = "제목",

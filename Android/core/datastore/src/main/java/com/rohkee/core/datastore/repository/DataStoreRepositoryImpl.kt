@@ -2,6 +2,7 @@ package com.rohkee.core.datastore.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -28,7 +29,25 @@ class DataStoreRepositoryImpl
             return prefs[ACCESS_TOKEN_KEY]
         }
 
+        override suspend fun saveUserId(userId: Long) {
+            dataStore.edit { prefs ->
+                prefs[USER_ID_KEY] = userId
+            }
+        }
+
+        override suspend fun getUserId(): Long? {
+            val prefs = dataStore.data.first()
+            return prefs[USER_ID_KEY]
+        }
+
+        override suspend fun deleteUserId() {
+            dataStore.edit { prefs ->
+                prefs.remove(USER_ID_KEY)
+            }
+        }
+
         companion object {
             private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
+            private val USER_ID_KEY = longPreferencesKey("user_id")
         }
     }

@@ -8,7 +8,17 @@ sealed interface DisplayResponse {
     val id: Long
 
     @Serializable
-    data class Short(
+    data class WithFavorite(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayThumbnail")
+        val thumbnailUrl: String,
+        @SerialName("favorite")
+        val favorite: Boolean,
+    ) : DisplayResponse
+
+    @Serializable
+    data class Simple(
         @SerialName("displayUid")
         override val id: Long,
         @SerialName("displayThumbnail")
@@ -19,6 +29,10 @@ sealed interface DisplayResponse {
     data class Detail(
         @Transient
         override val id: Long = 0,
+        @SerialName("creatorUid")
+        val authorId: Long,
+        @SerialName("creatorName")
+        val authorName: String,
         @SerialName("displayThumbnailUrl")
         val thumbnailUrl: String,
         @SerialName("displayName")
@@ -35,7 +49,9 @@ sealed interface DisplayResponse {
         val downloads: Int,
         @SerialName("commentCount")
         val comments: Int,
-        @SerialName("favourite")
+        @SerialName("liked")
+        val liked: Boolean,
+        @SerialName("favorite")
         val favorite: Boolean,
     ) : DisplayResponse
 
@@ -60,6 +76,14 @@ sealed interface DisplayResponse {
     ) : DisplayResponse
 
     @Serializable
+    data class Liked(
+        @Transient
+        override val id: Long = 0,
+        @SerialName("message")
+        val message: String,
+    ) : DisplayResponse
+
+    @Serializable
     data class Posted(
         @SerialName("displayUid")
         override val id: Long,
@@ -70,11 +94,21 @@ sealed interface DisplayResponse {
     ) : DisplayResponse
 
     @Serializable
-    data class Liked(
+    data class Published(
         @SerialName("displayUid")
         override val id: Long,
-        @SerialName("displayThumbnail")
-        val thumbnailUrl: String,
+        @SerialName("displayIsPosted")
+        val published: Boolean,
+    ) : DisplayResponse
+
+    @Serializable
+    data class Deleted(
+        @SerialName("displayUid")
+        override val id: Long,
+        @SerialName("displayName")
+        val title: String,
+        @SerialName("message")
+        val message: String,
     ) : DisplayResponse
 }
 

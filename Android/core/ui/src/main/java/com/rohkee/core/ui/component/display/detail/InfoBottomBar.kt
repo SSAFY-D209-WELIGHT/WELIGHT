@@ -189,20 +189,23 @@ private fun DetailInfoRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         IconWithNumber(
-            modifier = Modifier.clickable { onLikeClick() },
+            modifier = Modifier,
             icon = likeIcon,
             number = like,
+            onClick = onLikeClick,
         )
         IconWithNumber(
-            modifier = Modifier.clickable { onDownloadClick() },
+            modifier = Modifier,
             icon = painterResource(R.drawable.download),
             number = download,
+            onClick = onDownloadClick,
         )
         Spacer(modifier = Modifier.weight(1f))
         IconWithNumber(
-            modifier = Modifier.clickable { onCommentClick() },
+            modifier = Modifier,
             icon = painterResource(R.drawable.text_balloon),
             number = comment,
+            onClick = onCommentClick,
         )
     }
 }

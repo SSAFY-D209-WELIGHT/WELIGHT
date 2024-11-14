@@ -15,6 +15,8 @@ object AppColor {
     val OnContrast = Color(0xFF272727)
     val Convex = Color(0xFFD9D9D9)
     val OnConvex = Color(0xFF575757)
+    val LoadLight = Color(0xFF575757)
+    val LoadDark = Color(0xFF252525)
     val Active = Color(0xFFF5F5F5)
     val Inactive = Color(0xFF555555)
     val Warning = Color(0xFFE23A3A)

@@ -6,4 +6,10 @@ interface DataStoreRepository {
     suspend fun deleteAccessToken()
 
     suspend fun getAccessToken(): String?
+
+    suspend fun saveUserId(userId: Long)
+
+    suspend fun getUserId(): Long?
+
+    suspend fun deleteUserId()
 }

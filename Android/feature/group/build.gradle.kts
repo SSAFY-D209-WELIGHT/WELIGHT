@@ -10,6 +10,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose.android)
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
 }

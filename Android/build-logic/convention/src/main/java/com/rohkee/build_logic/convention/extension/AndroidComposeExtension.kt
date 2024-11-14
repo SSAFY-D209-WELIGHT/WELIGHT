@@ -43,6 +43,9 @@ internal fun Project.configureAndroidCompose(commonExtension: CommonExtension<*,
             // compose navigation
             add("implementation", libs.findLibrary("kotlinx.serialization.core").get())
             add("implementation", libs.findLibrary("androidx.navigation.compose").get())
+
+            // compose material
+            add("implementation", libs.findLibrary("androidx.compose.material3").get())
         }
     }
 }

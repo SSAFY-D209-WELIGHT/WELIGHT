@@ -2,7 +2,7 @@ package com.rohkee.core.network.repository
 
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.TokenHolder
-import com.rohkee.core.network.model.UserInfo
+import com.rohkee.core.network.model.UserResponse
 
 interface UserRepository {
     suspend fun login(
@@ -12,5 +12,5 @@ interface UserRepository {
         userLogin: String = "Google",
     ): ApiResponse<TokenHolder>
 
-    suspend fun getUserInfo(): ApiResponse<UserInfo>
+    suspend fun getUserInfo(): ApiResponse<UserResponse>
 }

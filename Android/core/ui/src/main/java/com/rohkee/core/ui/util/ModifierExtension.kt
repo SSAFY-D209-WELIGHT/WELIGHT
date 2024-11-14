@@ -38,6 +38,7 @@ fun Modifier.animateGradientBackground(
     startColor: Color,
     endColor: Color,
     animationDuration: Int = 3000,
+    shape: Shape = RectangleShape,
 ): Modifier {
     val infiniteTransition = rememberInfiniteTransition(label = "linear gradient transition")
 
@@ -70,6 +71,7 @@ fun Modifier.animateGradientBackground(
                     end = Offset((offset - 1) * (size.width * 2), 0f),
                     tileMode = TileMode.Mirror,
                 ),
+            shape = shape,
         )
 }
 

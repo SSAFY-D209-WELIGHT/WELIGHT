@@ -5,9 +5,8 @@ import com.rohkee.core.network.api.UserApi
 import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.LoginRequest
 import com.rohkee.core.network.model.TokenHolder
-import com.rohkee.core.network.model.UserInfo
+import com.rohkee.core.network.model.UserResponse
 import com.rohkee.core.network.repository.UserRepository
-import com.rohkee.core.network.util.simplify
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -26,9 +25,8 @@ class UserRepositoryImpl @Inject constructor(
         return response
     }
 
-    override suspend fun getUserInfo(): ApiResponse<UserInfo> {
-        return apiHandler {
-            userApi.getUserInfo()
-        }
+    override suspend fun getUserInfo(): ApiResponse<UserResponse> {
+        val response = apiHandler { userApi.getUserInfo() }
+        return response
     }
 }
