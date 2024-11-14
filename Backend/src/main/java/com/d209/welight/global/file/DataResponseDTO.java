@@ -12,19 +12,19 @@ import java.util.Map;
 @ToString
 public class DataResponseDTO {
 
-    private String image;
+    private String filePath;
     private String url;
 
 
     @Builder
-    public DataResponseDTO( String image, String url) {
-        this.image = image;
+    public DataResponseDTO( String filePath, String url) {
+        this.filePath = filePath;
         this.url = url;
     }
 
     public static DataResponseDTO of(Map<String,String> map) {
         return DataResponseDTO.builder()
-                .image(map.get("image"))
+                .filePath(map.get("filePath"))
                 .url(map.get("url"))
                 .build();
 

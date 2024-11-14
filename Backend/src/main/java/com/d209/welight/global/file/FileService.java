@@ -35,7 +35,7 @@ public class FileService {
      */
     public Map<String, String> getPresignedUrl(String prefix, String fileName, Boolean type)  {
         if (type) {
-            fileName = createPath(prefix, fileName);
+            fileName = createPath(prefix, fileName); // "{prefix}/{uuid}-{fileName}"형식
         }
         if(fileName == null) {
             fileName = "aa";
@@ -46,7 +46,7 @@ public class FileService {
 
         // Presigned URL 생성
         URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
-        return Map.of("url",url.toString(), "image", fileName);
+        return Map.of("url",url.toString(), "filePath", fileName);
     }
 
     /**

@@ -19,29 +19,29 @@ public class FileController {
 
     private final FileService fileService;
 
-    @GetMapping("/upload/{url}")
+    @GetMapping("/upload")
     @Operation(summary = "파일 업로드 url 받기", description = "파일 업로드 url을 받습니다")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "파일 업로드 url을 성공적으로 조회했습니다."),
             @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다.")
     })
-    public ResponseEntity<?> getUploadPresignedUrl(@PathVariable String url) {
-        DataResponseDTO data = DataResponseDTO.of(fileService.getPresignedUrl("images",url,true));
+    public ResponseEntity<?> getUploadPresignedUrl(@RequestParam(name="fileName") String fileName) {
+        DataResponseDTO data = DataResponseDTO.of(fileService.getPresignedUrl("images",fileName,true));
 
         return new ResponseEntity<DataResponseDTO>(data, HttpStatus.CREATED);
 
     }
 
-    @GetMapping("/download/{url}")
+    @GetMapping("/download")
     @Operation(summary = "파일 다운로드 url 받기", description = "파일 다운로드 url을 받습니다")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "파일 다운로드 url을 성공적으로 조회했습니다."),
+            @ApiResponse(responseCode = "200", description = "파일 다운로드 url을 성공적으로 조회했습니다."),
             @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다.")
     })
-    public ResponseEntity<?> getDownloadPresignedUrl(@PathVariable String url) {
-        DataResponseDTO data = DataResponseDTO.of(fileService.getPresignedUrl("images",url,false));
+    public ResponseEntity<?> getDownloadPresignedUrl(@RequestParam(name = "filePath") String filePath) {
+        DataResponseDTO data = DataResponseDTO.of(fileService.getPresignedUrl("images",filePath,false));
 
-        return new ResponseEntity<DataResponseDTO>(data,HttpStatus.CREATED);
+        return new ResponseEntity<DataResponseDTO>(data,HttpStatus.OK);
 
     }
 }
