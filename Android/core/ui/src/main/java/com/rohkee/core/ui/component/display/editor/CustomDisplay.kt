@@ -1,6 +1,7 @@
 package com.rohkee.core.ui.component.display.editor
 
 import android.net.Uri
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,19 +63,27 @@ fun CustomDisplay(
     imageState: DisplayImageState,
     textState: DisplayTextState,
     onImageTransformed: (DisplayImageState) -> Unit = {},
+    onImageTapped: () -> Unit = {},
     onTextTransformed: (DisplayTextState) -> Unit = {},
+    onTextTapped: () -> Unit = {},
+    onBackgroundTapped: () -> Unit = {},
 ) {
     Box(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(color = backgroundState.color),
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { onBackgroundTapped() },
+                    )
+                }.background(color = backgroundState.color),
     ) {
         // 이미지
         TransformableBox(
             scale = imageState.scale,
             rotation = imageState.rotationDegree,
             offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
+            onTap = onImageTapped,
             onTransfrm =
                 { scale, rotation, offset ->
                     onImageTransformed(
@@ -96,6 +106,7 @@ fun CustomDisplay(
             scale = textState.scale,
             rotation = textState.rotationDegree,
             offset = Offset(textState.offsetPercentX, textState.offsetPercentY),
+            onTap = onTextTapped,
             onTransfrm =
                 { scale, rotation, offset ->
                     onTextTransformed(
@@ -148,7 +159,7 @@ fun DisplayText(
         modifier = modifier,
         text = editorTextState.text,
         fontFamily = editorTextState.font,
-        fontSize = 32.sp,
+        fontSize = 72.sp,
         color = editorTextState.color.primary,
     )
 }

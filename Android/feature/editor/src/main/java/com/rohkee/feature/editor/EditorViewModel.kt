@@ -63,7 +63,8 @@ class EditorViewModel @Inject constructor(
 ) : ViewModel() {
     private val displayId: Long? = savedStateHandle.toRoute<EditorRoute>().displayId
 
-    private val editorStateHolder = MutableStateFlow<DisplayEditorData>(DisplayEditorData(displayId = displayId))
+    private val editorStateHolder =
+        MutableStateFlow<DisplayEditorData>(DisplayEditorData(displayId = displayId))
 
     val editorState: StateFlow<EditorState> =
         editorStateHolder
@@ -97,12 +98,18 @@ class EditorViewModel @Inject constructor(
                     editingState = EditingState.Image,
                 )
 
+            is EditorIntent.ImageObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Image)
+
             // TextObject
             is EditorIntent.TextObject.Transform ->
                 editorStateHolder.updateState(
                     displayTextState = intent.textState,
                     editingState = EditingState.Text,
                 )
+
+            is EditorIntent.TextObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Text)
+
+            is EditorIntent.Background.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Background)
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()
