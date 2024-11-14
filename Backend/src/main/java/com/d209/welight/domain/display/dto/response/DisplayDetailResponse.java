@@ -4,13 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayDetailResponse {
+public class DisplayDetailResponse implements Serializable {
     private Long creatorUid;  // 제작자 고유번호
     private String creatorName; // 제작자 이름
     private String displayName;  // 디스플레이 이름

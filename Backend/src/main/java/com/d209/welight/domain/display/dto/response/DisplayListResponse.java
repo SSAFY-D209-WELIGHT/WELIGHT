@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayListResponse {
+public class DisplayListResponse implements Serializable {
     private int currentPage;
     private List<DisplayInfo> displays;
 
@@ -19,7 +20,7 @@ public class DisplayListResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class DisplayInfo {
+    public static class DisplayInfo implements Serializable {
         private Long displayUid;
         private String displayThumbnail;
         private boolean isFavorite; // 즐겨찾기 여부
