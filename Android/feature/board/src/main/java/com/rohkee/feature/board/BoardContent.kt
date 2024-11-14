@@ -104,7 +104,7 @@ private fun LoadedContent(
                             ).copy(cursorColor = AppColor.OnBackground),
                 )
                 Icon(
-                    modifier = Modifier.clickable { onIntent(BoardIntent.ToggleSearch) },
+                    modifier = Modifier.clickable { onIntent(BoardIntent.CloseSearch) },
                     imageVector = Icons.Default.Close,
                     contentDescription = "뒤로가기",
                     tint = AppColor.OnBackground,
