@@ -14,7 +14,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
-                LoginRoute()
+                LoginRoute(
+                    onLoginSuccess = TODO()
+                )
             }
         }
     }
