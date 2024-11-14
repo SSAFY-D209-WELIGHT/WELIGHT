@@ -1,6 +1,7 @@
 package com.rohkee.core.ui.component.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ fun TransformableBox(
     rotation: Float,
     offset: Offset,
     onTransfrm: (scale: Float, rotation: Float, offset: Offset) -> Unit = { _, _, _ -> },
+    onTap: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     BoxWithConstraints(
@@ -64,13 +67,17 @@ fun TransformableBox(
         Box(
             modifier
                 .align(Alignment.Center)
-                .graphicsLayer(
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { onTap() },
+                    )
+                }.graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
                     rotationZ = rotation,
                     translationX = (offset.x * width),
                     translationY = (offset.y * height),
-                ).transformable(state = state)
+                ).transformable(state = state),
         ) {
             content()
         }
@@ -95,7 +102,7 @@ private fun TransformableBoxPreview() {
                 rotation = r
                 offset = o
             },
-        ) { 
+        ) {
             Text(
                 modifier = Modifier.align(Alignment.Center).background(color = Color.Cyan),
                 text = "$scale $rotation $offset",

@@ -40,7 +40,7 @@ interface DisplayRepository {
 
     suspend fun importDisplayToMyStorage(id: Long): ApiResponse<DisplayResponse.Posted>
 
-    suspend fun likeDisplay(id: Long): ApiResponse<String>
+    suspend fun likeDisplay(id: Long): ApiResponse<DisplayResponse.Liked>
 
     suspend fun publishDisplay(id: Long): ApiResponse<DisplayResponse.Published>
 
@@ -48,7 +48,5 @@ interface DisplayRepository {
 
     suspend fun deleteDisplayFromStorage(id: Long): ApiResponse<DisplayResponse.Deleted>
 
-    suspend fun unlikeDisplay(id: Long): ApiResponse<String>
-
-    suspend fun getLikedDisplays(): Flow<PagingData<DisplayResponse.Short>>
+    suspend fun unlikeDisplay(id: Long): ApiResponse<DisplayResponse.Liked>
 }

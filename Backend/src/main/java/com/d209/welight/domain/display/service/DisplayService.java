@@ -1,16 +1,12 @@
 package com.d209.welight.domain.display.service;
 
+import com.d209.welight.domain.display.dto.response.*;
 import com.d209.welight.domain.display.entity.*;
 import org.springframework.data.domain.Pageable;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCreateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
-import com.d209.welight.domain.display.dto.response.DisplayCommentResponse;
-import com.d209.welight.domain.display.dto.response.DisplayCreateResponse;
-import com.d209.welight.domain.display.dto.response.DisplayDetailResponse;
-import com.d209.welight.domain.display.dto.response.DisplayListResponse;
-import com.d209.welight.domain.display.dto.response.DisplayPostedToggleResponse;
 
 import java.util.List;
 
@@ -30,9 +26,6 @@ public interface DisplayService {
 
     // 디스플레이 복제
     DisplayCreateResponse duplicateDisplay(Long displayId, String userId);
-    void duplicateTexts(List<DisplayText> originalTexts, Display newDisplay);
-    void duplicateImages(List<DisplayImage> originalImages, Display newDisplay, String userId);
-    void duplicateBackground(DisplayBackground originalBackground, Display newDisplay);
 
     // 수정하는 디스플레이 정보 전송
     public DisplayCreateRequest getDisplayForEdit(Long displayId, String userId);
@@ -53,6 +46,8 @@ public interface DisplayService {
     // 디스플레이 좋아요
     void doLikeDisplay(String userId, long displayUid);
     void cancelLikeDisplay(String userId, long displayUid);
+    DisplayLikedListResponse getLikedDisplayList(String userId, Pageable pageable);
+
 
     // 디스플레이 댓글
     List<DisplayCommentResponse> getComments(String userId, long displayUid);

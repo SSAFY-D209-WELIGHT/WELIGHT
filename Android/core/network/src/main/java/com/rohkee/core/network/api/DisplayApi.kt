@@ -95,7 +95,7 @@ interface DisplayApi {
     @POST("display/{displayId}/like")
     suspend fun likeDisplay(
         @Path("displayId") displayId: Long,
-    ): Response<String>
+    ): Response<DisplayResponse.Liked>
 
     // PATCH
     // TODO : /display/{displayId}/comment
@@ -128,12 +128,5 @@ interface DisplayApi {
     @DELETE("display/{displayId}/like")
     suspend fun unlikeDisplay(
         @Path("displayId") displayId: Long,
-    ): Response<String>
-
-    // display/like
-    @GET("display/like")
-    suspend fun getLikeDisplay(
-        @Query("page") page: Int,
-        @Query("size") size: Int,
     ): Response<DisplayResponse.Liked>
 }
