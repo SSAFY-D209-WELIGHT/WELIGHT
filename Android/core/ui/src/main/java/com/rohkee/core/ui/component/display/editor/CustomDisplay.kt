@@ -81,36 +81,39 @@ fun CustomDisplay(
                 }.background(color = backgroundState.color),
     ) {
         // 이미지
-        TransformableBox(
-            scale = imageState.scale,
-            rotation = imageState.rotationDegree,
-            offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
-            onTap = onImageTapped,
-            onTransfrm =
-                { scale, rotation, offset ->
-                    onImageTransformed(
-                        imageState.copy(
-                            scale = scale,
-                            rotationDegree = rotation,
-                            offsetPercentX = offset.x,
-                            offsetPercentY = offset.y,
+        if(imageState.imageSource != null){
+
+            TransformableBox(
+                scale = imageState.scale,
+                rotation = imageState.rotationDegree,
+                offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
+                onTap = onImageTapped,
+                onTransfrm =
+                    { scale, rotation, offset ->
+                        onImageTransformed(
+                            imageState.copy(
+                                scale = scale,
+                                rotationDegree = rotation,
+                                offsetPercentX = offset.x,
+                                offsetPercentY = offset.y,
+                            ),
+                        )
+                    },
+            ) {
+                DisplayImage(
+                    modifier =
+                        Modifier.align(Alignment.Center).then(
+                            if (imageState.isSelected) {
+                                Modifier.dashedBorder(
+                                    shape = RectangleShape,
+                                )
+                            } else {
+                                Modifier
+                            },
                         ),
-                    )
-                },
-        ) {
-            DisplayImage(
-                modifier =
-                    Modifier.align(Alignment.Center).then(
-                        if (imageState.isSelected) {
-                            Modifier.dashedBorder(
-                                shape = RectangleShape,
-                            )
-                        } else {
-                            Modifier
-                        },
-                    ),
-                state = imageState,
-            )
+                    state = imageState,
+                )
+            }
         }
         TransformableBox(
             modifier = Modifier.padding(16.dp),
