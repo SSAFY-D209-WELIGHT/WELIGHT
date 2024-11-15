@@ -21,4 +21,15 @@ public interface UserSearchRepository extends ElasticsearchRepository<UserDocume
             "}" +
             "}")
     Page<UserDocument> findByUserIdContaining(String userId, Pageable pageable);
+
+
+    @Query("{" +
+            "\"bool\": {" +
+            "\"should\": [" +
+            "{\"wildcard\": {\"userNickname\": {\"value\": \"*?0*\"}}}," +
+            "{\"match\": {\"userNickname\": {\"query\": \"?0\", \"fuzziness\": \"AUTO\"}}}" +
+            "]" +
+            "}" +
+            "}")
+    Page<UserDocument> findByUserNicknameContaining(String userNickname, Pageable pageable);
 }

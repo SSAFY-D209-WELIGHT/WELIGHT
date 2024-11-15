@@ -22,12 +22,12 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
     private final UserSearchRepository userSearchRepository;
 
     @Override
-    public Page<DisplayDocument> search(String userId, String keyword, Pageable pageable) {
+    public Page<DisplayDocument> search(String userNickname, String keyword, Pageable pageable) {
         try {
             // userId로 검색하는 경우
-            if (userId != null && !userId.isEmpty()) {
+            if (userNickname != null && !userNickname.isEmpty()) {
                 // userId로 UserDocument 검색 - 퍼지 매칭 적용
-                Page<UserDocument> userResults = userSearchRepository.findByUserIdContaining(userId, pageable);
+                Page<UserDocument> userResults = userSearchRepository.findByUserNicknameContaining(userNickname, pageable);
                 if (userResults.isEmpty()) {
                     throw new NoSearchResultException("해당하는 결과가 없습니다.");
                 }

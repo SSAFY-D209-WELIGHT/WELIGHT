@@ -5,6 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface DisplaySearchService {
-    public Page<DisplayDocument> search(String userId, String keyword, Pageable pageable);
+    public Page<DisplayDocument> search(String userNickname, String keyword, Pageable pageable);
 
 }

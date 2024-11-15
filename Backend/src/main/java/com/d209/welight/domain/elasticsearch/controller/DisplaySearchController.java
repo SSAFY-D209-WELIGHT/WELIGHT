@@ -23,13 +23,13 @@ public class DisplaySearchController {
     @GetMapping
     @Operation(summary = "디스플레이 검색", description = "사용자 아이디, 디스플레이 이름, 태그를 활용하여 검색합니다.")
     public ResponseEntity<Page<DisplayDocument>> searchDisplays(
-            @RequestParam(required = false, defaultValue = "") String userId,
+            @RequestParam(required = false, defaultValue = "") String userNickname,
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(searchService.search(userId, keyword, pageable));
+        return ResponseEntity.ok(searchService.search(userNickname, keyword, pageable));
     }
 
 }
