@@ -118,6 +118,10 @@ class BoardViewModel @Inject constructor(
             }
     }
 
+    private fun refresh() {
+
+    }
+
     private var temp: Flow<PagingData<DisplayCardState>>? = null
 
     private fun toggleSearch() {

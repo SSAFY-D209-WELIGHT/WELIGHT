@@ -15,16 +15,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.rohkee.core.ui.component.appbar.TitleAppBar
 import com.rohkee.core.ui.component.storage.DisplayCard
@@ -61,6 +64,7 @@ fun BoardContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LoadedContent(
     modifier: Modifier = Modifier,
@@ -74,9 +78,11 @@ private fun LoadedContent(
             ) {
                 Icon(
                     modifier =
-                        Modifier.size(24.dp).clickable {
-                            onIntent(BoardIntent.ToggleSearch)
-                        },
+                        Modifier
+                            .size(24.dp)
+                            .clickable {
+                                onIntent(BoardIntent.ToggleSearch)
+                            },
                     imageVector = Icons.Filled.Search,
                     contentDescription = "검색",
                     tint = AppColor.OnBackground,
@@ -116,26 +122,34 @@ private fun LoadedContent(
 
         val boardItems = state.boards.collectAsLazyPagingItems()
 
-        LazyVerticalGrid(
+        PullToRefreshBox(
+            isRefreshing = boardItems.loadState.refresh is LoadState.Loading,
+            onRefresh = { boardItems.refresh() },
             modifier = Modifier.fillMaxSize(),
-            columns = GridCells.Fixed(3),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(
-                count = boardItems.itemCount,
-                key = { index -> boardItems[index]?.cardId ?: index },
-            ) { index ->
-                boardItems[index]?.let { board ->
-                    DisplayCard(
-                        modifier =
-                            Modifier
-                                .aspectRatio(0.5f)
-                                .clip(shape = RoundedCornerShape(4.dp)),
-                        state = board,
-                        onCardSelected = { onIntent(BoardIntent.SelectBoardItem(board.cardId)) },
-                    )
+            LazyVerticalGrid(
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
+                columns = GridCells.Fixed(3),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                items(
+                    count = boardItems.itemCount,
+                    key = { index -> boardItems[index]?.cardId ?: index },
+                ) { index ->
+                    boardItems[index]?.let { board ->
+                        DisplayCard(
+                            modifier =
+                                Modifier
+                                    .aspectRatio(0.5f)
+                                    .clip(shape = RoundedCornerShape(4.dp)),
+                            state = board,
+                            onCardSelected = { onIntent(BoardIntent.SelectBoardItem(board.cardId)) },
+                        )
+                    }
                 }
             }
         }
