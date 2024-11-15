@@ -56,8 +56,8 @@ fun LikeRecordScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                         state = rememberLazyGridState(), // 스크롤 상태 관리
                         contentPadding = PaddingValues(vertical = 8.dp), // 스크롤 여백
                     ) {
