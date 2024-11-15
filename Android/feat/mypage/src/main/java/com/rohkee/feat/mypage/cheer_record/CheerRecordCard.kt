@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.component.storage.DisplayCard
@@ -46,7 +47,7 @@ fun CheerRecordCard(
                 .padding(8.dp),
     ) {
         DisplayCard(
-            modifier = Modifier.aspectRatio(0.5f),
+            modifier = Modifier.aspectRatio(0.5f).clip(RoundedCornerShape(4.dp)),
             state = DisplayCardState(imageSource = state.thumbnailUrl),
         )
 

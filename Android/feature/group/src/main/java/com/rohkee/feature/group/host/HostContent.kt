@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.Preview
@@ -115,7 +116,11 @@ fun WaitingRoomContent(
                 pageCount = state.list.size,
                 pageRatio = 0.3f,
             ) { index ->
-                DisplayCard(state = state.list[index], onCardSelected = {})
+                DisplayCard(
+                    modifier = Modifier.clip(RoundedCornerShape(4.dp)),
+                    state = state.list[index],
+                    onCardSelected = {},
+                )
             }
         }
         Column(

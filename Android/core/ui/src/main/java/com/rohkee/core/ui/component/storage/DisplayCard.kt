@@ -5,12 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rohkee.core.ui.component.common.GradientImageLoader
@@ -27,48 +25,6 @@ data class DisplayCardState(
 )
 
 @Composable
-fun SmallDisplayCard(
-    modifier: Modifier = Modifier,
-    state: DisplayCardState,
-    onCardSelected: () -> Unit = {},
-) {
-    var imageState by remember { mutableStateOf<AsyncImagePainter.State>(AsyncImagePainter.State.Empty) }
-
-    Box(
-        modifier =
-        modifier
-            .fillMaxSize()
-            .clip(RoundedCornerShape(4.dp))
-            .clickable { onCardSelected() }
-            .background(color = AppColor.Surface),
-    ) {
-        AsyncImage(
-            modifier =
-            Modifier,
-            model = state.imageSource,
-            contentScale = ContentScale.Crop,
-            contentDescription = null,
-            onLoading = { imageState = it },
-            onSuccess = { imageState = it },
-            onError = { imageState = it },
-        )
-        when (imageState) {
-            is AsyncImagePainter.State.Success -> {}
-            else -> {
-                Box(
-                    modifier =
-                    Modifier.fillMaxSize().animateGradientBackground(
-                        startColor = AppColor.LoadLight,
-                        endColor = AppColor.LoadDark,
-                    ),
-                ) {
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun DisplayCard(
     modifier: Modifier = Modifier,
     state: DisplayCardState,
@@ -78,7 +34,6 @@ fun DisplayCard(
         modifier =
             modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(16.dp))
                 .clickable { onCardSelected() }
                 .background(color = AppColor.Surface),
         imageSource = state.imageSource,
