@@ -67,8 +67,8 @@ fun BottomTabSubNavigation(
                     BottomNavigationItemState(
                         route = MypageRoute,
                         label = "마이페이지",
-                        icon = painterResource(R.drawable.ic_group_unselected),
-                        selectedIcon = painterResource(R.drawable.ic_group_selected),
+                        icon = painterResource(R.drawable.ic_mypage_selected),
+                        selectedIcon = painterResource(R.drawable.ic_mypage_unselected),
                     ),
                 ),
             onSelected = { route ->
@@ -109,7 +109,9 @@ fun BottomTabSubNavigation(
             }
 
             composable<MypageRoute> {
-                MypageScreen()
+                MypageScreen(
+                    onNavigateToDisplayDetail = onNavigateToDisplayDetail,
+                )
             }
         }
     }

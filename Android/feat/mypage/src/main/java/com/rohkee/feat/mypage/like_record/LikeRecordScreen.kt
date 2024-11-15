@@ -12,7 +12,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,15 +23,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LikeRecordScreen(
     modifier: Modifier = Modifier,
     viewModel: LikeRecordViewModel = hiltViewModel(),
+    onNavigateToDisplayDetail: (displayId: Long) -> Unit = {},
 ) {
     val likedDisplaysState by viewModel.likedDisplaysState.collectAsStateWithLifecycle()
 
@@ -42,39 +47,46 @@ fun LikeRecordScreen(
             is LikedDisplaysState.Loaded -> {
                 val lazyPagingItems = state.displayListFlow.collectAsLazyPagingItems()
 
-                if (lazyPagingItems.itemCount == 0) {
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = "좋아요한 디스플레이가 없습니다",
-                        style = Pretendard.Medium24,
-                        color = AppColor.OnBackgroundTransparent,
-                    )
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        modifier =
+                PullToRefreshBox(
+                    isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading,
+                    onRefresh = { lazyPagingItems.refresh() },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (lazyPagingItems.itemCount == 0) {
+                        Text(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = "좋아요한 디스플레이가 없습니다",
+                            style = Pretendard.Medium24,
+                            color = AppColor.OnBackgroundTransparent,
+                        )
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        state = rememberLazyGridState(), // 스크롤 상태 관리
-                        contentPadding = PaddingValues(vertical = 8.dp), // 스크롤 여백
-                    ) {
-                        items(
-                            count = lazyPagingItems.itemCount,
-                            key = { index -> lazyPagingItems[index]?.cardId ?: index },
-                            contentType = { "image" },
-                        ) { index ->
-                            val item = lazyPagingItems[index]
-                            if (item != null) {
-                                DisplayCard(
-                                    modifier =
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            state = rememberLazyGridState(), // 스크롤 상태 관리
+                            contentPadding = PaddingValues(vertical = 8.dp), // 스크롤 여백
+                        ) {
+                            items(
+                                count = lazyPagingItems.itemCount,
+                                key = { index -> lazyPagingItems[index]?.cardId ?: index },
+                                contentType = { "image" },
+                            ) { index ->
+                                val item = lazyPagingItems[index]
+                                if (item != null) {
+                                    DisplayCard(
+                                        modifier =
                                         Modifier
                                             .aspectRatio(0.5f)
                                             .clip(RoundedCornerShape(4.dp)),
-                                    state = item,
-                                )
+                                        state = item,
+                                        onCardSelected = { onNavigateToDisplayDetail(item.cardId) },
+                                    )
+                                }
                             }
                         }
                     }

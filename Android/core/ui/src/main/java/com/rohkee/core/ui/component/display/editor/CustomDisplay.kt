@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
@@ -25,6 +26,7 @@ import com.rohkee.core.ui.component.common.TransformableBox
 import com.rohkee.core.ui.model.CustomColor
 import com.rohkee.core.ui.model.background
 import com.rohkee.core.ui.theme.pretendardFamily
+import com.rohkee.core.ui.util.dashedBorder
 import kotlinx.collections.immutable.persistentListOf
 
 @Immutable
@@ -79,27 +81,39 @@ fun CustomDisplay(
                 }.background(color = backgroundState.color),
     ) {
         // 이미지
-        TransformableBox(
-            scale = imageState.scale,
-            rotation = imageState.rotationDegree,
-            offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
-            onTap = onImageTapped,
-            onTransfrm =
-                { scale, rotation, offset ->
-                    onImageTransformed(
-                        imageState.copy(
-                            scale = scale,
-                            rotationDegree = rotation,
-                            offsetPercentX = offset.x,
-                            offsetPercentY = offset.y,
+        if(imageState.imageSource != null){
+
+            TransformableBox(
+                scale = imageState.scale,
+                rotation = imageState.rotationDegree,
+                offset = Offset(imageState.offsetPercentX, imageState.offsetPercentY),
+                onTap = onImageTapped,
+                onTransfrm =
+                    { scale, rotation, offset ->
+                        onImageTransformed(
+                            imageState.copy(
+                                scale = scale,
+                                rotationDegree = rotation,
+                                offsetPercentX = offset.x,
+                                offsetPercentY = offset.y,
+                            ),
+                        )
+                    },
+            ) {
+                DisplayImage(
+                    modifier =
+                        Modifier.align(Alignment.Center).then(
+                            if (imageState.isSelected) {
+                                Modifier.dashedBorder(
+                                    shape = RectangleShape,
+                                )
+                            } else {
+                                Modifier
+                            },
                         ),
-                    )
-                },
-        ) {
-            DisplayImage(
-                modifier = Modifier.align(Alignment.Center),
-                state = imageState,
-            )
+                    state = imageState,
+                )
+            }
         }
         TransformableBox(
             modifier = Modifier.padding(16.dp),
@@ -120,7 +134,16 @@ fun CustomDisplay(
                 },
         ) {
             DisplayText(
-                modifier = Modifier.align(Alignment.Center),
+                modifier =
+                    Modifier.align(Alignment.Center).then(
+                        if (textState.isSelected) {
+                            Modifier.dashedBorder(
+                                shape = RectangleShape,
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ),
                 editorTextState = textState,
             )
         }

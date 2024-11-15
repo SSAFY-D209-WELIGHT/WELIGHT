@@ -83,7 +83,12 @@ class EditorViewModel @Inject constructor(
     fun onIntent(intent: EditorIntent) {
         when (intent) {
             is EditorIntent.AttemptExitPage -> {
-                editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+                if (editorStateHolder.value.dialogState !is DialogState.Closed) {
+                    Log.d("TAG", "onIntent: ${editorStateHolder.value.dialogState}")
+                    editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+                } else {
+                    editorStateHolder.updateDialog(dialogState = DialogState.ExitAsking)
+                }
             }
 
             is EditorIntent.Save -> {
@@ -98,7 +103,7 @@ class EditorViewModel @Inject constructor(
                     editingState = EditingState.Image,
                 )
 
-            is EditorIntent.ImageObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Image)
+            is EditorIntent.ImageObject.Tapped -> editorStateHolder.selectImageObject()
 
             // TextObject
             is EditorIntent.TextObject.Transform ->
@@ -107,9 +112,9 @@ class EditorViewModel @Inject constructor(
                     editingState = EditingState.Text,
                 )
 
-            is EditorIntent.TextObject.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Text)
+            is EditorIntent.TextObject.Tapped -> editorStateHolder.selectTextObject()
 
-            is EditorIntent.Background.Tapped -> editorStateHolder.updateBottomBar(editingState = EditingState.Background)
+            is EditorIntent.Background.Tapped -> editorStateHolder.selectBackground()
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()

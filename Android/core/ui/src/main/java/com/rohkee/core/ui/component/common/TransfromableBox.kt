@@ -1,5 +1,6 @@
 package com.rohkee.core.ui.component.common
 
+import android.graphics.Matrix
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -53,31 +54,40 @@ fun TransformableBox(
 
         val state =
             rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-                onTransfrm.invoke(
-                    scale * zoomChange,
-                    rotation + rotationChange,
+                val newScale = scale * zoomChange
+                val newRotation = rotation + rotationChange
+                val rotationMatrix = Matrix()
+                rotationMatrix.setRotate(newRotation)
+                val offsetArray = floatArrayOf(offsetChange.x, offsetChange.y)
+                rotationMatrix.mapPoints(offsetArray)
+                val newOffset =
                     offset +
                         Offset(
-                            x = offsetChange.x / width,
-                            y = offsetChange.y / height,
-                        ),
+                            x = (offsetArray[0] / width) * newScale,
+                            y = (offsetArray[1] / height) * newScale,
+                        )
+
+                onTransfrm.invoke(
+                    newScale,
+                    newRotation,
+                    newOffset,
                 )
             }
 
         Box(
             modifier
                 .align(Alignment.Center)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = { onTap() },
-                    )
-                }.graphicsLayer(
+                .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
                     rotationZ = rotation,
                     translationX = (offset.x * width),
                     translationY = (offset.y * height),
-                ).transformable(state = state),
+                ).pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = { onTap() },
+                    )
+                }.transformable(state = state),
         ) {
             content()
         }
