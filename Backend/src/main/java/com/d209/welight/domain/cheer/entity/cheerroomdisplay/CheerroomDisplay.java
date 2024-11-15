@@ -5,6 +5,8 @@ import com.d209.welight.domain.display.entity.Display;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -25,4 +27,8 @@ public class CheerroomDisplay {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DISPLAY_UID")
     private Display display;
+
+    @Builder.Default
+    @Column(name = "USED_AT", nullable = false)
+    private LocalDateTime usedAt = LocalDateTime.now();
 } 
