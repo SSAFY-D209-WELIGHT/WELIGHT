@@ -3,6 +3,7 @@ package com.rohkee.core.network.api
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 import com.rohkee.core.network.model.PageResponse
+import com.rohkee.core.network.model.PageSearchResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -46,13 +47,13 @@ interface DisplayApi {
     ): Response<DisplayResponse.Editable>
 
     // /display/search
-    @GET("display/search")
+    @GET("elasticsearch")
     suspend fun searchDisplayList(
+        @Query("userId") userId: Long,
         @Query("keyword") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
-        @Query("sortType") sort: String,
-    ): Response<PageResponse<DisplayResponse.WithFavorite>>
+    ): Response<PageSearchResponse<DisplayResponse.Search>>
 
     // /display/like
     @GET("display/like")

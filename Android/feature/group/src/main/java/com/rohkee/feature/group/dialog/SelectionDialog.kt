@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,7 +77,10 @@ private fun LoadedContent(
         items(displayList.itemCount) { index ->
             displayList[index]?.let { item ->
                 DisplayCard(
-                    modifier = Modifier.aspectRatio(0.5f),
+                    modifier =
+                        Modifier
+                            .aspectRatio(0.5f)
+                            .clip(RoundedCornerShape(4.dp)),
                     state = item,
                     onCardSelected = { onIntent(SelectionDialogIntent.SelectDisplay(displayId = item.cardId)) },
                 )
@@ -83,7 +89,10 @@ private fun LoadedContent(
         if (displayList.loadState.append == LoadState.Loading) {
             item {
                 CircularProgressIndicator(
-                    modifier = Modifier.fillMaxWidth().wrapContentSize(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentSize(),
                 )
             }
         }
