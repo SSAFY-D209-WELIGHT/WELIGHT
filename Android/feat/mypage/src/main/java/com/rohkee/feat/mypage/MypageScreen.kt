@@ -1,6 +1,7 @@
 package com.rohkee.feat.mypage
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +67,7 @@ fun MypageScreen(
                 .background(Color.Black),
     ) {
         Box(
-            modifier = Modifier.height(144.dp).padding(16.dp),
+            modifier = Modifier.background(color = AppColor.Surface).height(144.dp).padding(16.dp),
             contentAlignment = Alignment.Center,
         ) {
             when (mypageUIState) {
@@ -82,7 +83,11 @@ fun MypageScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         GradientImageLoader(
-                            modifier = Modifier.size(80.dp).clip(shape = CircleShape),
+                            modifier =
+                                Modifier
+                                    .size(80.dp)
+                                    .clip(shape = CircleShape)
+                                    .border(2.dp, color = AppColor.OnSurface, shape = CircleShape),
                             imageSource = loaded.userProfileImg,
                         )
                         Text(
@@ -108,7 +113,10 @@ fun MypageScreen(
             containerColor = AppColor.Background,
             indicator = { tabPositions ->
                 if (selectedTab < tabPositions.size) {
-                    TabRowDefaults.SecondaryIndicator(Modifier.tabIndicatorOffset(tabPositions[selectedTab]), color = AppColor.OnSurface)
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = AppColor.OnSurface,
+                    )
                 }
             },
         ) {

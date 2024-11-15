@@ -31,7 +31,7 @@ fun CheerRecordContent(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = "응원내역이 없습니다.", style = Pretendard.Medium24, color = AppColor.OnBackgroundTransparent)
+                    Text(text = "응원내역이 없습니다", style = Pretendard.Medium24, color = AppColor.OnBackgroundTransparent)
                 }
             } else {
                 LazyColumn(
