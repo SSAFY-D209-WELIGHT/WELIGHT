@@ -53,14 +53,19 @@ fun TransformableBox(
 
         val state =
             rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-                onTransfrm.invoke(
-                    scale * zoomChange,
-                    rotation + rotationChange,
+                val newScale = scale * zoomChange
+                val newRotation = rotation + rotationChange
+                val newOffset =
                     offset +
                         Offset(
-                            x = offsetChange.x / width,
-                            y = offsetChange.y / height,
-                        ),
+                            x = (offsetChange.x / width) * newScale,
+                            y = (offsetChange.y / height) * newScale,
+                        )
+
+                onTransfrm.invoke(
+                    newScale,
+                    newRotation,
+                    newOffset,
                 )
             }
 
