@@ -34,6 +34,7 @@ import com.rohkee.core.ui.theme.Pretendard
 fun LikeRecordScreen(
     modifier: Modifier = Modifier,
     viewModel: LikeRecordViewModel = hiltViewModel(),
+    onNavigateToDisplayDetail: (displayId: Long) -> Unit = {},
 ) {
     val likedDisplaysState by viewModel.likedDisplaysState.collectAsStateWithLifecycle()
 
@@ -46,25 +47,25 @@ fun LikeRecordScreen(
             is LikedDisplaysState.Loaded -> {
                 val lazyPagingItems = state.displayListFlow.collectAsLazyPagingItems()
 
-                if (lazyPagingItems.itemCount == 0) {
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = "좋아요한 디스플레이가 없습니다",
-                        style = Pretendard.Medium24,
-                        color = AppColor.OnBackgroundTransparent,
-                    )
-                } else {
-                    PullToRefreshBox(
-                        isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading,
-                        onRefresh = { lazyPagingItems.refresh() },
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
+                PullToRefreshBox(
+                    isRefreshing = lazyPagingItems.loadState.refresh is LoadState.Loading,
+                    onRefresh = { lazyPagingItems.refresh() },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (lazyPagingItems.itemCount == 0) {
+                        Text(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = "좋아요한 디스플레이가 없습니다",
+                            style = Pretendard.Medium24,
+                            color = AppColor.OnBackgroundTransparent,
+                        )
+                    } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(3),
                             modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             state = rememberLazyGridState(), // 스크롤 상태 관리
@@ -79,10 +80,11 @@ fun LikeRecordScreen(
                                 if (item != null) {
                                     DisplayCard(
                                         modifier =
-                                            Modifier
-                                                .aspectRatio(0.5f)
-                                                .clip(RoundedCornerShape(4.dp)),
+                                        Modifier
+                                            .aspectRatio(0.5f)
+                                            .clip(RoundedCornerShape(4.dp)),
                                         state = item,
+                                        onCardSelected = { onNavigateToDisplayDetail(item.cardId) },
                                     )
                                 }
                             }

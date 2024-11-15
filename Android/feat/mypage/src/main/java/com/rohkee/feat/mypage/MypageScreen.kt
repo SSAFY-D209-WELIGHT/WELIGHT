@@ -55,6 +55,7 @@ sealed interface MypageUIState {
 fun MypageScreen(
     modifier: Modifier = Modifier,
     mypageViewModel: MypageViewModel = hiltViewModel(),
+    onNavigateToDisplayDetail: (displayId: Long) -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -147,7 +148,9 @@ fun MypageScreen(
         // Tab Content
         when (selectedTab) {
             0 -> CheerRecordScreen()
-            1 -> LikeRecordScreen()
+            1 -> LikeRecordScreen(
+                onNavigateToDisplayDetail = onNavigateToDisplayDetail
+            )
         }
     }
 }

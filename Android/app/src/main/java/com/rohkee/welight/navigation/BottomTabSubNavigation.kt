@@ -109,7 +109,9 @@ fun BottomTabSubNavigation(
             }
 
             composable<MypageRoute> {
-                MypageScreen()
+                MypageScreen(
+                    onNavigateToDisplayDetail = onNavigateToDisplayDetail,
+                )
             }
         }
     }
