@@ -1,6 +1,4 @@
 # main.py
-# from fastapi import FastAPI
-
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from rembg import remove
