@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CheerRecord(
-    @SerialName("participationData")
+    @SerialName("participationDate")
     val participationDate: String, // 참여 날짜
     @SerialName("cheerroomName")
     val cheerRoomName: String, // 공연명
