@@ -32,6 +32,8 @@ android {
 
 dependencies {
     implementation(project(":feat:login"))
+    implementation(project(":feat:mypage"))
+    implementation(project(":core:network"))
 
 //    implementation(libs.androidx.lifecycle.viewmodel.compose.v262)
 //    implementation(libs.androidx.core.ktx)

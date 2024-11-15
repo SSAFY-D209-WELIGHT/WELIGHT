@@ -14,6 +14,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rohkee.core.ui.component.common.BottomNavigationBar
 import com.rohkee.core.ui.component.common.BottomNavigationItemState
+import com.rohkee.feat.mypage.MypageRoute
+import com.rohkee.feat.mypage.MypageScreen
 import com.rohkee.feature.group.GroupRoute
 import com.rohkee.feature.group.GroupScreen
 import com.rohkee.feature.storage.StorageRoute
@@ -54,6 +56,12 @@ fun BottomTabSubNavigation(
 //                        icon = painterResource(R.drawable.ic_board_unselected),
 //                        selectedIcon = painterResource(R.drawable.ic_board_selected),
 //                    ),
+                    BottomNavigationItemState(
+                        route = MypageRoute,
+                        label = "마이페이지",
+                        icon = painterResource(R.drawable.ic_group_unselected),
+                        selectedIcon = painterResource(R.drawable.ic_group_selected),
+                    ),
                 ),
             onSelected = { route ->
                 navController.navigate(route) {
@@ -84,6 +92,10 @@ fun BottomTabSubNavigation(
                     onNavigateToGroupRoom = onNavigateToGroupRoom,
                     onNavigateToCreateGroupRoom = onNavigateToCreateGroupRoom,
                 )
+            }
+
+            composable<MypageRoute> {
+                MypageScreen()
             }
         }
     }

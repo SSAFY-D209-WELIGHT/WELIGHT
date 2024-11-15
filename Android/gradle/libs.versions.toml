@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.1"
+coilCompose = "2.0.0"
 converterGson = "2.9.0"
 googlePlayServicesAuth = "21.2.0"
 kotlin = "2.0.20"
@@ -23,6 +24,7 @@ lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.3"
 composeBom = "2024.10.00"
 lifecycleViewmodelCompose = "2.6.2"
+pagingCompose = "3.3.4"
 viewmodel-compose = "2.8.6"
 navigation-compose = "2.8.3"
 lifecycleRuntimeComposeAndroid = "2.8.6"
@@ -71,6 +73,10 @@ playServicesAuth = "21.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-lifecycle-viewmodel-compose-v262 = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+androidx-material3 = { module = "androidx.compose.material3:material3" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingCompose" }
+coil-compose-v200 = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
