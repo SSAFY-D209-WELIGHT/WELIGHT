@@ -20,6 +20,8 @@ import coil.compose.rememberImagePainter
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.model.UserResponse
 import com.rohkee.core.network.repository.UserRepository
+import com.rohkee.feat.mypage.cheer_record.CheerRecordScreen
+import com.rohkee.feat.mypage.like_record.LikeRecordScreen
 import kotlinx.coroutines.launch
 
 @Composable

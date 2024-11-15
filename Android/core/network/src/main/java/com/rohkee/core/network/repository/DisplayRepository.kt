@@ -2,7 +2,6 @@ package com.rohkee.core.network.repository
 
 import androidx.paging.PagingData
 import com.rohkee.core.network.ApiResponse
-import com.rohkee.core.network.model.Display
 import com.rohkee.core.network.model.DisplayRequest
 import com.rohkee.core.network.model.DisplayResponse
 import kotlinx.coroutines.flow.Flow

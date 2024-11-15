@@ -28,7 +28,7 @@ import com.rohkee.core.ui.util.animateGradientBackground
  */
 @Immutable
 data class DisplayCardState(
-    val cardId: Long,
+    val cardId: Long = 0,
     val imageSource: String? = null,
     val selected: Boolean = false,
 )
