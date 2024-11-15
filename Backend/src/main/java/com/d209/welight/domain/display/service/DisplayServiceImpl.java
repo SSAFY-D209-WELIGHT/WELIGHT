@@ -104,6 +104,7 @@ public class DisplayServiceImpl implements DisplayService {
             boolean isOwner = false;
             boolean isFavorite = false;
             boolean isLiked = false;
+            boolean isStored = false;
 
             // 제작자 정보 조회
             User creator = userRepository.findByUserUid(display.getCreatorUid())
@@ -113,7 +114,12 @@ public class DisplayServiceImpl implements DisplayService {
             if (request.getUserId() != null) {
                 Optional<User> currentUser = userRepository.findByUserId(request.getUserId());
                 if (currentUser.isPresent()) {
+
+                    // 제작자 인지
                     isOwner = display.getCreatorUid().equals(currentUser.get().getUserUid());
+
+                    // 저장되어 있는지
+                    isStored = displayStorageRepository.existsByUserAndDisplay(currentUser.get(), display);
 
                     // 즐겨찾기 여부 확인
                     isFavorite = displayStorageRepository.existsByUserAndDisplayAndIsFavoritesIsTrue(currentUser, display);
@@ -137,6 +143,7 @@ public class DisplayServiceImpl implements DisplayService {
                     .isOwner(isOwner)
                     .isFavorite(isFavorite)
                     .isLiked(isLiked)
+                    .isStored(isStored)
                     .likeCount(display.getDisplayLikeCount())
                     .downloadCount(display.getDisplayDownloadCount())
                     .commentCount(displayCommentRepository.countByDisplay(display))

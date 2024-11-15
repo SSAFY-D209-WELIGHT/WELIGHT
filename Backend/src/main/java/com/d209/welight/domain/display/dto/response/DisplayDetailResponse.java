@@ -22,6 +22,7 @@ public class DisplayDetailResponse implements Serializable {
     private boolean isOwner; // 소유 여부 (현재 사용자와 제작자의 uid 비교)
     private boolean isFavorite; // 즐겨찾기 여부
     private boolean isLiked; // 좋아요 여부
+    private boolean isStored; // 저장 여부
 
     @Builder.Default
     private Long likeCount = 0L; // 좋아요 수
