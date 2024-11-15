@@ -1,5 +1,6 @@
 package com.rohkee.core.ui.component.common
 
+import android.graphics.Matrix
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -55,11 +56,15 @@ fun TransformableBox(
             rememberTransformableState { zoomChange, offsetChange, rotationChange ->
                 val newScale = scale * zoomChange
                 val newRotation = rotation + rotationChange
+                val rotationMatrix = Matrix()
+                rotationMatrix.setRotate(newRotation)
+                val offsetArray = floatArrayOf(offsetChange.x, offsetChange.y)
+                rotationMatrix.mapPoints(offsetArray)
                 val newOffset =
                     offset +
                         Offset(
-                            x = (offsetChange.x / width) * newScale,
-                            y = (offsetChange.y / height) * newScale,
+                            x = (offsetArray[0] / width) * newScale,
+                            y = (offsetArray[1] / height) * newScale,
                         )
 
                 onTransfrm.invoke(
