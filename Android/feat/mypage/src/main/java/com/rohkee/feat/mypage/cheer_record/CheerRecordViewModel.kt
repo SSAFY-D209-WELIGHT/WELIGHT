@@ -1,10 +1,12 @@
 package com.rohkee.feat.mypage.cheer_record
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rohkee.core.network.repository.CheerRepository
 import com.rohkee.core.network.util.handle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +32,7 @@ class CheerRecordViewModel @Inject constructor(
                 onSuccess = { records ->
                     _cheerRecords.update {
                         if (records.isNullOrEmpty()) {
-                            CheerRecordUIState.Error("데이터가 없습니다.")
+                            CheerRecordUIState.Loaded(cheerRecords = persistentListOf())
                         } else {
                             CheerRecordUIState.Loaded(
                                 cheerRecords =
@@ -48,7 +50,8 @@ class CheerRecordViewModel @Inject constructor(
                         }
                     }
                 },
-                onError = { _, _ ->
+                onError = { _, message ->
+                    Log.d("TAG", "loadData: $message")
                     // TODO 에러 처리
                 },
             )
