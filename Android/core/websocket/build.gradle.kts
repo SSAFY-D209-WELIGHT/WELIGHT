@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(libs.socket.io.client)
+    implementation(libs.bundles.serialization)
     implementation(libs.json)
     implementation(libs.play.services.location)
 }

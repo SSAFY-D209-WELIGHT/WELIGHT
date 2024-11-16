@@ -2,6 +2,8 @@ package com.rohkee.core.websocket
 
 import io.socket.client.IO
 import io.socket.client.Socket
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Singleton
@@ -41,15 +43,53 @@ object WebSocketClient {
         }
     }
 
-    fun setupSocketEvents() {
-//        socket?.apply {
-//            on("error") { args -> handleError(args) }
-//            on("initInfo") { args -> handleInitInfo(args) }
-//            on("roomUpdate") { args -> handleRoomUpdate(args) }
-//            on("updateDisplay") { args -> handleUpdateDisplay(args) }
-//            on("roomClosed") { args -> handleRoomClosed(args) }
-//            on("roomList") { args -> handleRoomList(args) }
-//            on("chatUpdate") { args -> handleChat(args) }
-//        }
+    fun closeSocket() {
+        socket?.apply {
+            disconnect()
+            close()
+            socket = null
+        }
     }
+
+    fun setupSocketEvents() =
+        callbackFlow<SocketResponse> {
+            socket?.apply {
+                on(SocketEvent.On.ROOM_CREATE.name) { args ->
+                    deserialize<SocketResponse.RoomCreate>(args)
+                }
+                on(SocketEvent.On.ROOM_JOIN.name) { args ->
+                    deserialize<SocketResponse.RoomJoin>(args)
+                }
+                on(SocketEvent.On.ROOM_INFO_RECEIVE.name) { args ->
+                    deserialize<SocketResponse.RoomInfoReceive>(args)
+                }
+                on(SocketEvent.On.GROUP_SELECT.name) { args ->
+                    deserialize<SocketResponse.GroupSelect>(args)
+                }
+                on(SocketEvent.On.ROOM_DISPLAY_CHANGE.name) { args ->
+                    deserialize<SocketResponse.RoomDisplayChange>(args)
+                }
+                on(SocketEvent.On.CHEER_START.name) { args ->
+                    deserialize<SocketResponse.CheerStart>(args)
+                }
+                on(SocketEvent.On.CHEER_END.name) { args ->
+                    deserialize<SocketResponse.CheerEnd>(args)
+                }
+                on(SocketEvent.On.DISPLAY_CONTROL.name) { args ->
+                    deserialize<SocketResponse.DisplayControl>(args)
+                }
+                on(SocketEvent.On.ERROR.name) { args ->
+                    deserialize<SocketResponse.Error>(args)
+                }
+            }
+        }
 }
+
+private inline fun <reified T> deserialize(args: Array<Any>?): T? =
+    args?.firstOrNull()?.toString()?.let { msg ->
+        try {
+            Json.decodeFromString<T>(msg)
+        } catch (e: Exception) {
+            null
+        }
+    }

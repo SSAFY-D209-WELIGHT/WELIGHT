@@ -8,27 +8,25 @@ import MessageType
 import Room
 import RoomInfo
 import RoomUpdate
-import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import io.socket.client.IO
-import io.socket.client.Socket
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import org.json.JSONObject
-import javax.inject.Inject
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import dagger.hilt.android.lifecycle.HiltViewModel
+import io.socket.client.IO
+import io.socket.client.Socket
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.net.HttpURLConnection
-import java.net.URL
+import org.json.JSONObject
+import javax.inject.Inject
 
 @HiltViewModel
 class WebSocketClientViewModel @Inject constructor(
