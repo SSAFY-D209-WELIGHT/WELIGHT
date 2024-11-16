@@ -46,6 +46,7 @@ class SelectionDialogViewModel @Inject constructor(
                 emitEvent(
                     SelectionDialogEvent.SelectedDisplay(
                         intent.displayId,
+                        intent.thumbnailUrl,
                     ),
                 )
         }
@@ -92,6 +93,7 @@ sealed interface SelectionDialogIntent {
 
     data class SelectDisplay(
         val displayId: Long,
+        val thumbnailUrl: String,
     ) : SelectionDialogIntent
 }
 
@@ -100,5 +102,6 @@ sealed interface SelectionDialogEvent {
 
     data class SelectedDisplay(
         val displayId: Long,
+        val thumbnailUrl: String,
     ) : SelectionDialogEvent
 }

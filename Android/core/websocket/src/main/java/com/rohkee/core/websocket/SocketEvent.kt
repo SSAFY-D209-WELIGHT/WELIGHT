@@ -6,7 +6,7 @@ sealed interface SocketEvent {
     ) : SocketEvent {
         ROOM_CREATE("roomCreate"),
         ROOM_JOIN("roomJoin"),
-        ROOM_INFO_RECEIVE("roomInfoReceive"),
+        ROOM_INFO_RECEIVE("roomInfo"),
         ROOM_DISPLAY_CHANGE("roomDisplayChange"),
         GROUP_SELECT("groupSelect"),
         CHEER_START("cheerStart"),

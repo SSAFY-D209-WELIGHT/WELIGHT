@@ -6,7 +6,12 @@ import kotlinx.collections.immutable.PersistentList
 
 sealed interface HostState {
     @Immutable
-    data object Creation : HostState
+    data class Creation(
+        val title: String,
+        val description: String,
+        val list: PersistentList<DisplayCardState>,
+        val dialogState: DialogState,
+    ) : HostState
 
     @Immutable
     data class WaitingRoom(
@@ -15,5 +20,6 @@ sealed interface HostState {
         val list: PersistentList<DisplayCardState>,
         val effect: DisplayEffect,
         val doDetect: Boolean,
+        val dialogState: DialogState,
     ) : HostState
 }

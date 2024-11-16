@@ -2,6 +2,7 @@ package com.rohkee.core.websocket
 
 import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface SocketResponse {
     @Serializable
     data class RoomCreate(
@@ -13,7 +14,8 @@ sealed interface SocketResponse {
         val isOwner: Boolean,
         val clientCount: Int,
         val groupNumber: Int,
-        val createdAt: String,
+        val createdAt: Long,
+        val displays: List<Display.Group>
     ) : SocketResponse
 
     @Serializable
@@ -26,7 +28,8 @@ sealed interface SocketResponse {
         val isOwner: Boolean,
         val clientCount: Int,
         val groupNumber: Int,
-        val createdAt: String,
+        val createdAt: Long,
+        val displays: List<Display.Group>
     ) : SocketResponse
 
     @Serializable
@@ -69,6 +72,13 @@ sealed interface Display {
     data class Group(
         val displayId: Long,
     ) : Display
+
+    @Serializable
+    data class Control(
+        val displayId: Long,
+        val offset: Float,
+        val interval: Float,
+    )
 }
 
 @Serializable

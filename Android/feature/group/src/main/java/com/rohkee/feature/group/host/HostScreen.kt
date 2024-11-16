@@ -19,7 +19,6 @@ fun HostScreen(
     hostViewModel.hostEvent.collectWithLifecycle { event ->
         when (event) {
             HostEvent.ExitPage -> onPopBackStack()
-            HostEvent.ChooseDisplayForNewGroup -> TODO()
             is HostEvent.StartCheer -> onStartCheer(event.roomId)
         }
     }

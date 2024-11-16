@@ -2,10 +2,20 @@ package com.rohkee.feature.group.host
 
 sealed interface HostIntent {
     sealed interface Creation : HostIntent {
-        data class Confirm(
+        data class UpdateTitle(
             val title: String,
+        ) : Creation
+
+        data class UpdateDescription(
             val description: String,
         ) : Creation
+
+        data class CreateRoom(
+            val latitude: Double,
+            val longitude: Double,
+        ) : Creation
+
+        data object AddDisplay : Creation
 
         data object Cancel : Creation
     }

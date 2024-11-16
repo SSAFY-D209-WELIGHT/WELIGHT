@@ -1,5 +1,7 @@
 package com.rohkee.feature.group.host
 
+import android.Manifest
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,37 +9,48 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.location.LocationServices
 import com.rohkee.core.ui.component.appbar.ConfirmAppBar
 import com.rohkee.core.ui.component.appbar.GradientAppBar
 import com.rohkee.core.ui.component.common.ChipGroup
 import com.rohkee.core.ui.component.common.RoundedTextInput
 import com.rohkee.core.ui.component.group.GroupSizeChip
 import com.rohkee.core.ui.component.storage.DisplayCard
-import com.rohkee.core.ui.component.storage.InfiniteHorizontalPager
+import com.rohkee.core.ui.component.storage.DisplayCardState
+import com.rohkee.core.ui.component.storage.RatioHorizontalPager
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
+import com.rohkee.feature.group.dialog.DisplaySelectionDialog
+import com.rohkee.feature.group.util.MultiplePermissionHandler
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
@@ -56,12 +69,32 @@ enum class DisplayEffect(
     }
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 fun HostContent(
     modifier: Modifier = Modifier,
     state: HostState,
     onIntent: (HostIntent) -> Unit = {},
 ) {
+    if (state is HostState.Creation &&
+        state.dialogState is DialogState.SelectDisplay ||
+        state is HostState.WaitingRoom &&
+        state.dialogState is DialogState.SelectDisplay
+    ) {
+        DisplaySelectionDialog(
+            modifier = Modifier.fillMaxSize(),
+            onDismiss = { onIntent(HostIntent.Dialog.Cancel) },
+            onConfirm = { displayId, thumbnailUrl ->
+                onIntent(
+                    HostIntent.Dialog.SelectDisplay(
+                        displayId,
+                        thumbnailUrl,
+                    ),
+                )
+            },
+        )
+    }
+
     Scaffold(
         modifier = modifier,
     ) { innerPadding ->
@@ -69,15 +102,8 @@ fun HostContent(
             is HostState.Creation ->
                 CreationContent(
                     modifier = Modifier.padding(innerPadding),
-                    onClose = { onIntent(HostIntent.Creation.Cancel) },
-                    onConfirm = { title, description ->
-                        onIntent(
-                            HostIntent.Creation.Confirm(
-                                title,
-                                description,
-                            ),
-                        )
-                    },
+                    state = state,
+                    onIntent = onIntent,
                 )
 
             is HostState.WaitingRoom ->
@@ -110,18 +136,17 @@ fun WaitingRoomContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         GradientAppBar(onClick = { onIntent(HostIntent.Control.Exit) }) { }
-        Box(modifier = Modifier.weight(0.5f).fillMaxWidth()) {
-            InfiniteHorizontalPager(
+        Box(
+            modifier =
+                Modifier
+                    .weight(0.5f)
+                    .fillMaxWidth(),
+        ) {
+            DisplayList(
                 modifier = Modifier.fillMaxSize(),
-                pageCount = state.list.size,
-                pageRatio = 0.3f,
-            ) { index ->
-                DisplayCard(
-                    modifier = Modifier.clip(RoundedCornerShape(4.dp)),
-                    state = state.list[index],
-                    onCardSelected = {},
-                )
-            }
+                list = state.list,
+                onAdd = { onIntent(HostIntent.Control.AddDisplayGroup) },
+            )
         }
         Column(
             modifier =
@@ -132,7 +157,11 @@ fun WaitingRoomContent(
                     .padding(vertical = 16.dp),
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(text = "방 제목", style = Pretendard.Medium20, color = AppColor.OnSurface)
@@ -204,15 +233,35 @@ fun WaitingRoomContent(
     }
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 private fun CreationContent(
     modifier: Modifier,
-    onClose: () -> Unit = {},
-    onConfirm: (title: String, description: String) -> Unit = { _, _ -> },
+    state: HostState.Creation,
+    onIntent: (HostIntent) -> Unit,
 ) {
-    val (titleText, setTitleText) = remember { mutableStateOf("") }
-    val (descriptionText, setDescriptionText) = remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+
+    var latitude by remember { mutableStateOf(0.0) }
+    var longitude by remember { mutableStateOf(0.0) }
+
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    MultiplePermissionHandler(
+        permissions =
+            listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ),
+    ) { result ->
+        if (result.all { it.value }) {
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                latitude = it.latitude
+                longitude = it.longitude
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         delay(100)
@@ -223,15 +272,16 @@ private fun CreationContent(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(color = AppColor.BackgroundTransparent)
-                .imePadding(),
+                .background(color = AppColor.BackgroundTransparent),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ConfirmAppBar(
             modifier = Modifier.fillMaxWidth(),
-            onCloseClick = onClose,
+            onCloseClick = { onIntent(HostIntent.Creation.Cancel) },
             onConfirmClick = {
-                onConfirm(titleText, descriptionText)
+                onIntent(
+                    HostIntent.Creation.CreateRoom(latitude = latitude, longitude = longitude),
+                )
             },
         )
         RoundedTextInput(
@@ -241,11 +291,11 @@ private fun CreationContent(
                     .padding(16.dp)
                     .focusRequester(focusRequester),
             autofocus = true,
-            value = titleText,
+            value = state.title,
             hint = "제목", // TODO : string resource
-            isError = titleText.isEmpty(),
+            isError = state.title.isEmpty(),
             errorMessage = "제목을 입력해주세요.", // TODO : string resource,
-            onValueChange = { setTitleText(it) },
+            onValueChange = { onIntent(HostIntent.Creation.UpdateTitle(it)) },
         )
         RoundedTextInput(
             modifier =
@@ -253,12 +303,50 @@ private fun CreationContent(
                     .fillMaxWidth()
                     .padding(16.dp),
             autofocus = true,
-            value = descriptionText,
+            value = state.description,
             hint = "설명", // TODO : string resource
             isError = false,
             errorMessage = "",
-            onValueChange = { setDescriptionText(it) },
+            onValueChange = { onIntent(HostIntent.Creation.UpdateDescription(it)) },
         )
+        DisplayList(
+            modifier = Modifier.fillMaxSize(),
+            list = state.list,
+            onAdd = { onIntent(HostIntent.Creation.AddDisplay) },
+        )
+    }
+}
+
+@Composable
+private fun DisplayList(
+    modifier: Modifier = Modifier,
+    list: List<DisplayCardState>,
+    onAdd: () -> Unit,
+) {
+    RatioHorizontalPager(
+        modifier = modifier.fillMaxSize(),
+        pageCount = list.size + 1,
+        pageRatio = 0.3f,
+    ) { index ->
+        if (index == list.size) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .aspectRatio(0.5f)
+                        .background(color = AppColor.Surface, shape = RoundedCornerShape(4.dp))
+                        .clickable { onAdd() },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(imageVector = Icons.Default.AddCircle, contentDescription = "add")
+            }
+        } else {
+            DisplayCard(
+                modifier = Modifier.aspectRatio(0.5f).clip(RoundedCornerShape(4.dp)),
+                state = list[index],
+                onCardSelected = {},
+            )
+        }
     }
 }
 
@@ -274,6 +362,7 @@ private fun WaitingRoomContentPreview() {
                 list = persistentListOf(),
                 effect = DisplayEffect.NONE,
                 doDetect = false,
+                dialogState = DialogState.Closed,
             ),
         onIntent = {},
     )
@@ -282,5 +371,15 @@ private fun WaitingRoomContentPreview() {
 @Preview
 @Composable
 private fun CreationContentPreview() {
-    CreationContent(modifier = Modifier)
+    CreationContent(
+        modifier = Modifier,
+        state =
+            HostState.Creation(
+                title = "title",
+                description = "description",
+                list = persistentListOf(),
+                dialogState = DialogState.Closed
+            ),
+        onIntent = {},
+    )
 }

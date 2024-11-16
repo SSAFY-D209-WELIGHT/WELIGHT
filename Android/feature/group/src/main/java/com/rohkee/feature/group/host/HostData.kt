@@ -7,6 +7,7 @@ data class HostData(
     val roomId: Long = 0,
     val title: String = "",
     val description: String = "",
+    val clients: Int = 0,
     val list: List<GroupDisplayData> = emptyList(),
     val effect: DisplayEffect = DisplayEffect.NONE,
     val doDetect: Boolean = false,
@@ -28,9 +29,23 @@ data class HostData(
                         }.toPersistentList(),
                 effect = effect,
                 doDetect = doDetect,
+                dialogState = dialogState,
             )
         } else {
-            HostState.Creation
+            HostState.Creation(
+                title = title,
+                description = description,
+                list =
+                    list
+                        .map {
+                            DisplayCardState(
+                                cardId = it.displayId,
+                                imageSource = it.thumbnailUrl,
+                                selected = false,
+                            )
+                        }.toPersistentList(),
+                dialogState = dialogState,
+            )
         }
 }
 
@@ -42,5 +57,5 @@ data class GroupDisplayData(
 sealed interface DialogState {
     data object Closed : DialogState
 
-    data object ChooseDisplayForNewGroup : DialogState
+    data object SelectDisplay : DialogState
 }
