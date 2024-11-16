@@ -20,7 +20,7 @@ async def root():
 
 
 
-@app.post("/remove-background/")
+@app.post("/remove-background")
 async def remove_background(file: UploadFile = File(...)):
     try:
         # 파일을 PIL 이미지로 열기
