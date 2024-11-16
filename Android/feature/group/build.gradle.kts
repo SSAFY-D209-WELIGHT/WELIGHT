@@ -14,4 +14,5 @@ dependencies {
     implementation(libs.androidx.paging.compose.android)
     implementation(project(":core:network"))
     implementation(project(":core:ui"))
+    implementation(project(":core:websocket"))
 }

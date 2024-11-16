@@ -2,7 +2,6 @@
 agp = "8.7.1"
 coilCompose = "2.0.0"
 converterGson = "2.9.0"
-googlePlayServicesAuth = "21.2.0"
 kotlin = "2.0.20"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -18,6 +17,9 @@ kotlinStdlib = "2.0.21"
 kotlinxCoroutinesAndroid = "1.8.1"
 kotlinxSerializationCore = "1.5.1"
 kotlinxImmutableCollections = "0.3.5"
+
+# json
+json = "20210307"
 
 # compose
 lifecycleRuntimeKtx = "2.8.6"
@@ -54,6 +56,9 @@ material = "1.12.0"
 # s3
 awsAndroidSdkS3 = "2.73.0"
 
+# websocket
+socketIoClient = "2.1.0"
+
 # lottie
 lottie = "3.1.0"
 
@@ -68,8 +73,11 @@ material3Android = "1.3.1"
 lifecycleViewmodelKtx = "2.6.2"
 runtimeLivedata = "1.7.5"
 
-# oauth
+# play service
 playServicesAuth = "21.2.0"
+playServicesLocation = "21.3.0"
+androidxAppcompat = "1.7.0"
+googleMaterial = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -81,6 +89,9 @@ converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+# json
+json = { module = "org.json:json", version.ref = "json" }
 
 # gradle
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -115,8 +126,11 @@ accompanist-permissions = { group = "com.google.accompanist", name = "accompanis
 # datastore
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
 
-# network
+# play service
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+
+# network
 retrofit = { module = "com.squareup.retrofit2:retrofit", name = "retrofit", version.ref = "retrofit" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", name = "okhttp", version.ref = "okhttp" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
@@ -138,6 +152,8 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 aws-android-sdk-core = { module = "com.amazonaws:aws-android-sdk-core", version.ref = "awsAndroidSdkS3" }
 aws-android-sdk-s3 = { module = "com.amazonaws:aws-android-sdk-s3", version.ref = "awsAndroidSdkS3" }
 
+# websocket
+socket-io-client = { module = "io.socket:socket.io-client", version.ref = "socketIoClient" }
 
 # lottie
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
@@ -147,6 +163,8 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 
 # timber
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
 
 [bundles]
 network = ["retrofit", "okhttp-logging-interceptor", "gson", "kotlinx-serialization-json", "kotlinx-serialization-converter", "kotlinx-serialization-core"]
