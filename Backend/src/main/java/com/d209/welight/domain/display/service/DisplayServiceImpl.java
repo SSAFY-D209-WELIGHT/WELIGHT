@@ -395,44 +395,44 @@ public class DisplayServiceImpl implements DisplayService {
             throw new IllegalStateException("디스플레이를 삭제할 권한이 없습니다.");
         }
 
+        // 3. S3에서 이미지 파일들 삭제
         try {
-            // 3. S3에서 이미지 파일들 삭제
-            // 썸네일 삭제
             if (display.getDisplayThumbnailUrl() != null) {
                 s3Service.deleteS3(display.getDisplayThumbnailUrl());
             }
 
-            // 디스플레이 이미지들 삭제
-            display.getImages().forEach(image -> {
+            for (DisplayImage image : display.getImages()) {
                 if (image.getDisplayImgUrl() != null) {
-                    try {
-                        s3Service.deleteS3(image.getDisplayImgUrl());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    s3Service.deleteS3(image.getDisplayImgUrl());
                 }
-            });
+            }
+        } catch (Exception e) {
+            log.error("S3 파일 삭제 중 오류 발생: ", e);
+            throw new RuntimeException("S3 파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
 
-            // 4. 연관된 데이터 삭제
-            // 좋아요, 저장소, 태그, 이미지, 텍스트, 배경 삭제
+        // 4. 연관된 데이터 삭제
+        try {
             displayTagRepository.deleteByDisplay(display);
             displayImageRepository.deleteByDisplay(display);
             displayTextRepository.deleteByDisplay(display);
             displayBackgroundRepository.deleteByDisplay(display);
-            // 모든 사용자의 좋아요 삭제
-            displayLikeRepository.deleteAllByDisplay(display);
-            // 모든 사용자의 저장소 데이터 삭제
-            displayStorageRepository.deleteAllByDisplay(display);
-            // 댓글 삭제
-            displayCommentRepository.deleteAllByDisplay(display);
+            displayLikeRepository.deleteByDisplay(display);
+            displayStorageRepository.deleteByDisplay(display);
+            displayCommentRepository.deleteByDisplay(display);
+        } catch (Exception e) {
+            log.error("연관 데이터 삭제 중 오류 발생: ", e);
+            throw new RuntimeException("연관 데이터 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
 
-
-            // 5. 디스플레이 삭제
+        // 5. 디스플레이 삭제
+        try {
             displayRepository.delete(display);
             eventPublisher.publishEvent(new DisplayEvent("DELETE", display));
             log.info("디스플레이 삭제 완료: 디스플레이 ID {}", displayUid);
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다.");
+            log.error("디스플레이 삭제 중 오류 발생: ", e);
+            throw new RuntimeException("디스플레이 삭제 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 

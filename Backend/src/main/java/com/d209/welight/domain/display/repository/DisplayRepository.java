@@ -18,9 +18,10 @@ public interface DisplayRepository extends JpaRepository<Display, Long> {
     Optional<Display> findByDisplayThumbnailUrl(String defaultThumbnailUrl);
     Optional<Display> findByDisplayUid(Long displayUid);
     
-    // 게시 여부가 1인 디스플레이만 조회
+    // // 게시 여부가 1인 디스플레이만 조회
     Page<Display> findAllByDisplayIsPostedTrue(Pageable pageable);
 
+  
 
     @Query("SELECT d FROM Display d " +
             "JOIN DisplayStorage ds ON d = ds.display " +
