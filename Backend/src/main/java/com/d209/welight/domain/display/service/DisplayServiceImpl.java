@@ -159,8 +159,7 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
-    @Transactional
-    @Cacheable(value = "allDisplays", key = "#pageable")
+    @Cacheable(value = "allDisplays", key = "#pageable.pageNumber + '_' + #pageable.pageSize")
     @Override
     public DisplayListResponse getDisplayList(Pageable pageable) {
         try {
@@ -382,7 +381,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
+    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true, beforeInvocation = true)
     public void deleteDisplay(Long displayUid, String userId) {
         // 1. Display와 User 정보 확인
         Display display = displayRepository.findById(displayUid)
