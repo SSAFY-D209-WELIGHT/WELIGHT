@@ -65,14 +65,14 @@ public class CheerServiceImpl implements CheerService {
         // 위도/경도 유효성 검사
         Cheerroom.validateLocation(request.getLatitude(), request.getLongitude());
 
-        // 응원방 이름 중복 검사
-        List<Cheerroom> existingCheerrooms = cheerroomRepository.findAllByName(request.getCheerroomName());
-        boolean hasActiveCheerroom = existingCheerrooms.stream()
-                .anyMatch(cheerroom -> !cheerroom.isDone());
-
-        if (hasActiveCheerroom) {
-            throw new InvalidCheerDataException("이미 존재하는 응원방 이름입니다.");
-        }
+//        // 응원방 이름 중복 검사
+//        List<Cheerroom> existingCheerrooms = cheerroomRepository.findAllByName(request.getCheerroomName());
+//        boolean hasActiveCheerroom = existingCheerrooms.stream()
+//                .anyMatch(cheerroom -> !cheerroom.isDone());
+//
+//        if (hasActiveCheerroom) {
+//            throw new InvalidCheerDataException("이미 존재하는 응원방 이름입니다.");
+//        }
 
 
         // 응원방 생성
@@ -81,6 +81,7 @@ public class CheerServiceImpl implements CheerService {
                 .description(request.getCheerroomDescription())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
+                .number(request.getCheerroomNumber())
                 .isDone(false)
                 .createdAt(LocalDateTime.now())
                 .build();

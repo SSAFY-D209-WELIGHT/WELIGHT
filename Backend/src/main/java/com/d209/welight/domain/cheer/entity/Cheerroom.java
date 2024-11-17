@@ -57,6 +57,9 @@ public class Cheerroom {
     @Column(name = "CHEERROOM_CREATED_AT", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "CHEERROOM_NUMBER", nullable = false)
+    private Long number;
+
     @OneToMany(mappedBy = "cheerroom", cascade = CascadeType.ALL)
     @Builder.Default
     private List<CheerParticipation> participations = new ArrayList<>();

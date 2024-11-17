@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CheerroomResponse {
     private Long cheerroomUid;
+    private Long cheerroomNumber;
     private String cheerroomName;
     private String cheerroomDescription;
     private Double latitude;
@@ -17,9 +18,11 @@ public class CheerroomResponse {
     private LocalDateTime createdAt;
     private int participantCount;
 
+
     public static CheerroomResponse from(Cheerroom cheerroom, int participantCount) {
         return CheerroomResponse.builder()
                 .cheerroomUid(cheerroom.getId())
+                .cheerroomNumber(cheerroom.getNumber())
                 .cheerroomName(cheerroom.getName())
                 .cheerroomDescription(cheerroom.getDescription())
                 .latitude(cheerroom.getLatitude())
