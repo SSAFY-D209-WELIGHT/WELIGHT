@@ -23,4 +23,5 @@ public interface DisplayLikeRepository extends JpaRepository<DisplayLike, Displa
     // 사용자의 디스플레이 목록 조회
     Page<DisplayLike> findAllByUser(User user, Pageable pageable);
 
+    void deleteAllByDisplay(Display display);
 }

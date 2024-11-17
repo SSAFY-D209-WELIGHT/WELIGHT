@@ -15,4 +15,6 @@ public interface DisplayCommentRepository extends JpaRepository<DisplayComment, 
     void deleteByCommentUid(Long commentUid);
 
     long countByDisplay(Display display); // 디스플레이에 대한 댓글 수 조회
+
+    void deleteAllByDisplay(Display display);
 }

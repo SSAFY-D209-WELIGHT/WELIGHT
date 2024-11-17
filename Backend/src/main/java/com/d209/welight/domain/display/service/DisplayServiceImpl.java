@@ -159,6 +159,7 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
+    @Transactional
     @Cacheable(value = "allDisplays", key = "#pageable")
     @Override
     public DisplayListResponse getDisplayList(Pageable pageable) {
@@ -415,12 +416,17 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 4. 연관된 데이터 삭제
             // 좋아요, 저장소, 태그, 이미지, 텍스트, 배경 삭제
-            displayLikeRepository.deleteByUserAndDisplay(user, display);
-            displayStorageRepository.deleteByUserAndDisplay(user, display);
             displayTagRepository.deleteByDisplay(display);
             displayImageRepository.deleteByDisplay(display);
             displayTextRepository.deleteByDisplay(display);
             displayBackgroundRepository.deleteByDisplay(display);
+            // 모든 사용자의 좋아요 삭제
+            displayLikeRepository.deleteAllByDisplay(display);
+            // 모든 사용자의 저장소 데이터 삭제
+            displayStorageRepository.deleteAllByDisplay(display);
+            // 댓글 삭제
+            displayCommentRepository.deleteAllByDisplay(display);
+
 
             // 5. 디스플레이 삭제
             displayRepository.delete(display);

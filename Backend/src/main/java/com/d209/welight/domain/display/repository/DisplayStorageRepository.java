@@ -18,4 +18,6 @@ public interface DisplayStorageRepository extends JpaRepository<DisplayStorage, 
 
     Optional<DisplayStorage> findByUserAndDisplay(User user, Display display);
     void deleteByUserAndDisplay(User user, Display display);
+
+    void deleteAllByDisplay(Display display);
 }
