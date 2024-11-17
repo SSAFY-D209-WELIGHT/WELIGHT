@@ -12,6 +12,7 @@ import com.rohkee.core.websocket.User
 import com.rohkee.core.websocket.WebSocketClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,6 +51,8 @@ class HostViewModel @Inject constructor(
 
     val hostEvent = MutableSharedFlow<HostEvent>()
 
+    private var callback: Job? = null
+
     fun onIntent(intent: HostIntent) {
         when (intent) {
             HostIntent.Control.AddDisplayGroup -> hostStateHolder.update { it.copy(dialogState = DialogState.SelectDisplay) }
@@ -61,6 +64,7 @@ class HostViewModel @Inject constructor(
 
             HostIntent.Control.Exit -> emitEvent(HostEvent.ExitPage)
             HostIntent.Control.StartCheer -> emitEvent(HostEvent.StartCheer(hostStateHolder.value.roomId))
+
             HostIntent.Creation.Cancel -> emitEvent(HostEvent.ExitPage)
             is HostIntent.Creation.CreateRoom ->
                 createRoom(
@@ -91,26 +95,30 @@ class HostViewModel @Inject constructor(
     }
 
     private suspend fun initialize() {
+
         webSocketClient.initializeSocket(
             onConnect = {
                 Log.d("TAG", "initialize: connected")
+                callback?.cancel()
+                callback =
+                    viewModelScope.launch {
+                        webSocketClient.socketEventCallbacks().collect {
+                            Log.d("TAG", "initialize: $it")
+                            handleResponse(it)
+                        }
+                    }
             },
             onDisconnect = {
                 // TODO : 연결 종료
+                callback?.cancel()
                 emitEvent(HostEvent.ExitPage)
             },
             onConnectionError = {
                 // TODO : 연결 에러
+                callback?.cancel()
                 emitEvent(HostEvent.ExitPage)
             },
         )
-
-        viewModelScope.launch {
-            webSocketClient.socketEventCallbacks().collect {
-                Log.d("TAG", "initialize: $it")
-                handleResponse(it)
-            }
-        }
     }
 
     private fun handleResponse(response: SocketResponse) {
@@ -175,14 +183,16 @@ class HostViewModel @Inject constructor(
                             displayId,
                             thumbnailUrl,
                         ),
-                dialogState = DialogState.Closed
+                dialogState = DialogState.Closed,
             )
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        webSocketClient.emit(SocketRequest.CloseRoom(hostStateHolder.value.roomId))
+        if (hostState.value is HostState.WaitingRoom) {
+            webSocketClient.emit(SocketRequest.CloseRoom(hostStateHolder.value.roomId))
+        }
         webSocketClient.closeSocket()
     }
 }

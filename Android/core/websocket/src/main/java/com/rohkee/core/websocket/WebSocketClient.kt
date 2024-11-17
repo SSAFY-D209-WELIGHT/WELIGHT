@@ -50,47 +50,46 @@ object WebSocketClient {
     fun socketEventCallbacks() =
         callbackFlow<SocketResponse> {
             socket?.apply {
-                on(SocketEvent.On.ROOM_CREATE.name) { args ->
-                    deserialize<SocketResponse.RoomCreate>(args)
+                on(SocketEvent.On.ROOM_CREATE.event) { args ->
+                    deserialize<SocketResponse.RoomCreate>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.ROOM_JOIN.name) { args ->
-                    deserialize<SocketResponse.RoomJoin>(args)
+                on(SocketEvent.On.ROOM_JOIN.event) { args ->
+                    deserialize<SocketResponse.RoomJoin>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.ROOM_INFO_RECEIVE.name) { args ->
-                    deserialize<SocketResponse.RoomInfo>(args)
+                on(SocketEvent.On.ROOM_INFO_RECEIVE.event) { args ->
+                    deserialize<SocketResponse.RoomInfo>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.GROUP_SELECT.name) { args ->
-                    deserialize<SocketResponse.GroupChange>(args)
+                on(SocketEvent.On.GROUP_SELECT.event) { args ->
+                    deserialize<SocketResponse.GroupChange>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.ROOM_DISPLAY_CHANGE.name) { args ->
-                    deserialize<SocketResponse.RoomDisplayChange>(args)
+                on(SocketEvent.On.ROOM_DISPLAY_CHANGE.event) { args ->
+                    deserialize<SocketResponse.RoomDisplayChange>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.CHEER_START.name) { args ->
-                    deserialize<SocketResponse.CheerStart>(args)
+                on(SocketEvent.On.CHEER_START.event) { args ->
+                    deserialize<SocketResponse.CheerStart>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.CHEER_END.name) { args ->
-                    deserialize<SocketResponse.CheerEnd>(args)
+                on(SocketEvent.On.CHEER_END.event) { args ->
+                    deserialize<SocketResponse.CheerEnd>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.ROOM_CLOSE.name) { args ->
-                    deserialize<SocketResponse.RoomClose>(args)
+                on(SocketEvent.On.ROOM_CLOSE.event) { args ->
+                    deserialize<SocketResponse.RoomClose>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.DISPLAY_CONTROL.name) { args ->
-                    deserialize<SocketResponse.DisplayControl>(args)
+                on(SocketEvent.On.DISPLAY_CONTROL.event) { args ->
+                    deserialize<SocketResponse.DisplayControl>(args)?.let { trySend(it) }
                 }
-                on(SocketEvent.On.ERROR.name) { args ->
-                    deserialize<SocketResponse.Error>(args)
+                on(SocketEvent.On.ERROR.event) { args ->
+                    deserialize<SocketResponse.Error>(args)?.let { trySend(it) }
                 }
             }
 
             awaitClose {
-                closeSocket()
             }
         }
 
     fun emit(request: SocketRequest) {
         val jsonObject = JSONObject(Json.encodeToString(request))
         jsonObject.remove("type") // 불필요한 type 키 제거
-        Log.d("TAG", "emit: ${jsonObject}")
+        Log.d("TAG", "emit: $jsonObject")
         socket?.emit(request.name(), jsonObject)
     }
 
@@ -108,6 +107,7 @@ private inline fun <reified T> deserialize(args: Array<Any>?): T? =
         try {
             Json.decodeFromString<T>(msg)
         } catch (e: Exception) {
+            Log.d("TAG", "deserialize: ${e.stackTrace}")
             null
         }
     }

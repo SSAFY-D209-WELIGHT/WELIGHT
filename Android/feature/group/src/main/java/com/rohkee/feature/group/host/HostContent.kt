@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -136,7 +136,10 @@ fun WaitingRoomContent(
                 .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        GradientAppBar(modifier = Modifier.fillMaxWidth(), onClick = { onIntent(HostIntent.Control.Exit) }) { }
+        GradientAppBar(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onIntent(HostIntent.Control.Exit) },
+        ) { }
         Box(
             modifier =
                 Modifier
@@ -165,15 +168,27 @@ fun WaitingRoomContent(
                         .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(text = "방 제목", style = Pretendard.Medium20, color = AppColor.OnSurface)
+                Text(
+                    text = "방 제목",
+                    style = Pretendard.Regular14,
+                    color = AppColor.OnBackgroundTransparent,
+                )
                 Text(text = state.title, style = Pretendard.Regular16, color = AppColor.OnSurface)
-                Text(text = "방 설명", style = Pretendard.Medium20, color = AppColor.OnSurface)
+                Text(
+                    text = "방 설명",
+                    style = Pretendard.Regular14,
+                    color = AppColor.OnBackgroundTransparent,
+                )
                 Text(
                     text = state.description,
                     style = Pretendard.Regular16,
                     color = AppColor.OnSurface,
                 )
-                Text(text = "효과", style = Pretendard.Medium20, color = AppColor.OnSurface)
+                Text(
+                    text = "효과",
+                    style = Pretendard.Regular14,
+                    color = AppColor.OnBackgroundTransparent,
+                )
                 ChipGroup(
                     list = options,
                     selected = selected.text,
@@ -182,29 +197,35 @@ fun WaitingRoomContent(
                     setSelected(effect)
                     onIntent(HostIntent.Control.ChangeEffect(effect))
                 }
+                Text(
+                    text = "효과간격",
+                    style = Pretendard.Regular14,
+                    color = AppColor.OnBackgroundTransparent,
+                )
+                Row(
+                    modifier = Modifier.wrapContentHeight(),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(text = "음원 감지", style = Pretendard.Medium16, color = AppColor.OnSurface)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Switch(
+                        modifier = Modifier.height(24.dp),
+                        checked = checked,
+                        onCheckedChange = setChecked,
+                        colors =
+                            SwitchDefaults.colors().copy(
+                                checkedThumbColor = AppColor.OnConvex,
+                                checkedTrackColor = AppColor.Convex,
+                                checkedBorderColor = AppColor.OnConvex,
+                                uncheckedThumbColor = AppColor.Surface,
+                                uncheckedTrackColor = AppColor.Inactive,
+                                uncheckedBorderColor = AppColor.Surface,
+                            ),
+                    )
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
-            HorizontalDivider(color = AppColor.OnSurface)
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = "음원 감지", style = Pretendard.Medium20, color = AppColor.OnSurface)
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = checked,
-                    onCheckedChange = setChecked,
-                    colors =
-                        SwitchDefaults.colors().copy(
-                            checkedThumbColor = AppColor.OnConvex,
-                            checkedTrackColor = AppColor.Convex,
-                            checkedBorderColor = AppColor.OnConvex,
-                            uncheckedThumbColor = AppColor.Surface,
-                            uncheckedTrackColor = AppColor.Inactive,
-                            uncheckedBorderColor = AppColor.Surface,
-                        ),
-                )
-            }
+
             Box(
                 modifier =
                     Modifier
@@ -226,7 +247,7 @@ fun WaitingRoomContent(
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     GroupSizeChip(
-                        number = 0,
+                        number = state.clients,
                     )
                 }
             }
@@ -356,7 +377,11 @@ private fun DisplayList(
                         .clickable { onAdd() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(modifier = Modifier.size(32.dp), imageVector = Icons.Default.AddCircle, contentDescription = "add")
+                Icon(
+                    modifier = Modifier.size(32.dp),
+                    imageVector = Icons.Default.AddCircle,
+                    contentDescription = "add",
+                )
             }
         } else {
             DisplayCard(
@@ -378,6 +403,7 @@ private fun WaitingRoomContentPreview() {
                 title = "title",
                 description = "description",
                 list = persistentListOf(),
+                clients = 15,
                 effect = DisplayEffect.NONE,
                 doDetect = false,
                 dialogState = DialogState.Closed,

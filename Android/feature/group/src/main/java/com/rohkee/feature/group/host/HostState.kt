@@ -18,6 +18,7 @@ sealed interface HostState {
         val title: String,
         val description: String,
         val list: PersistentList<DisplayCardState>,
+        val clients: Int,
         val effect: DisplayEffect,
         val doDetect: Boolean,
         val dialogState: DialogState,

@@ -27,6 +27,7 @@ data class HostData(
                                 selected = false,
                             )
                         }.toPersistentList(),
+                clients = clients,
                 effect = effect,
                 doDetect = doDetect,
                 dialogState = dialogState,
@@ -58,4 +59,10 @@ sealed interface DialogState {
     data object Closed : DialogState
 
     data object SelectDisplay : DialogState
+
+    data class StartCheer(
+        val displayId: Long,
+        val offset: Float,
+        val interval: Float,
+    ) : DialogState
 }
