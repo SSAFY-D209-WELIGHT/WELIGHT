@@ -18,14 +18,14 @@ public interface CheerService {
     public List<ParticipantsResponse> getParticipants(Long cheerId);
 
     public void delegateLeader(long roomId, User currentLeader, User newLeader);
-    public void endCheering(User user, long cheerId);
+    public void endCheering(User user, long cheerNumber);
 
     /* 기록 */
     public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest);
     public void deleteRecords(User user, long roomId);
 
-    public void enterCheerroom(String userId, Long cheerroomId);
-    public void leaveCheerroom(String userId, Long cheerroomId);
+    public void enterCheerroom(String cheerNumber, Long cheerroomId);
+    public void leaveCheerroom(String cheerNumber, Long cheerroomId);
     public List<CheerHistoryResponse> getUserCheerHistory(String userId);
     public CheerHistoryDetailResponse getCheerHistoryDetail(String userId, Long cheerId);
 

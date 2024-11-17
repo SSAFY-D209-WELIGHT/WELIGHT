@@ -75,12 +75,12 @@ public class CheerController {
         return ResponseEntity.ok().body(participantsResponseList);
     }
 
-    @PatchMapping("/{cheerId}/end")
+    @PatchMapping("/{cheerNumber}/end")
     @Operation(summary = "응원 종료 (방장)")
     public ResponseEntity<String> endCheering(Authentication authentication,
-                                            @PathVariable(name="cheerId") long cheerId) {
+                                            @PathVariable(name="cheerNumber") long cheerNumber) {
         User user = userService.findByUserId(authentication.getName());
-        cheerService.endCheering(user, cheerId);
+        cheerService.endCheering(user, cheerNumber);
         return ResponseEntity.ok("응원 종료 성공");
     }
 
@@ -104,24 +104,24 @@ public class CheerController {
         return ResponseEntity.ok("응원 기록 삭제 완료");
     }
 
-    @PostMapping("/{cheerId}/enter")
+    @PostMapping("/{cheerNumber}/enter")
     @Operation(summary = "응원방 입장", description = "응원방에 입장합니다.")
     public ResponseEntity<String> enterCheerroom(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long cheerId) {
-        cheerService.enterCheerroom(userDetails.getUsername(), cheerId);
+            @PathVariable Long cheerNumber) {
+        cheerService.enterCheerroom(userDetails.getUsername(), cheerNumber);
         return ResponseEntity.ok(String.format("응원방 '%d'에 사용자 '%s'가 입장합니다.",
-                cheerId, userDetails.getUsername()));
+                cheerNumber, userDetails.getUsername()));
     }
 
-    @PatchMapping("/{cheerId}/leave")
+    @PatchMapping("/{cheerNumber}/leave")
     @Operation(summary = "응원방 나가기", description = "응원방에서 나갑니다.")
     public ResponseEntity<String> leaveCheerroom(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long cheerId) {
-        cheerService.leaveCheerroom(userDetails.getUsername(), cheerId);
+            @PathVariable Long cheerNumber) {
+        cheerService.leaveCheerroom(userDetails.getUsername(), cheerNumber);
         return ResponseEntity.ok(String.format("응원방 '%d'에 사용자 '%s'가 퇴장합니다.",
-                cheerId, userDetails.getUsername()));
+                cheerNumber, userDetails.getUsername()));
     }
 
     @GetMapping("/records")

@@ -8,14 +8,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {
-    List<Cheerroom> findByIsDoneFalse();
-    List<Cheerroom> findByLatitudeBetweenAndLongitudeBetween(
-            BigDecimal latStart, BigDecimal latEnd,
-            BigDecimal longStart, BigDecimal longEnd
-    );
+
     @Query("SELECT DISTINCT c FROM Cheerroom c " +
             "WHERE c.isDone = false AND " +
             "(6371 * acos(cos(radians(:latitude)) * cos(radians(c.latitude)) * " +
@@ -25,5 +22,5 @@ public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {
                              @Param("longitude") Double longitude,
                              @Param("upToKm") Double upToKm);
 
-    List<Cheerroom> findAllByName(String cheerroomName);
+    Optional<Cheerroom> findByNumber(Long cheerroomNumber);
 }

@@ -172,14 +172,14 @@ public class CheerServiceImpl implements CheerService {
     }
 
     @Override
-    public void endCheering(User user, long cheerId) {
-        log.info("응원방 종료 처리 시작 - 사용자ID={}, 응원방ID={}", user.getUserId(), cheerId);
+    public void endCheering(User user, long cheerNumber) {
+        log.info("응원방 종료 처리 시작 - 사용자ID={}, 응원방번호={}", user.getUserId(), cheerNumber);
 
-        Cheerroom cheerroom = cheerroomRepository.findById(cheerId)
+        Cheerroom cheerroom = cheerroomRepository.findByNumber(cheerNumber)
                 .orElseThrow(() -> new CheerNotFoundException("존재하지 않는 응원방입니다."));
 
         CheerParticipation participation = cheerParticipationRepository
-                .findByUserAndCheerroomId(user, cheerId)
+                .findByUserAndCheerroomNumber(user, cheerNumber)
                 .orElseThrow(() -> new CheerNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
 
         if (!participation.isOwner()) {
@@ -189,7 +189,7 @@ public class CheerServiceImpl implements CheerService {
         // is_done 값 true로 업데이트
         cheerroom.setDone(true);
         cheerParticipationRepository.save(participation);
-        log.info("응원방 종료 처리 완료 - 응원방ID={}", cheerId);
+        log.info("응원방 종료 처리 완료 - 응원방번호={}", cheerNumber);
 
         // cheerroom_display 업데이트 -> 응원방 디스플레이 선택저장 API
     }
@@ -228,14 +228,15 @@ public class CheerServiceImpl implements CheerService {
         log.info("응원 기록 삭제 완료 - 사용자ID={}, 응원방ID={}", user.getUserId(), roomId);
     }
 
-    public void enterCheerroom(String userId, Long cheerroomId) {
-        log.info("응원방 입장 시작 - 사용자ID={}, 응원방ID={}", userId, cheerroomId);
+    public void enterCheerroom(String userId, Long cheeroomNumber) {
+        log.info("응원방 입장 시작 - 사용자ID={}, 응원방번호={}", userId, cheeroomNumber);
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
-        Cheerroom cheerroom = cheerroomRepository.findById(cheerroomId)
+        Cheerroom cheerroom = cheerroomRepository.findByNumber(cheeroomNumber)
                 .orElseThrow(() -> new CheerNotFoundException("응원방을 찾을 수 없습니다."));
 
+        Long cheerroomId = cheerroom.getId();
 
         CheerParticipationId participationId = new CheerParticipationId(user.getUserUid(), cheerroomId);
 
@@ -244,7 +245,7 @@ public class CheerServiceImpl implements CheerService {
                 .orElse(null);
 
         if (participation == null) {
-            log.debug("신규 참여자 입장 - 사용자ID={}, 응원방ID={}", userId, cheerroomId);
+            log.debug("신규 참여자 입장 - 사용자ID={}, 응원방번호={}", userId, cheeroomNumber);
             // 새로운 참여자
             participation = CheerParticipation.createNewParticipation(user, cheerroom, false);
             participation.setEntryCount(1);
@@ -254,17 +255,22 @@ public class CheerServiceImpl implements CheerService {
         }
 
         cheerParticipationRepository.save(participation);
-        log.info("응원방 입장 완료 - userId: {}, cheerroomId: {}, entryCount: {}",
-                userId, cheerroomId, participation.getEntryCount());
+        log.info("응원방 입장 완료 - userId: {}, cheerroomNumber: {}, entryCount: {}",
+                userId, cheeroomNumber, participation.getEntryCount());
     }
 
     @Override
     @Transactional
-    public void leaveCheerroom(String userId, Long cheerroomId) {
-        log.info("응원방 퇴장 처리 시작 - 사용자ID={}, 응원방ID={}", userId, cheerroomId);
+    public void leaveCheerroom(String userId, Long cheeroomNumber) {
+        log.info("응원방 퇴장 처리 시작 - 사용자ID={}, 응원방번호={}", userId, cheeroomNumber);
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+
+        Cheerroom cheerroom = cheerroomRepository.findByNumber(cheeroomNumber)
+                .orElseThrow(() -> new CheerNotFoundException("응원방을 찾을 수 없습니다."));
+
+        Long cheerroomId = cheerroom.getId();
 
         CheerParticipationId participationId = new CheerParticipationId(user.getUserUid(), cheerroomId);
 
@@ -276,9 +282,9 @@ public class CheerServiceImpl implements CheerService {
         LocalDateTime exitTime = LocalDateTime.now();
 
         if (participation.isOwner()) {
-            log.debug("방장 퇴장 처리 시작 - 응원방ID={}", cheerroomId);
+            log.debug("방장 퇴장 처리 시작 - 응원방번호={}", cheeroomNumber);
             // 방장이 나가는 경우: 응원방 종료 및 모든 참여자 퇴장 처리
-            Cheerroom cheerroom = participation.getCheerroom();
+            cheerroom = participation.getCheerroom();
             cheerroom.setDone(true);
             cheerroomRepository.save(cheerroom);
 
@@ -292,13 +298,13 @@ public class CheerServiceImpl implements CheerService {
                         participation.getUser().getUserId(), newTotal);
             }
 
-            log.info("방장 퇴장으로 인한 응원방 종료 처리 완료 - 응원방ID={}, 퇴장처리된 참여자 수={}",
-                    cheerroomId, activeParticipations.size());
+            log.info("방장 퇴장으로 인한 응원방 종료 처리 완료 - 응원방번호={}, 퇴장처리된 참여자 수={}",
+                    cheeroomNumber, activeParticipations.size());
         } else {
             // 방장이 아닌 경우: 본인만 퇴장 처리
             LocalTime newTotal = participation.updateExitInfo(exitTime);
             cheerParticipationRepository.save(participation);
-            log.info("참여자 퇴장 처리 완료 - userId: {}, cheerroomId: {}", userId, cheerroomId);
+            log.info("참여자 퇴장 처리 완료 - userId: {}, cheerroomNumber: {}", userId, cheeroomNumber);
             log.debug("퇴장 정보 업데이트 - userId: {}, totalDuration: {}",
                     participation.getUser().getUserId(), newTotal);
         }

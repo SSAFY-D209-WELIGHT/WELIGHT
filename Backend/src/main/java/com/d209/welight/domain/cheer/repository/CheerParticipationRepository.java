@@ -13,10 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface CheerParticipationRepository extends JpaRepository<CheerParticipation, CheerParticipationId> {
-    List<CheerParticipation> findByUser_UserUid(Long userUid);
-    List<CheerParticipation> findByCheerroom_Id(Long cheerroomUid);
-    Optional<CheerParticipation> findByUser_UserUidAndCheerroom_Id(Long userUid, Long cheerroomUid);
+
     Optional<CheerParticipation> findByUserAndCheerroomId(User user, Long cheerRoomUid);
+    Optional<CheerParticipation> findByUserAndCheerroomNumber(User user, Long cheerNumber);
     void deleteByUserAndCheerroom(User user, Cheerroom cheerRoom);
 
     List<CheerParticipation> findByCheerroomAndLastExitTimeIsNull(Cheerroom cheerroom);
