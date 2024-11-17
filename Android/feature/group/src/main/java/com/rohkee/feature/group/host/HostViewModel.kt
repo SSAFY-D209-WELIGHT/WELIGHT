@@ -24,6 +24,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "HostViewModel"
+
 @HiltViewModel
 class HostViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
@@ -225,6 +227,8 @@ class HostViewModel @Inject constructor(
         viewModelScope.launch {
             val state = hostStateHolder.value
             val interval = if (state.effect == DisplayEffect.NONE) 0.0f else state.interval
+
+            Log.d(TAG, "onCheerStart: $state $interval")
             webSocketClient.emit(
                 SocketRequest.ControlDisplay(
                     roomId = state.roomId,

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -152,141 +153,128 @@ fun WaitingRoomContent(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onIntent(HostIntent.Control.Exit) },
         ) { }
-        Box(
-            modifier =
-                Modifier
-                    .weight(0.5f)
-                    .fillMaxWidth(),
-        ) {
-            DisplayList(
-                modifier = Modifier.fillMaxSize(),
-                list = state.list,
-                onAdd = { onIntent(HostIntent.Control.AddDisplayGroup) },
-            )
-        }
+        DisplayList(
+            modifier = Modifier.weight(1f),
+            list = state.list,
+            onAdd = { onIntent(HostIntent.Control.AddDisplayGroup) },
+        )
         Column(
             modifier =
                 Modifier
-                    .weight(0.5f)
                     .fillMaxWidth()
                     .background(color = AppColor.Surface)
-                    .padding(vertical = 16.dp),
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            Text(
+                text = "방 제목",
+                style = Pretendard.Regular14,
+                color = AppColor.OnBackgroundTransparent,
+            )
+            Text(text = state.title, style = Pretendard.Regular16, color = AppColor.OnSurface)
+            Text(
+                text = "방 설명",
+                style = Pretendard.Regular14,
+                color = AppColor.OnBackgroundTransparent,
+            )
+            Text(
+                text = state.description,
+                style = Pretendard.Regular16,
+                color = AppColor.OnSurface,
+            )
+            Text(
+                text = "효과",
+                style = Pretendard.Regular14,
+                color = AppColor.OnBackgroundTransparent,
+            )
+            ChipGroup(
+                modifier = Modifier.padding(bottom = 4.dp),
+                list = options,
+                selected = state.effect.text,
             ) {
-                Text(
-                    text = "방 제목",
-                    style = Pretendard.Regular14,
-                    color = AppColor.OnBackgroundTransparent,
-                )
-                Text(text = state.title, style = Pretendard.Regular16, color = AppColor.OnSurface)
-                Text(
-                    text = "방 설명",
-                    style = Pretendard.Regular14,
-                    color = AppColor.OnBackgroundTransparent,
-                )
-                Text(
-                    text = state.description,
-                    style = Pretendard.Regular16,
-                    color = AppColor.OnSurface,
-                )
-                Text(
-                    text = "효과",
-                    style = Pretendard.Regular14,
-                    color = AppColor.OnBackgroundTransparent,
-                )
-                ChipGroup(
-                    list = options,
-                    selected = state.effect.text,
-                ) {
-                    val effect = DisplayEffect.parse(it)
-                    onIntent(HostIntent.Control.ChangeEffect(effect))
-                }
-                Text(
-                    text = "효과 간격",
-                    style = Pretendard.Regular14,
-                    color = AppColor.OnBackgroundTransparent,
-                )
-                Slider(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                    enabled = !state.doDetect,
-                    value = state.interval,
-                    valueRange = 0.5f..10.0f,
-                    onValueChange = { onIntent(HostIntent.Control.ChangeInterval(it)) },
-                    colors =
-                        SliderDefaults.colors(
-                            activeTrackColor = AppColor.Active,
-                            inactiveTrackColor = AppColor.Inactive,
-                        ),
-                    thumb = {
-                        Box(
-                            modifier =
-                                Modifier
-                                    .background(
-                                        color = if (state.doDetect) AppColor.OverSurface else AppColor.Convex,
-                                        shape = RoundedCornerShape(4.dp),
-                                    ).padding(horizontal = 8.dp, vertical = 4.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = state.interval.toString(),
-                                style = Pretendard.SemiBold16,
-                                textAlign = TextAlign.Center,
-                                color = AppColor.OnConvex,
-                            )
-                        }
-                    },
-                )
-                Row(
-                    modifier = Modifier.wrapContentHeight(),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Text(text = "음원 감지", style = Pretendard.Medium16, color = AppColor.OnSurface)
-                    Spacer(modifier = Modifier.weight(1f))
-                    Switch(
-                        modifier = Modifier.height(24.dp),
-                        checked = state.doDetect,
-                        onCheckedChange = { onIntent(HostIntent.Control.ToggleDetect(it)) },
-                        colors =
-                            SwitchDefaults.colors().copy(
-                                checkedThumbColor = AppColor.OnConvex,
-                                checkedTrackColor = AppColor.Convex,
-                                checkedBorderColor = AppColor.OnConvex,
-                                uncheckedThumbColor = AppColor.Surface,
-                                uncheckedTrackColor = AppColor.Inactive,
-                                uncheckedBorderColor = AppColor.Surface,
-                            ),
-                    )
-                }
+                val effect = DisplayEffect.parse(it)
+                onIntent(HostIntent.Control.ChangeEffect(effect))
             }
-            Spacer(modifier = Modifier.weight(1f))
-
+            Text(
+                text = "효과 간격",
+                style = Pretendard.Regular14,
+                color = AppColor.OnBackgroundTransparent,
+            )
+            Slider(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                enabled = !state.doDetect,
+                value = state.interval,
+                valueRange = 0.5f..10.0f,
+                onValueChange = { onIntent(HostIntent.Control.ChangeInterval(it)) },
+                colors =
+                SliderDefaults.colors(
+                    activeTrackColor = AppColor.Active,
+                    inactiveTrackColor = AppColor.Inactive,
+                ),
+                thumb = {
+                    Box(
+                        modifier =
+                        Modifier
+                            .background(
+                                color = if (state.doDetect) AppColor.OverSurface else AppColor.Convex,
+                                shape = RoundedCornerShape(4.dp),
+                            ).padding(horizontal = 8.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            modifier = Modifier.width(32.dp),
+                            text = String.format("%.1f", state.interval),
+                            style = Pretendard.SemiBold16,
+                            textAlign = TextAlign.Center,
+                            color = AppColor.OnConvex,
+                        )
+                    }
+                },
+            )
+            Row(
+                modifier = Modifier.wrapContentHeight(),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Text(text = "음원 감지", style = Pretendard.Medium16, color = AppColor.OnSurface)
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    modifier = Modifier.height(24.dp),
+                    checked = state.doDetect,
+                    onCheckedChange = { onIntent(HostIntent.Control.ToggleDetect(it)) },
+                    colors =
+                    SwitchDefaults.colors().copy(
+                        checkedThumbColor = AppColor.OnConvex,
+                        checkedTrackColor = AppColor.Convex,
+                        checkedBorderColor = AppColor.OnConvex,
+                        uncheckedThumbColor = AppColor.Surface,
+                        uncheckedTrackColor = AppColor.Inactive,
+                        uncheckedBorderColor = AppColor.Surface,
+                    ),
+                )
+            }
             Box(
                 modifier =
-                    Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                        .background(
-                            color = AppColor.Contrast,
-                            shape = RoundedCornerShape(4.dp),
-                        ).clickable { onIntent(HostIntent.Control.StartCheer) }
-                        .padding(16.dp),
+                Modifier
+                    .padding(top = 48.dp)
+                    .fillMaxWidth()
+                    .background(
+                        color = AppColor.Contrast,
+                        shape = RoundedCornerShape(4.dp),
+                    ).clickable { onIntent(HostIntent.Control.StartCheer) }
+                    .padding(16.dp),
             ) {
                 Text(
                     modifier =
-                        Modifier
-                            .align(Alignment.Center),
+                    Modifier
+                        .align(Alignment.Center),
                     text = "응원 시작",
                     style = Pretendard.SemiBold20,
                     color = AppColor.OnContrast,
                 )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
                     GroupSizeChip(
                         number = state.clients,
                     )
@@ -412,7 +400,6 @@ private fun DisplayList(
             Box(
                 modifier =
                     Modifier
-                        .fillMaxSize()
                         .aspectRatio(0.5f)
                         .background(color = AppColor.Surface, shape = RoundedCornerShape(4.dp))
                         .clickable { onAdd() },
