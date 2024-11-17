@@ -32,12 +32,16 @@ sealed interface HostIntent {
         data object StartCheer : Control
     }
 
-    sealed interface Dialog : HostIntent {
-        data object Cancel : Dialog
+    sealed interface SelectionDialog : HostIntent {
+        data object Cancel : SelectionDialog
 
         data class SelectDisplay(
             val displayId: Long,
             val thumbnailUrl: String,
-        ) : Dialog
+        ) : SelectionDialog
+    }
+
+    sealed interface CheerDialog : HostIntent {
+        data object Cancel : CheerDialog
     }
 }

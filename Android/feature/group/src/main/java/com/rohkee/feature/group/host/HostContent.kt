@@ -50,6 +50,7 @@ import com.rohkee.core.ui.component.storage.DisplayCardState
 import com.rohkee.core.ui.component.storage.RatioHorizontalPager
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
+import com.rohkee.feature.group.dialog.CheerDialog
 import com.rohkee.feature.group.dialog.DisplaySelectionDialog
 import com.rohkee.feature.group.util.MultiplePermissionHandler
 import kotlinx.collections.immutable.persistentListOf
@@ -84,10 +85,10 @@ fun HostContent(
     ) {
         DisplaySelectionDialog(
             modifier = Modifier.fillMaxSize(),
-            onDismiss = { onIntent(HostIntent.Dialog.Cancel) },
+            onDismiss = { onIntent(HostIntent.SelectionDialog.Cancel) },
             onConfirm = { displayId, thumbnailUrl ->
                 onIntent(
-                    HostIntent.Dialog.SelectDisplay(
+                    HostIntent.SelectionDialog.SelectDisplay(
                         displayId,
                         thumbnailUrl,
                     ),
@@ -127,6 +128,15 @@ fun WaitingRoomContent(
     val (selected, setSelected) = remember(state) { mutableStateOf(state.effect) }
 
     val (checked, setChecked) = remember(state) { mutableStateOf(state.doDetect) }
+
+    if (state.dialogState is DialogState.StartCheer) {
+        CheerDialog(
+            displayId = state.dialogState.displayId,
+            offset = state.dialogState.offset,
+            interval = state.dialogState.interval,
+            onDismiss = { onIntent(HostIntent.CheerDialog.Cancel) },
+        )
+    }
 
     Column(
         modifier =
@@ -234,13 +244,13 @@ fun WaitingRoomContent(
                         .background(
                             color = AppColor.Contrast,
                             shape = RoundedCornerShape(4.dp),
-                        ).padding(16.dp),
+                        ).clickable { onIntent(HostIntent.Control.StartCheer) }
+                        .padding(16.dp),
             ) {
                 Text(
                     modifier =
                         Modifier
-                            .align(Alignment.Center)
-                            .clickable { onIntent(HostIntent.Control.StartCheer) },
+                            .align(Alignment.Center),
                     text = "응원 시작",
                     style = Pretendard.SemiBold20,
                     color = AppColor.OnContrast,
@@ -279,8 +289,8 @@ private fun CreationContent(
     ) { result ->
         if (result.all { it.value }) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
-                latitude = it.latitude
-                longitude = it.longitude
+                latitude = it?.latitude ?: 0.0
+                longitude = it?.longitude ?: 0.0
             }
         }
     }

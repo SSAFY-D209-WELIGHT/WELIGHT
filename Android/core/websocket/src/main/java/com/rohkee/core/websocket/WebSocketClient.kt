@@ -102,8 +102,9 @@ object WebSocketClient {
     }
 }
 
-private inline fun <reified T> deserialize(args: Array<Any>?): T? =
-    args?.firstOrNull()?.toString()?.let { msg ->
+private inline fun <reified T> deserialize(args: Array<Any>?): T? {
+    Log.d("TAG", "deserialize: ${args?.firstOrNull()}")
+    return args?.firstOrNull()?.toString()?.let { msg ->
         try {
             Json.decodeFromString<T>(msg)
         } catch (e: Exception) {
@@ -111,5 +112,6 @@ private inline fun <reified T> deserialize(args: Array<Any>?): T? =
             null
         }
     }
+}
 
 private fun SocketRequest.encode() = Json.encodeToString(this)

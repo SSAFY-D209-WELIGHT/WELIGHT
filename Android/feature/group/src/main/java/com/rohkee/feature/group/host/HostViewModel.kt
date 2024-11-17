@@ -63,7 +63,7 @@ class HostViewModel @Inject constructor(
                 }
 
             HostIntent.Control.Exit -> emitEvent(HostEvent.ExitPage)
-            HostIntent.Control.StartCheer -> emitEvent(HostEvent.StartCheer(hostStateHolder.value.roomId))
+            HostIntent.Control.StartCheer -> startCheer()
 
             HostIntent.Creation.Cancel -> emitEvent(HostEvent.ExitPage)
             is HostIntent.Creation.CreateRoom ->
@@ -72,8 +72,8 @@ class HostViewModel @Inject constructor(
                     longitude = intent.longitude,
                 )
 
-            HostIntent.Dialog.Cancel -> hostStateHolder.update { it.copy(dialogState = DialogState.Closed) }
-            is HostIntent.Dialog.SelectDisplay ->
+            HostIntent.SelectionDialog.Cancel -> hostStateHolder.update { it.copy(dialogState = DialogState.Closed) }
+            is HostIntent.SelectionDialog.SelectDisplay ->
                 addDisplayGroup(
                     intent.displayId,
                     intent.thumbnailUrl,
@@ -85,6 +85,7 @@ class HostViewModel @Inject constructor(
 
             is HostIntent.Creation.UpdateDescription -> hostStateHolder.update { it.copy(description = intent.description) }
             is HostIntent.Creation.UpdateTitle -> hostStateHolder.update { it.copy(title = intent.title) }
+            HostIntent.CheerDialog.Cancel -> endCheer()
         }
     }
 
@@ -157,11 +158,21 @@ class HostViewModel @Inject constructor(
                 // 호스트는 처리할 필요 없음
             }
 
-            is SocketResponse.CheerStart -> cheerStart()
+            is SocketResponse.CheerStart -> onCheerStart()
             is SocketResponse.RoomClose -> {
                 // 호스트는 처리할 필요 없음
             }
         }
+    }
+
+    private fun startCheer() {
+        webSocketClient.emit(SocketRequest.StartCheer(hostStateHolder.value.roomId))
+        onCheerStart()
+    }
+
+    private fun endCheer() {
+        webSocketClient.emit(SocketRequest.EndCheer(hostStateHolder.value.roomId))
+        hostStateHolder.update { it.copy(dialogState = DialogState.Closed) }
     }
 
     private fun displayControl(
@@ -197,7 +208,7 @@ class HostViewModel @Inject constructor(
         }
     }
 
-    private fun cheerStart() {
+    private fun onCheerStart() {
         hostStateHolder.update {
             it.copy(
                 dialogState =
