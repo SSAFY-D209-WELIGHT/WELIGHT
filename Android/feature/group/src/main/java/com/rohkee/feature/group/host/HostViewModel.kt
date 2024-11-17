@@ -95,7 +95,6 @@ class HostViewModel @Inject constructor(
     }
 
     private suspend fun initialize() {
-
         webSocketClient.initializeSocket(
             onConnect = {
                 Log.d("TAG", "initialize: connected")
@@ -123,16 +122,91 @@ class HostViewModel @Inject constructor(
 
     private fun handleResponse(response: SocketResponse) {
         when (response) {
-            is SocketResponse.DisplayControl -> TODO()
-            SocketResponse.Error -> TODO()
-            is SocketResponse.GroupChange -> TODO()
+            is SocketResponse.DisplayControl ->
+                displayControl(
+                    displayId = response.displayId,
+                    offset = response.offset,
+                    interval = response.interval,
+                )
+
+            SocketResponse.Error -> {
+                // TODO : Error handling
+            }
+
+            is SocketResponse.GroupChange -> {
+                // 호스트는 처리할 필요 없음
+            }
+
             is SocketResponse.RoomCreate -> onRoomCreate(response)
-            is SocketResponse.RoomDisplayChange -> TODO()
-            is SocketResponse.RoomInfo -> TODO()
-            is SocketResponse.RoomJoin -> TODO()
-            is SocketResponse.CheerEnd -> TODO()
-            is SocketResponse.CheerStart -> TODO()
-            is SocketResponse.RoomClose -> TODO()
+            is SocketResponse.RoomDisplayChange -> {
+                // 호스트는 처리할 필요 없음
+            }
+
+            is SocketResponse.RoomInfo ->
+                changeRoomInfo(
+                    title = response.title,
+                    description = response.description,
+                    clients = response.clientCount,
+                )
+
+            is SocketResponse.RoomJoin -> {
+                // 호스트는 처리할 필요 없음
+            }
+
+            is SocketResponse.CheerEnd -> {
+                // 호스트는 처리할 필요 없음
+            }
+
+            is SocketResponse.CheerStart -> cheerStart()
+            is SocketResponse.RoomClose -> {
+                // 호스트는 처리할 필요 없음
+            }
+        }
+    }
+
+    private fun displayControl(
+        displayId: Long,
+        offset: Float,
+        interval: Float,
+    ) {
+        if (hostStateHolder.value.dialogState is DialogState.StartCheer) {
+            hostStateHolder.update {
+                it.copy(
+                    dialogState =
+                        DialogState.StartCheer(
+                            displayId = displayId,
+                            offset = offset,
+                            interval = interval,
+                        ),
+                )
+            }
+        }
+    }
+
+    private fun changeRoomInfo(
+        title: String,
+        description: String,
+        clients: Int,
+    ) {
+        hostStateHolder.update {
+            it.copy(
+                title = title,
+                description = description,
+                clients = clients,
+            )
+        }
+    }
+
+    private fun cheerStart() {
+        hostStateHolder.update {
+            it.copy(
+                dialogState =
+                    DialogState.StartCheer(
+                        displayId = it.list.first().displayId,
+                        offset = 0f,
+                        interval = 0f,
+                    ),
+            )
         }
     }
 
@@ -174,15 +248,18 @@ class HostViewModel @Inject constructor(
         displayId: Long,
         thumbnailUrl: String,
     ) {
-        // TODO 그룹 추가
+        val newList = hostStateHolder.value.list + GroupDisplayData(displayId, thumbnailUrl)
+        if (hostState.value is HostState.WaitingRoom) {
+            webSocketClient.emit(
+                SocketRequest.ChangeRoomDisplay(
+                    hostStateHolder.value.roomId,
+                    displays = newList.map { Display.Group(it.displayId) },
+                ),
+            )
+        }
         hostStateHolder.update {
             it.copy(
-                list =
-                    it.list +
-                        GroupDisplayData(
-                            displayId,
-                            thumbnailUrl,
-                        ),
+                list = newList,
                 dialogState = DialogState.Closed,
             )
         }
