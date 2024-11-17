@@ -220,6 +220,29 @@ class HostViewModel @Inject constructor(
             )
         }
         // TODO : 응원 시작 로직
+        viewModelScope.launch {
+            val state = hostStateHolder.value
+            val interval = if (state.effect == DisplayEffect.NONE) 0.0f else 1.0f
+            webSocketClient.emit(
+                SocketRequest.ControlDisplay(
+                    roomId = state.roomId,
+                    displays =
+                        state.list.mapIndexed { index, groupDisplayData ->
+                            Display.Control(
+                                displayId = groupDisplayData.displayId,
+                                offset =
+                                    when (state.effect) {
+                                        DisplayEffect.NONE -> 0.0f
+                                        DisplayEffect.FLASH -> 0.0f
+                                        DisplayEffect.CROSS -> if (index % 2 == 0) 0.0f else 1.0f
+                                        DisplayEffect.WAVE -> index / state.list.size.toFloat()
+                                    },
+                                interval = interval * 1000,
+                            )
+                        },
+                ),
+            )
+        }
     }
 
     private fun createRoom(

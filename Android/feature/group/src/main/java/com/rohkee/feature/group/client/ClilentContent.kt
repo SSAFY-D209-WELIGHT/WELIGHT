@@ -92,14 +92,16 @@ fun ClientContent(
                 }
             }
 
-            GradientAppBar(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .padding(top = innerPadding.calculateTopPadding()),
-                onClick = { onIntent(ClientIntent.ExitPage) },
-            ) {}
+            if (state !is ClientState.Cheering) {
+                GradientAppBar(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                            .padding(top = innerPadding.calculateTopPadding()),
+                    onClick = { onIntent(ClientIntent.ExitPage) },
+                ) {}
+            }
         }
     }
 }
@@ -112,6 +114,13 @@ private fun CheeringContent(
     Box(
         modifier = modifier.fillMaxSize(),
     ) {
+        CustomDisplay(
+            modifier = modifier.fillMaxSize(),
+            imageState = state.imageState,
+            textState = state.textState,
+            backgroundState = state.backgroundState,
+        )
+
         if (state.interval > 0f) {
             val infiniteTransition = rememberInfiniteTransition(label = "flicker animation")
 
@@ -137,13 +146,6 @@ private fun CheeringContent(
                         .background(color = Color.Black.copy(alpha = animatedValue)),
             )
         }
-
-        CustomDisplay(
-            modifier = modifier.fillMaxSize(),
-            imageState = state.imageState,
-            textState = state.textState,
-            backgroundState = state.backgroundState,
-        )
     }
 }
 
@@ -158,6 +160,21 @@ private fun ClientContentPreview() {
                 groupNumber = 1,
                 displays = listOf(1L, 2L, 3L),
                 dialogState = ClientDialogState.Closed,
+                imageState = DisplayImageState(),
+                textState = DisplayTextState(),
+                backgroundState = DisplayBackgroundState(),
+            ),
+    )
+}
+
+@Preview
+@Composable
+fun CheeringContentPreview() {
+    CheeringContent(
+        state =
+            ClientState.Cheering(
+                offset = 0.5f,
+                interval = 1000f,
                 imageState = DisplayImageState(),
                 textState = DisplayTextState(),
                 backgroundState = DisplayBackgroundState(),

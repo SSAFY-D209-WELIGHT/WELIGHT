@@ -182,19 +182,12 @@ class ClientViewModel @Inject constructor(
 
     private fun onCheerStart() {
         clientStateHolder.update {
-            it.copy(
-                dialogState =
-                    ClientDialogState.StartCheer(
-                        displayId = it.displays[it.groupNumber - 1],
-                        offset = 0f,
-                        interval = 0f,
-                    ),
-            )
+            it.copy(isCheering = true)
         }
     }
 
     private fun onCheerEnd() {
-        clientStateHolder.update { it.copy(dialogState = ClientDialogState.Closed) }
+        clientStateHolder.update { it.copy(isCheering = false) }
     }
 
     private fun onDisplayChanged(displays: List<Long>) {
