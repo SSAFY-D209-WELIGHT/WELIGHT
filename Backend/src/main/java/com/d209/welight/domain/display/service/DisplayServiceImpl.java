@@ -491,6 +491,7 @@ public class DisplayServiceImpl implements DisplayService {
     }
     
     @Override
+    @Transactional
     @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
