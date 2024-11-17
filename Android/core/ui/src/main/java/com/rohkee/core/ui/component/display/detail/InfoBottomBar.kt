@@ -201,12 +201,12 @@ private fun DetailInfoRow(
             onClick = onDownloadClick,
         )
         Spacer(modifier = Modifier.weight(1f))
-        IconWithNumber(
-            modifier = Modifier,
-            icon = painterResource(R.drawable.text_balloon),
-            number = comment,
-            onClick = onCommentClick,
-        )
+//        IconWithNumber(
+//            modifier = Modifier,
+//            icon = painterResource(R.drawable.text_balloon),
+//            number = comment,
+//            onClick = onCommentClick,
+//        )
     }
 }
 
