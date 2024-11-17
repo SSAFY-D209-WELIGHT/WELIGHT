@@ -171,28 +171,28 @@ public class CheerServiceImpl implements CheerService {
 
     }
 
-    @Override
-    public void endCheering(User user, long cheerNumber) {
-        log.info("응원방 종료 처리 시작 - 사용자ID={}, 응원방번호={}", user.getUserId(), cheerNumber);
-
-        Cheerroom cheerroom = cheerroomRepository.findByNumber(cheerNumber)
-                .orElseThrow(() -> new CheerNotFoundException("존재하지 않는 응원방입니다."));
-
-        CheerParticipation participation = cheerParticipationRepository
-                .findByUserAndCheerroomNumber(user, cheerNumber)
-                .orElseThrow(() -> new CheerNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
-
-        if (!participation.isOwner()) {
-            throw new CheerAccessDeniedException("방장만 응원을 종료할 수 있습니다.");
-        }
-
-        // is_done 값 true로 업데이트
-        cheerroom.setDone(true);
-        cheerParticipationRepository.save(participation);
-        log.info("응원방 종료 처리 완료 - 응원방번호={}", cheerNumber);
-
-        // cheerroom_display 업데이트 -> 응원방 디스플레이 선택저장 API
-    }
+//    @Override
+//    public void endCheering(User user, long cheerNumber) {
+//        log.info("응원방 종료 처리 시작 - 사용자ID={}, 응원방번호={}", user.getUserId(), cheerNumber);
+//
+//        Cheerroom cheerroom = cheerroomRepository.findByNumber(cheerNumber)
+//                .orElseThrow(() -> new CheerNotFoundException("존재하지 않는 응원방입니다."));
+//
+//        CheerParticipation participation = cheerParticipationRepository
+//                .findByUserAndCheerroomNumber(user, cheerNumber)
+//                .orElseThrow(() -> new CheerNotFoundException("해당 응원방에 참여하지 않은 사용자입니다."));
+//
+//        if (!participation.isOwner()) {
+//            throw new CheerAccessDeniedException("방장만 응원을 종료할 수 있습니다.");
+//        }
+//
+//        // is_done 값 true로 업데이트
+//        cheerroom.setDone(true);
+//        cheerParticipationRepository.save(participation);
+//        log.info("응원방 종료 처리 완료 - 응원방번호={}", cheerNumber);
+//
+//        // cheerroom_display 업데이트 -> 응원방 디스플레이 선택저장 API
+//    }
 
     /* 기록 */
     @Override

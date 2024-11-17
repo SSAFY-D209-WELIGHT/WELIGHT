@@ -18,7 +18,7 @@ public interface CheerService {
     public List<ParticipantsResponse> getParticipants(Long cheerId);
 
     public void delegateLeader(long roomId, User currentLeader, User newLeader);
-    public void endCheering(User user, long cheerNumber);
+//    public void endCheering(User user, long cheerNumber);
 
     /* 기록 */
     public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest);

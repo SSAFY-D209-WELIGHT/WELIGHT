@@ -75,14 +75,14 @@ public class CheerController {
         return ResponseEntity.ok().body(participantsResponseList);
     }
 
-    @PatchMapping("/{cheerNumber}/end")
-    @Operation(summary = "응원 종료 (방장)")
-    public ResponseEntity<String> endCheering(Authentication authentication,
-                                            @PathVariable(name="cheerNumber") long cheerNumber) {
-        User user = userService.findByUserId(authentication.getName());
-        cheerService.endCheering(user, cheerNumber);
-        return ResponseEntity.ok("응원 종료 성공");
-    }
+//    @PatchMapping("/{cheerNumber}/end")
+//    @Operation(summary = "응원 종료 (방장)")
+//    public ResponseEntity<String> endCheering(Authentication authentication,
+//                                            @PathVariable(name="cheerNumber") long cheerNumber) {
+//        User user = userService.findByUserId(authentication.getName());
+//        cheerService.endCheering(user, cheerNumber);
+//        return ResponseEntity.ok("응원 종료 성공");
+//    }
 
     /* 기록 */
     @PostMapping("{cheerId}/records")
