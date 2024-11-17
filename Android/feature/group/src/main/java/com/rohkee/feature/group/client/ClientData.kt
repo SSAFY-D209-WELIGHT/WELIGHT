@@ -24,6 +24,7 @@ data class ClientData(
                 groupSize = groupSize,
                 thumbnailUrl = thumbnailUrl,
                 displayId = displayId,
+                dialogState = dialogState,
             )
         }
 }

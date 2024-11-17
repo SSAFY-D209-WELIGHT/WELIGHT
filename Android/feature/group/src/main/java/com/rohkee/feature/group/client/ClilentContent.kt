@@ -15,6 +15,7 @@ import com.rohkee.core.ui.component.group.GroupBottomBar
 import com.rohkee.core.ui.component.group.GroupBottomBarState
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
+import com.rohkee.feature.group.dialog.CheerDialog
 
 @Composable
 fun ClientContent(
@@ -22,8 +23,17 @@ fun ClientContent(
     state: ClientState,
     onIntent: (ClientIntent) -> Unit = {},
 ) {
+    if (state is ClientState.Loaded && state.dialogState is ClientDialogState.StartCheer) {
+        CheerDialog(
+            displayId = state.displayId!!,
+            offset = state.dialogState.offset,
+            interval = state.dialogState.interval,
+            onDismiss = { onIntent(ClientIntent.CheerDialog.Cancel) },
+        )
+    }
+
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
         Box {
             when (state) {
@@ -84,6 +94,7 @@ private fun ClientContentPreview() {
                 groupSize = 5,
                 thumbnailUrl = null,
                 displayId = null,
+                dialogState = ClientDialogState.Closed,
             ),
     )
 }

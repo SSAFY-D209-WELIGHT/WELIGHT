@@ -6,4 +6,8 @@ sealed interface ClientIntent {
     data class ChangeGroup(
         val groupNumber: Int,
     ) : ClientIntent
+
+    sealed interface CheerDialog : ClientIntent {
+        data object Cancel : CheerDialog
+    }
 }

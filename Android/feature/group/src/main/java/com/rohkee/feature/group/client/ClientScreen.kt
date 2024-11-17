@@ -12,7 +12,6 @@ fun ClientScreen(
     modifier: Modifier = Modifier,
     clientViewModel: ClientViewModel = hiltViewModel(),
     onPopBackStack: () -> Unit = {},
-    onStartCheer: (id: Long) -> Unit = {},
 ) {
     val clientUiState by clientViewModel.clientState.collectAsStateWithLifecycle()
 

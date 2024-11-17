@@ -113,9 +113,6 @@ fun MainNavigation(
             composable<ClientRoute> {
                 ClientScreen(
                     onPopBackStack = { navController.popBackStack() },
-                    onStartCheer = {
-                        // TODO: 응원 시작
-                    },
                 )
             }
         }
