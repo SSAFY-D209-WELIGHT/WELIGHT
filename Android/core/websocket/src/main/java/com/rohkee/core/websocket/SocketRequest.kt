@@ -1,13 +1,18 @@
 package com.rohkee.core.websocket
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 sealed interface SocketRequest {
+    val roomId: Long
+
     fun name(): String
 
     @Serializable
     data class CreateRoom(
+        @Transient
+        override val roomId: Long = 0,
         val user: User,
         val title: String,
         val description: String,
@@ -19,7 +24,7 @@ sealed interface SocketRequest {
 
     @Serializable
     data class JoinRoom(
-        val roomId: Long,
+        override val roomId: Long,
         val user: User,
     ) : SocketRequest {
         override fun name(): String = "joinRoom"
@@ -27,35 +32,51 @@ sealed interface SocketRequest {
 
     @Serializable
     data class ChangeRoomDisplay(
+        override val roomId: Long,
         val displays: List<Display.Group>,
     ) : SocketRequest {
         override fun name(): String = "changeRoomDisplay"
     }
 
     @Serializable
-    data class SelectGroup(
+    data class ChangeGroup(
+        override val roomId: Long,
         val groupNumber: Int,
     ) : SocketRequest {
-        override fun name(): String = "selectGroup"
+        override fun name(): String = "changeGroup"
     }
 
     @Serializable
-    data object StartCheer : SocketRequest {
-        override fun name(): String = "startCheer"
+    data class StartCheer(
+        override val roomId: Long,
+    ) : SocketRequest {
+        override fun name(): String = "startCheering"
     }
 
     @Serializable
-    data object EndCheer : SocketRequest {
-        override fun name(): String = "endCheer"
+    data class EndCheer(
+        override val roomId: Long,
+    ) : SocketRequest {
+        override fun name(): String = "endCheering"
     }
 
     @Serializable
-    data object CloseRoom : SocketRequest {
+    data class CloseRoom(
+        override val roomId: Long,
+    ) : SocketRequest {
         override fun name(): String = "closeRoom"
     }
 
     @Serializable
+    data class LeaveRoom(
+        override val roomId: Long,
+    ) : SocketRequest {
+        override fun name(): String = "leaveRoom"
+    }
+
+    @Serializable
     data class ControlDisplay(
+        override val roomId: Long,
         val displays: List<Display.Control>,
     ) : SocketRequest {
         override fun name(): String = "controlDisplay"

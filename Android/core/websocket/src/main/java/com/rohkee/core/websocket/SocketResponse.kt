@@ -10,12 +10,12 @@ sealed interface SocketResponse {
         val title: String,
         val description: String,
         val location: Location,
+        val displays: List<Display.Group>,
         val address: String,
         val isOwner: Boolean,
         val clientCount: Int,
         val groupNumber: Int,
         val createdAt: Long,
-        val displays: List<Display.Group>
     ) : SocketResponse
 
     @Serializable
@@ -33,7 +33,7 @@ sealed interface SocketResponse {
     ) : SocketResponse
 
     @Serializable
-    data class RoomInfoReceive(
+    data class RoomInfo(
         val roomId: Long,
         val title: String,
         val description: String,
@@ -42,22 +42,34 @@ sealed interface SocketResponse {
 
     @Serializable
     data class RoomDisplayChange(
+        val roomId: Long,
         val displays: List<Display.Group>,
     ) : SocketResponse
 
     @Serializable
-    data class GroupSelect(
+    data class GroupChange(
         val groupNumber: Int,
     ) : SocketResponse
 
     @Serializable
-    data object CheerStart : SocketResponse
+    data class CheerStart(
+        val roomId: Long
+    ) : SocketResponse
 
     @Serializable
-    data object CheerEnd : SocketResponse
+    data class CheerEnd(
+        val roomId: Long
+    ) : SocketResponse
+
+    @Serializable
+    data class RoomClose(
+        val roomId: Long,
+    ) : SocketResponse
 
     @Serializable
     data class DisplayControl(
+        val roomId: Long,
+        val groupNumber: Int,
         val displayId: Long,
         val offset: Float,
         val interval: Float,

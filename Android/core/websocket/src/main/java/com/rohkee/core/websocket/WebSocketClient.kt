@@ -1,5 +1,6 @@
 package com.rohkee.core.websocket
 
+import android.util.Log
 import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.channels.awaitClose
@@ -56,10 +57,10 @@ object WebSocketClient {
                     deserialize<SocketResponse.RoomJoin>(args)
                 }
                 on(SocketEvent.On.ROOM_INFO_RECEIVE.name) { args ->
-                    deserialize<SocketResponse.RoomInfoReceive>(args)
+                    deserialize<SocketResponse.RoomInfo>(args)
                 }
                 on(SocketEvent.On.GROUP_SELECT.name) { args ->
-                    deserialize<SocketResponse.GroupSelect>(args)
+                    deserialize<SocketResponse.GroupChange>(args)
                 }
                 on(SocketEvent.On.ROOM_DISPLAY_CHANGE.name) { args ->
                     deserialize<SocketResponse.RoomDisplayChange>(args)
@@ -69,6 +70,9 @@ object WebSocketClient {
                 }
                 on(SocketEvent.On.CHEER_END.name) { args ->
                     deserialize<SocketResponse.CheerEnd>(args)
+                }
+                on(SocketEvent.On.ROOM_CLOSE.name) { args ->
+                    deserialize<SocketResponse.RoomClose>(args)
                 }
                 on(SocketEvent.On.DISPLAY_CONTROL.name) { args ->
                     deserialize<SocketResponse.DisplayControl>(args)
@@ -86,6 +90,7 @@ object WebSocketClient {
     fun emit(request: SocketRequest) {
         val jsonObject = JSONObject(Json.encodeToString(request))
         jsonObject.remove("type") // 불필요한 type 키 제거
+        Log.d("TAG", "emit: ${jsonObject}")
         socket?.emit(request.name(), jsonObject)
     }
 

@@ -107,6 +107,7 @@ class HostViewModel @Inject constructor(
 
         viewModelScope.launch {
             webSocketClient.socketEventCallbacks().collect {
+                Log.d("TAG", "initialize: $it")
                 handleResponse(it)
             }
         }
@@ -114,15 +115,16 @@ class HostViewModel @Inject constructor(
 
     private fun handleResponse(response: SocketResponse) {
         when (response) {
-            SocketResponse.CheerEnd -> TODO()
-            SocketResponse.CheerStart -> TODO()
             is SocketResponse.DisplayControl -> TODO()
             SocketResponse.Error -> TODO()
-            is SocketResponse.GroupSelect -> TODO()
+            is SocketResponse.GroupChange -> TODO()
             is SocketResponse.RoomCreate -> onRoomCreate(response)
             is SocketResponse.RoomDisplayChange -> TODO()
-            is SocketResponse.RoomInfoReceive -> TODO()
+            is SocketResponse.RoomInfo -> TODO()
             is SocketResponse.RoomJoin -> TODO()
+            is SocketResponse.CheerEnd -> TODO()
+            is SocketResponse.CheerStart -> TODO()
+            is SocketResponse.RoomClose -> TODO()
         }
     }
 
@@ -180,7 +182,7 @@ class HostViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        webSocketClient.emit(SocketRequest.CloseRoom)
+        webSocketClient.emit(SocketRequest.CloseRoom(hostStateHolder.value.roomId))
         webSocketClient.closeSocket()
     }
 }
