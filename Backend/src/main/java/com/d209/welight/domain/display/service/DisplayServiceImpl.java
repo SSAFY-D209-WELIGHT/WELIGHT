@@ -240,6 +240,8 @@ public class DisplayServiceImpl implements DisplayService {
                 .creatorUid(userUid)
                 .displayName(originalDisplay.getDisplayName() + "_복제")
                 .displayIsPosted(false)
+                .displayDownloadCount(0L)
+                .displayLikeCount(0L)
                 .build();
 
         // 썸네일 복제
