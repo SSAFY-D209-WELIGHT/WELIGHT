@@ -68,10 +68,22 @@ public class DisplayServiceImpl implements DisplayService {
             // 이벤트 발행
             eventPublisher.publishEvent(new DisplayEvent("CREATE", savedDisplay));
 
-            // 2. 태그, 이미지, 텍스트, 배경, 저장소 저장
-            displayHelper.saveTags(savedDisplay, request.getTags());
-            displayHelper.saveImages(savedDisplay, request.getImages());
-            displayHelper.saveTexts(savedDisplay, request.getTexts());
+            // 태그가 있을 때만 저장
+            if (request.getTags() != null && !request.getTags().isEmpty()) {
+                displayHelper.saveTags(savedDisplay, request.getTags());
+            }
+            
+            // 이미지가 있을 때만 저장
+            if (request.getImages() != null && !request.getImages().isEmpty()) {
+                displayHelper.saveImages(savedDisplay, request.getImages());
+            }
+            
+            // 텍스트가 있을 때만 저장
+            if (request.getTexts() != null && !request.getTexts().isEmpty()) {
+                displayHelper.saveTexts(savedDisplay, request.getTexts());
+            }
+
+            // 배경은 필수값이므로 그대로 저장
             displayHelper.saveBackground(savedDisplay, request.getBackground());
             displayHelper.saveDisplayStorage(user, savedDisplay);
 
