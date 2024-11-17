@@ -11,6 +11,7 @@ import com.rohkee.core.ui.util.collectWithLifecycle
 fun HostScreen(
     modifier: Modifier = Modifier,
     hostViewModel: HostViewModel = hiltViewModel(),
+    showSnackbar: (String) -> Unit = {},
     onPopBackStack: () -> Unit = {},
     onStartCheer: (id: Long) -> Unit = {},
 ) {
