@@ -33,5 +33,8 @@ class CheerRepositoryImpl @Inject constructor(
             )
         }
 
-    override suspend fun getCheerRoomList(): ApiResponse<List<CheerResponse>> = apiHandler { cheerApi.getCheerRoomList() }
+    override suspend fun getCheerRoomList(
+        latitude: Double,
+        longitude: Double,
+    ): ApiResponse<List<CheerResponse>> = apiHandler { cheerApi.getCheerRoomList(latitude = latitude, longitude = longitude) }
 }

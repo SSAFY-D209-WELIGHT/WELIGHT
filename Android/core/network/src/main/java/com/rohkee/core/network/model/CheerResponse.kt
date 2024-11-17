@@ -11,7 +11,7 @@ data class CheerResponse(
     val roomName: String,
     @SerialName("cheerroomDescription")
     val roomDescription: String,
-    @SerialName("latitiude")
+    @SerialName("latitude")
     val latitude: Double,
     @SerialName("longitude")
     val longitude: Double,

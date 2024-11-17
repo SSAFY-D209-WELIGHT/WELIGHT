@@ -7,5 +7,8 @@ import com.rohkee.core.network.model.CheerResponse
 interface CheerRepository {
     suspend fun getCheerRecords(): ApiResponse<List<CheerRecord>>
 
-    suspend fun getCheerRoomList(): ApiResponse<List<CheerResponse>>
+    suspend fun getCheerRoomList(
+        latitude: Double,
+        longitude: Double,
+    ): ApiResponse<List<CheerResponse>>
 }
