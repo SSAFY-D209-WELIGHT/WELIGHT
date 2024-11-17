@@ -219,6 +219,7 @@ class HostViewModel @Inject constructor(
                     ),
             )
         }
+        // TODO : 응원 시작 로직
     }
 
     private fun createRoom(
