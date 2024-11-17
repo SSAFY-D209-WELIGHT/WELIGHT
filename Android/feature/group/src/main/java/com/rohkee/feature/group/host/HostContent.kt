@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -37,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.location.LocationServices
@@ -118,6 +122,7 @@ fun HostContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WaitingRoomContent(
     modifier: Modifier,
@@ -125,9 +130,6 @@ fun WaitingRoomContent(
     onIntent: (HostIntent) -> Unit,
 ) {
     val options = remember { DisplayEffect.entries.map { it.text }.toPersistentList() }
-    val (selected, setSelected) = remember(state) { mutableStateOf(state.effect) }
-
-    val (checked, setChecked) = remember(state) { mutableStateOf(state.doDetect) }
 
     if (state.hostDialogState is HostDialogState.StartCheer) {
         CheerDialog(
@@ -201,16 +203,45 @@ fun WaitingRoomContent(
                 )
                 ChipGroup(
                     list = options,
-                    selected = selected.text,
+                    selected = state.effect.text,
                 ) {
                     val effect = DisplayEffect.parse(it)
-                    setSelected(effect)
                     onIntent(HostIntent.Control.ChangeEffect(effect))
                 }
                 Text(
-                    text = "효과간격",
+                    text = "효과 간격",
                     style = Pretendard.Regular14,
                     color = AppColor.OnBackgroundTransparent,
+                )
+                Slider(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    enabled = !state.doDetect,
+                    value = state.interval,
+                    valueRange = 0.5f..10.0f,
+                    onValueChange = { onIntent(HostIntent.Control.ChangeInterval(it)) },
+                    colors =
+                        SliderDefaults.colors(
+                            activeTrackColor = AppColor.Active,
+                            inactiveTrackColor = AppColor.Inactive,
+                        ),
+                    thumb = {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .background(
+                                        color = if (state.doDetect) AppColor.OverSurface else AppColor.Convex,
+                                        shape = RoundedCornerShape(4.dp),
+                                    ).padding(horizontal = 8.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = state.interval.toString(),
+                                style = Pretendard.SemiBold16,
+                                textAlign = TextAlign.Center,
+                                color = AppColor.OnConvex,
+                            )
+                        }
+                    },
                 )
                 Row(
                     modifier = Modifier.wrapContentHeight(),
@@ -220,8 +251,8 @@ fun WaitingRoomContent(
                     Spacer(modifier = Modifier.weight(1f))
                     Switch(
                         modifier = Modifier.height(24.dp),
-                        checked = checked,
-                        onCheckedChange = setChecked,
+                        checked = state.doDetect,
+                        onCheckedChange = { onIntent(HostIntent.Control.ToggleDetect(it)) },
                         colors =
                             SwitchDefaults.colors().copy(
                                 checkedThumbColor = AppColor.OnConvex,
@@ -391,6 +422,7 @@ private fun DisplayList(
                     modifier = Modifier.size(32.dp),
                     imageVector = Icons.Default.AddCircle,
                     contentDescription = "add",
+                    tint = AppColor.OnSurface,
                 )
             }
         } else {
@@ -415,14 +447,15 @@ private fun WaitingRoomContentPreview() {
                 list = persistentListOf(),
                 clients = 15,
                 effect = DisplayEffect.NONE,
-                doDetect = false,
+                doDetect = true,
                 hostDialogState = HostDialogState.Closed,
+                interval = 5.0f,
             ),
         onIntent = {},
     )
 }
 
-@Preview
+@Preview()
 @Composable
 private fun CreationContentPreview() {
     CreationContent(

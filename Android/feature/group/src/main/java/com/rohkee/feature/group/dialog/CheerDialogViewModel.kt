@@ -30,7 +30,7 @@ class CheerDialogViewModel @Inject constructor(
 
     fun loadDisplay(displayId: Long) {
         viewModelScope.launch {
-            displayRepository.getDisplayEdit(displayId).handle(
+            displayRepository.getDisplayDetail(displayId).handle(
                 onSuccess = { display ->
                     display?.let {
                         _state.update {

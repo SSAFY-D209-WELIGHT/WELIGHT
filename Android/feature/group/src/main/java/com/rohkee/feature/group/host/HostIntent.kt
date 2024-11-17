@@ -29,6 +29,14 @@ sealed interface HostIntent {
             val effect: DisplayEffect,
         ) : Control
 
+        data class ChangeInterval(
+            val interval: Float,
+        ) : Control
+
+        data class ToggleDetect(
+            val doDetect: Boolean,
+        ) : Control
+
         data object StartCheer : Control
     }
 

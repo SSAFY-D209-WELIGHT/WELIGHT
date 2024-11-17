@@ -86,6 +86,8 @@ class HostViewModel @Inject constructor(
             is HostIntent.Creation.UpdateDescription -> hostStateHolder.update { it.copy(description = intent.description) }
             is HostIntent.Creation.UpdateTitle -> hostStateHolder.update { it.copy(title = intent.title) }
             HostIntent.CheerDialog.Cancel -> endCheer()
+            is HostIntent.Control.ChangeInterval -> hostStateHolder.update { it.copy(interval = intent.interval) }
+            is HostIntent.Control.ToggleDetect -> hostStateHolder.update { it.copy(doDetect = intent.doDetect) }
         }
     }
 
@@ -222,7 +224,7 @@ class HostViewModel @Inject constructor(
         // TODO : 응원 시작 로직
         viewModelScope.launch {
             val state = hostStateHolder.value
-            val interval = if (state.effect == DisplayEffect.NONE) 0.0f else 1.0f
+            val interval = if (state.effect == DisplayEffect.NONE) 0.0f else state.interval
             webSocketClient.emit(
                 SocketRequest.ControlDisplay(
                     roomId = state.roomId,

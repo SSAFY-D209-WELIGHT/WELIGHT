@@ -10,6 +10,7 @@ data class HostData(
     val clients: Int = 0,
     val list: List<GroupDisplayData> = emptyList(),
     val effect: DisplayEffect = DisplayEffect.NONE,
+    val interval: Float = 1.0f,
     val doDetect: Boolean = false,
     val hostDialogState: HostDialogState = HostDialogState.Closed,
 ) {
@@ -30,6 +31,7 @@ data class HostData(
                 clients = clients,
                 effect = effect,
                 doDetect = doDetect,
+                interval = interval,
                 hostDialogState = hostDialogState,
             )
         } else {

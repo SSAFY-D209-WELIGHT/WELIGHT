@@ -20,6 +20,7 @@ sealed interface HostState {
         val list: PersistentList<DisplayCardState>,
         val clients: Int,
         val effect: DisplayEffect,
+        val interval: Float,
         val doDetect: Boolean,
         val hostDialogState: HostDialogState,
     ) : HostState
