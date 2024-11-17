@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -135,7 +136,7 @@ fun WaitingRoomContent(
                 .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        GradientAppBar(onClick = { onIntent(HostIntent.Control.Exit) }) { }
+        GradientAppBar(modifier = Modifier.fillMaxWidth(), onClick = { onIntent(HostIntent.Control.Exit) }) { }
         Box(
             modifier =
                 Modifier
@@ -273,7 +274,8 @@ private fun CreationContent(
             modifier
                 .fillMaxSize()
                 .background(color = AppColor.BackgroundTransparent),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         ConfirmAppBar(
             modifier = Modifier.fillMaxWidth(),
@@ -284,11 +286,12 @@ private fun CreationContent(
                 )
             },
         )
+        RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "응원방 이름")
         RoundedTextInput(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
                     .focusRequester(focusRequester),
             autofocus = true,
             value = state.title,
@@ -297,11 +300,12 @@ private fun CreationContent(
             errorMessage = "제목을 입력해주세요.", // TODO : string resource,
             onValueChange = { onIntent(HostIntent.Creation.UpdateTitle(it)) },
         )
+        RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "응원방 설명")
         RoundedTextInput(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
             autofocus = true,
             value = state.description,
             hint = "설명", // TODO : string resource
@@ -309,12 +313,26 @@ private fun CreationContent(
             errorMessage = "",
             onValueChange = { onIntent(HostIntent.Creation.UpdateDescription(it)) },
         )
+        RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "디스플레이 목록")
         DisplayList(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier,
             list = state.list,
             onAdd = { onIntent(HostIntent.Creation.AddDisplay) },
         )
     }
+}
+
+@Composable
+private fun RowTitleText(
+    modifier: Modifier = Modifier,
+    text: String,
+) {
+    Text(
+        modifier = modifier,
+        text = text,
+        style = Pretendard.SemiBold20,
+        color = AppColor.OnSurface,
+    )
 }
 
 @Composable
@@ -324,9 +342,9 @@ private fun DisplayList(
     onAdd: () -> Unit,
 ) {
     RatioHorizontalPager(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         pageCount = list.size + 1,
-        pageRatio = 0.3f,
+        pageRatio = 0.4f,
     ) { index ->
         if (index == list.size) {
             Box(
@@ -338,7 +356,7 @@ private fun DisplayList(
                         .clickable { onAdd() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(imageVector = Icons.Default.AddCircle, contentDescription = "add")
+                Icon(modifier = Modifier.size(32.dp), imageVector = Icons.Default.AddCircle, contentDescription = "add")
             }
         } else {
             DisplayCard(
@@ -378,7 +396,7 @@ private fun CreationContentPreview() {
                 title = "title",
                 description = "description",
                 list = persistentListOf(),
-                dialogState = DialogState.Closed
+                dialogState = DialogState.Closed,
             ),
         onIntent = {},
     )
