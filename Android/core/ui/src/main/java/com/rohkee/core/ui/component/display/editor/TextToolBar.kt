@@ -58,9 +58,14 @@ fun TextToolBar(
         ) {
             OptionsButton(
                 containerColor = AppColor.Contrast,
-                onClick = { setSelected(TextOptions.Color) },
             ) {
-                ColorChip(modifier = Modifier.size(20.dp), color = state.color, isSelected = false)
+                ColorChip(
+                    modifier = Modifier.size(20.dp),
+                    color = state.color,
+                    isSelected = false,
+                    onClick =
+                        { setSelected(TextOptions.Color) },
+                )
             }
             OptionsButton(
                 icon = painterResource(TextOptions.Font.icon),
