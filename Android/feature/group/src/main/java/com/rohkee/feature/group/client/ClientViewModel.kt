@@ -65,7 +65,6 @@ class ClientViewModel @Inject constructor(
 
     fun onIntent(intent: ClientIntent) {
         when (intent) {
-            // TODO : handle intent
             is ClientIntent.ExitPage -> leaveRoom()
 
             is ClientIntent.ChangeGroup -> {
@@ -120,7 +119,6 @@ class ClientViewModel @Inject constructor(
         when (response) {
             is SocketResponse.DisplayControl ->
                 onDisplayControl(
-                    displayId = response.displayId,
                     offset = response.offset,
                     interval = response.interval,
                 )
@@ -280,18 +278,14 @@ class ClientViewModel @Inject constructor(
     }
 
     private fun onDisplayControl(
-        displayId: Long,
         offset: Float,
         interval: Float,
     ) {
         clientStateHolder.update {
             it.copy(
-                dialogState =
-                    ClientDialogState.StartCheer(
-                        displayId = displayId,
-                        offset = offset,
-                        interval = interval,
-                    ),
+                isCheering = true,
+                offset = offset,
+                interval = interval,
             )
         }
     }

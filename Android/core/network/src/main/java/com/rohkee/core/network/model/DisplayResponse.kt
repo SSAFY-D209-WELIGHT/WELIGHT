@@ -55,6 +55,12 @@ sealed interface DisplayResponse {
         val liked: Boolean,
         @SerialName("favorite")
         val favorite: Boolean,
+        @SerialName("images")
+        val images: List<DisplayImage> = emptyList(),
+        @SerialName("texts")
+        val texts: List<DisplayText> = emptyList(),
+        @SerialName("background")
+        val background: DisplayBackground,
     ) : DisplayResponse
 
     @Serializable

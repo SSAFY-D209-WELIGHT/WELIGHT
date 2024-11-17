@@ -1,6 +1,5 @@
 package com.rohkee.feature.detail
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,9 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.rohkee.core.ui.component.display.detail.DetailAppBar
 import com.rohkee.core.ui.component.display.detail.DetailAppBarState
-import com.rohkee.core.ui.component.display.detail.DetailDisplay
 import com.rohkee.core.ui.component.display.detail.DetailInfoState
 import com.rohkee.core.ui.component.display.detail.InfoBottomBar
+import com.rohkee.core.ui.component.display.editor.CustomDisplay
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
 import kotlinx.collections.immutable.persistentListOf
@@ -61,9 +60,10 @@ private fun EditContent(
         modifier = modifier,
     ) { innerPadding ->
         Box {
-            DetailDisplay(
-                modifier = Modifier.clickable { onIntent(DetailIntent.ToggleUI) },
-                imageSource = state.thumbnailUrl,
+            CustomDisplay(
+                imageState = state.displayImageState,
+                textState = state.displayTextState,
+                backgroundState = state.displayBackgroundState,
             )
             DetailAppBar(
                 modifier =

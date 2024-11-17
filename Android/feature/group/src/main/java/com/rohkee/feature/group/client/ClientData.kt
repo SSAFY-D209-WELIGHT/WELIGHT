@@ -12,6 +12,8 @@ data class ClientData(
     val participants: Int = 0,
     val groupNumber: Int = 1,
     val displays: List<Long> = emptyList(),
+    val offset: Float = 0f,
+    val interval: Float = 0f,
     val imageState: DisplayImageState = DisplayImageState(),
     val textState: DisplayTextState = DisplayTextState(),
     val backgroundState: DisplayBackgroundState = DisplayBackgroundState(),
@@ -22,7 +24,7 @@ data class ClientData(
         if (displays.isEmpty()) {
             ClientState.Loading
         } else {
-            if(!isCheering) {
+            if (!isCheering) {
                 ClientState.Loaded(
                     title = title,
                     description = description,
@@ -35,9 +37,11 @@ data class ClientData(
                 )
             } else {
                 ClientState.Cheering(
+                    offset = offset,
+                    interval = interval,
                     imageState = imageState,
                     textState = textState,
-                    backgroundState = backgroundState
+                    backgroundState = backgroundState,
                 )
             }
         }

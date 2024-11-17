@@ -19,6 +19,8 @@ sealed interface ClientState {
     ) : ClientState
 
     data class Cheering(
+        val offset: Float,
+        val interval: Float,
         val imageState: DisplayImageState,
         val textState: DisplayTextState,
         val backgroundState: DisplayBackgroundState,
