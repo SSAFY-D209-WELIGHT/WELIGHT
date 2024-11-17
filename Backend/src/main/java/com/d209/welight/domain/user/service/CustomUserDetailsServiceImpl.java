@@ -96,11 +96,14 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
 
     @Transactional
     public void createUser(SocialSignUpRequestDTO request, String image) {
+
+        String imgUrl = "https://ssafy-gumi02-d209.s3.ap-northeast-2.amazonaws.com/profileImg/default.png";  // 앱 내 기본 이미지
+
         User user = User.builder()
                 .userId(request.getUserId())
                 .userPassword(passwordEncoder.encode(""))
                 .userNickname(request.getUserNickname())
-                .userProfileImg(image)
+                .userProfileImg(imgUrl)
                 .userLogin(request.getUserLogin())
                 .userIsAdmin(false)
                 .userSignupDate(LocalDateTime.now())
