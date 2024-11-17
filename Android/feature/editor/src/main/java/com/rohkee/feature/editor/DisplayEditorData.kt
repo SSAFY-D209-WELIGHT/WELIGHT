@@ -217,3 +217,11 @@ internal fun MutableStateFlow<DisplayEditorData>.deselectObject() =
             .copyWithText(isSelected = false)
             .copyWithImage(isSelected = false)
     }
+
+internal fun MutableStateFlow<DisplayEditorData>.closeBottomBar() =
+    update {
+        this.value
+            .copy(bottomBarState = EditingState.None)
+            .copyWithText(isSelected = false)
+            .copyWithImage(isSelected = false)
+    }

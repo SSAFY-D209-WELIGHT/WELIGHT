@@ -204,7 +204,7 @@ fun WaitingRoomContent(
                 modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                 enabled = !state.doDetect,
                 value = state.interval,
-                valueRange = 0.5f..10.0f,
+                valueRange = 0.2f..3.0f,
                 onValueChange = { onIntent(HostIntent.Control.ChangeInterval(it)) },
                 colors =
                 SliderDefaults.colors(
