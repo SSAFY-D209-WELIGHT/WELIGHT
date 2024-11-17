@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.service;
 
+import com.d209.welight.domain.display.dto.DisplayImageDto;
 import com.d209.welight.domain.display.dto.request.DisplayCommentRequest;
 import com.d209.welight.domain.display.dto.request.DisplayCommentUpdateRequest;
 import com.d209.welight.domain.display.dto.request.DisplayDetailRequest;
@@ -146,6 +147,9 @@ public class DisplayServiceImpl implements DisplayService {
                     .isStored(isStored)
                     .likeCount(display.getDisplayLikeCount())
                     .downloadCount(display.getDisplayDownloadCount())
+                    .images(displayHelper.convertImagesToDto(display.getImages()))
+                    .background(displayHelper.convertBackgroundToDto(display.getBackground()))
+                    .texts(displayHelper.convertTextsToDto(display.getTexts()))
                     .commentCount(displayCommentRepository.countByDisplay(display))
                     .build();
 

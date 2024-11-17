@@ -1,5 +1,12 @@
 package com.d209.welight.domain.display.dto.response;
 
+import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
+import com.d209.welight.domain.display.dto.DisplayImageDto;
+import com.d209.welight.domain.display.dto.DisplayTextDto;
+import com.d209.welight.domain.display.entity.DisplayBackground;
+import com.d209.welight.domain.display.entity.DisplayImage;
+import com.d209.welight.domain.display.entity.DisplayText;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,4 +37,8 @@ public class DisplayDetailResponse implements Serializable {
     private Long downloadCount = 0L; // 다운로드 수
     @Builder.Default
     private Long commentCount = 0L; // 댓글 수
+
+    private List<DisplayImageDto> images;  // 이미지 정보
+    private List<DisplayTextDto> texts;  // 텍스트 정보
+    private DisplayBackgroundDto background;  // 배경 정보
 }

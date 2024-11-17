@@ -373,4 +373,41 @@ public class DisplayHelper {
         }
     }
 
+    public List<DisplayImageDto> convertImagesToDto(List<DisplayImage> images) {
+        return images.stream()
+                .map(image -> DisplayImageDto.builder()
+                        .displayImgUrl(image.getDisplayImgUrl())
+                        .displayImgColor(image.getDisplayImgColor())
+                        .displayImgScale(image.getDisplayImgScale())
+                        .displayImgRotation(image.getDisplayImgRotation())
+                        .displayImgOffsetx(image.getDisplayImgOffsetx())
+                        .displayImgOffsety(image.getDisplayImgOffsety())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public List<DisplayTextDto> convertTextsToDto(List<DisplayText> texts) {
+        return texts.stream()
+                .map(text -> DisplayTextDto.builder()
+                        .displayTextDetail(text.getDisplayTextDetail())
+                        .displayTextColor(text.getDisplayTextColor())
+                        .displayTextFont(text.getDisplayTextFont())
+                        .displayTextScale(text.getDisplayTextScale())
+                        .displayTextRotation(text.getDisplayTextRotation())
+                        .displayTextOffsetx(text.getDisplayTextOffsetx())
+                        .displayTextOffsety(text.getDisplayTextOffsety())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public DisplayBackgroundDto convertBackgroundToDto(DisplayBackground background) {
+        return DisplayBackgroundDto.builder()
+                .displayBackgroundBrightness(background.getDisplayBackgroundBrightness())
+                .displayColorSolid(background.getDisplayColorSolid())
+                .displayBackgroundGradationColor1(background.getDisplayBackgroundGradationColor1())
+                .displayBackgroundGradationColor2(background.getDisplayBackgroundGradationColor2())
+                .displayBackgroundGradationType(background.getDisplayBackgroundGradationType())
+                .build();
+    }
+
 }

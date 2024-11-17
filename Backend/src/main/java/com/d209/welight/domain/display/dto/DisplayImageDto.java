@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayImageDto {
+public class DisplayImageDto implements Serializable {
     @Schema(description = "이미지 URL", example = "https://example.com/cherry_blossom_full.jpg")
     private String displayImgUrl;
 

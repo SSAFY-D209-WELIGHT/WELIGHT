@@ -2,6 +2,8 @@ package com.d209.welight.domain.display.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayText {
+public class DisplayText{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "DISPLAY_TEXT_UID")

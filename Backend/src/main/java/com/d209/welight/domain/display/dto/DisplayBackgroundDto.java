@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayBackgroundDto {
+public class DisplayBackgroundDto implements Serializable {
 
     @Schema(description = "배경 밝기", example = "0.9")
     private Float displayBackgroundBrightness; // 배경 밝기 추가

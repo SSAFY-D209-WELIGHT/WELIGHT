@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DisplayTextDto {
+public class DisplayTextDto implements Serializable {
 
     @Schema(description = "텍스트 내용", example = "아름다운 봄, 벚꽃 축제에 여러분을 초대합니다")
     private String displayTextDetail; // 텍스트 내용 (VARCHAR(255))
