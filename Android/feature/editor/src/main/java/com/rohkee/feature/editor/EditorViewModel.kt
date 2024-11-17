@@ -114,7 +114,7 @@ class EditorViewModel @Inject constructor(
 
             is EditorIntent.TextObject.Tapped -> editorStateHolder.selectTextObject()
 
-            is EditorIntent.Background.Tapped -> editorStateHolder.selectBackground()
+            is EditorIntent.Background.Tapped -> editorStateHolder.deselectObject()
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()
@@ -315,6 +315,7 @@ class EditorViewModel @Inject constructor(
         bitmap: GraphicsLayer,
     ) {
         val editorData = editorStateHolder.value
+        editorStateHolder.deselectObject()
 
         if (editorData.editorInfoState.title
                 .isEmpty()

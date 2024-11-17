@@ -65,9 +65,9 @@ fun StorageContent(
         }
         CreateDisplayButton(
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
             onClick = { onIntent(StorageIntent.CreateNewDisplay) },
         )
     }
@@ -104,7 +104,7 @@ private fun LoadedContent(
         modifier = modifier,
         isRefreshing = displayList.loadState.refresh is LoadState.Loading,
         onRefresh = { displayList.refresh() },
-    ){
+    ) {
         RatioHorizontalPager(
             pageCount = displayList.itemCount,
         ) { index ->

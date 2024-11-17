@@ -83,6 +83,7 @@ class DetailViewModel @Inject constructor(
                             title = data.title,
                             tags = data.tags.toPersistentList(),
                             author = data.authorName,
+                            stored = data.stored,
                             liked = data.liked,
                             like = data.likes,
                             download = data.downloads,
@@ -194,8 +195,10 @@ class DetailViewModel @Inject constructor(
     private fun duplicateDisplay() {
         viewModelScope.launch {
             displayRepository.duplicateDisplay(id).handle(
-                onSuccess = {
-                    detailEvent.emit(DetailEvent.Duplicate.Success(displayId = id))
+                onSuccess = { response ->
+                    response?.let {
+                        detailEvent.emit(DetailEvent.Duplicate.Success(displayId = response.id))
+                    }
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Duplicate.Error) },
             )

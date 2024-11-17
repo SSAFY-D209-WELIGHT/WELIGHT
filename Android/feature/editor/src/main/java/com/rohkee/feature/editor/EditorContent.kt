@@ -160,7 +160,7 @@ private fun EditContent(
                     onTextTransformed = { onIntent(EditorIntent.TextObject.Transform(it)) },
                     onImageTapped = { onIntent(EditorIntent.ImageObject.Tapped) },
                     onTextTapped = { onIntent(EditorIntent.TextObject.Tapped) },
-                    onBackgroundTapped = {  },
+                    onBackgroundTapped = { onIntent(EditorIntent.Background.Tapped) },
                 )
             }
 
