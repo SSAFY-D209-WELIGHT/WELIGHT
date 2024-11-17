@@ -45,7 +45,7 @@ public class DisplaySearchServiceImpl implements DisplaySearchService {
 
             // 키워드로만 검색
             if (keyword != null && !keyword.isEmpty()) {
-                Page<DisplayDocument> displayResults = displaySearchRepository.findByDisplayNameContainingOrTagsContainingAndDisplayIsPostedTrue(
+                Page<DisplayDocument> displayResults = displaySearchRepository.findByDisplayIsPostedTrueAndDisplayNameContainingOrDisplayIsPostedTrueAndTagsContaining(
                         keyword,  // displayName 검색용
                         keyword,  // tags 검색용
                         pageable
