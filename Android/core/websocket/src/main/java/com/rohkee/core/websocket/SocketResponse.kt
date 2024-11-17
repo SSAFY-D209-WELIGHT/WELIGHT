@@ -48,6 +48,7 @@ sealed interface SocketResponse {
 
     @Serializable
     data class GroupChange(
+        val roomId: Long,
         val groupNumber: Int,
     ) : SocketResponse
 

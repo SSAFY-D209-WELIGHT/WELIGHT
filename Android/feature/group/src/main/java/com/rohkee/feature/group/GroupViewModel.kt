@@ -47,7 +47,6 @@ class GroupViewModel @Inject constructor(
             GroupIntent.LoadGroupList -> viewModelScope.launch { loadData() }
             is GroupIntent.UpdateLocation ->
                 groupStateHolder.update {
-                    Log.d("TAG", "onIntent: ${intent.latitude} ${intent.longitude}")
                     it.copy(currentPostion = LatLng(intent.latitude, intent.longitude))
                 }
         }

@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CheerResponse(
     @SerialName("cheerroomUid")
+    val id: Long,
+    @SerialName("cheerroomNumber")
     val roomId: Long,
     @SerialName("cheerroomName")
     val roomName: String,

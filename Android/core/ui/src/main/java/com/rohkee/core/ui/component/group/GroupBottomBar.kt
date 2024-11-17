@@ -1,6 +1,7 @@
 package com.rohkee.core.ui.component.group
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,7 +87,8 @@ fun GroupBottomBar(
                     Modifier
                         .wrapContentWidth()
                         .background(color = AppColor.Convex, shape = RoundedCornerShape(8.dp))
-                        .padding(start = 16.dp, top = 4.dp, bottom = 4.dp, end = 8.dp),
+                        .padding(start = 16.dp, top = 4.dp, bottom = 4.dp, end = 8.dp)
+                        .clickable { setOpenDropdown(true) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {

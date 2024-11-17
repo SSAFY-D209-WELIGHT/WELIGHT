@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.rohkee.core.datastore.repository.DataStoreRepository
+import com.rohkee.core.network.repository.DisplayRepository
+import com.rohkee.core.network.util.handle
 import com.rohkee.core.websocket.SocketRequest
 import com.rohkee.core.websocket.SocketResponse
 import com.rohkee.core.websocket.User
@@ -29,6 +31,7 @@ private const val TAG = "ClientViewModel"
 class ClientViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val dataStoreRepository: DataStoreRepository,
+    private val displayRepository: DisplayRepository,
     private val webSocketClient: WebSocketClient,
 ) : ViewModel() {
     private val roomId = savedStateHandle.toRoute<ClientRoute>().roomId
@@ -54,10 +57,7 @@ class ClientViewModel @Inject constructor(
     fun onIntent(intent: ClientIntent) {
         when (intent) {
             // TODO : handle intent
-            is ClientIntent.ExitPage -> {
-                webSocketClient.emit(SocketRequest.LeaveRoom(clientStateHolder.value.roomId))
-                emitEvent(ClientEvent.ExitPage)
-            }
+            is ClientIntent.ExitPage -> leaveRoom()
 
             is ClientIntent.ChangeGroup -> {
                 webSocketClient.emit(
@@ -67,6 +67,8 @@ class ClientViewModel @Inject constructor(
                     ),
                 )
             }
+
+            is ClientIntent.CheerDialog.Cancel -> leaveRoom()
         }
     }
 
@@ -139,8 +141,7 @@ class ClientViewModel @Inject constructor(
                     description = response.description,
                     clientCount = response.clientCount,
                     groupNumber = response.groupNumber,
-                    display = response.displays.first().displayId,
-                    groupSize = response.displays.size,
+                    displays = response.displays.map { it.displayId },
                 )
 
             is SocketResponse.CheerEnd -> onCheerEnd()
@@ -150,13 +151,18 @@ class ClientViewModel @Inject constructor(
         }
     }
 
+    private fun leaveRoom() {
+        webSocketClient.emit(SocketRequest.LeaveRoom(clientStateHolder.value.roomId))
+        emitEvent(ClientEvent.ExitPage)
+    }
+
     private fun joinRoom() {
         viewModelScope.launch {
-            dataStoreRepository.getUserId()?.let { userId ->
+            dataStoreRepository.getAccessToken()?.let { token ->
                 webSocketClient.emit(
                     SocketRequest.JoinRoom(
                         roomId = clientStateHolder.value.roomId,
-                        user = User(userId),
+                        user = User(token),
                     ),
                 )
             }
@@ -172,7 +178,7 @@ class ClientViewModel @Inject constructor(
             it.copy(
                 dialogState =
                     ClientDialogState.StartCheer(
-                        displayId = it.displayId!!,
+                        displayId = it.displays[it.groupNumber - 1],
                         offset = 0f,
                         interval = 0f,
                     ),
@@ -185,14 +191,11 @@ class ClientViewModel @Inject constructor(
     }
 
     private fun onDisplayChanged(displays: List<Long>) {
-        if (clientStateHolder.value.groupNumber >= displays.size) {
-            clientStateHolder.update {
-                it.copy(groupNumber = displays.size, displayId = displays.last())
-            }
-        } else {
-            clientStateHolder.update {
-                it.copy(displayId = displays[clientStateHolder.value.groupNumber - 1])
-            }
+        clientStateHolder.update {
+            it.copy(
+                groupNumber = if (clientStateHolder.value.groupNumber >= displays.size) displays.size else it.groupNumber,
+                displays = displays,
+            )
         }
     }
 
@@ -201,17 +204,25 @@ class ClientViewModel @Inject constructor(
         description: String,
         clientCount: Int,
         groupNumber: Int,
-        groupSize: Int,
-        display: Long,
+        displays: List<Long>,
     ) {
-        clientStateHolder.update {
-            it.copy(
-                title = title,
-                description = description,
-                participants = clientCount,
-                groupNumber = groupNumber,
-                displayId = display,
-                groupSize = groupSize,
+        viewModelScope.launch {
+            displayRepository.getDisplayDetail(displays[groupNumber - 1]).handle(
+                onSuccess = { response ->
+                    clientStateHolder.update {
+                        it.copy(
+                            title = title,
+                            description = description,
+                            participants = clientCount,
+                            groupNumber = groupNumber,
+                            displays = displays,
+                            thumbnailUrl = response?.thumbnailUrl,
+                        )
+                    }
+                },
+                onError = { _, message ->
+                    Log.d(TAG, "onRoomJoined: $message")
+                },
             )
         }
     }
@@ -221,21 +232,34 @@ class ClientViewModel @Inject constructor(
         offset: Float,
         interval: Float,
     ) {
-        if (clientStateHolder.value.dialogState is ClientDialogState.StartCheer) {
-            clientStateHolder.update {
-                it.copy(
-                    dialogState =
-                        ClientDialogState.StartCheer(
-                            displayId = displayId,
-                            offset = offset,
-                            interval = interval,
-                        ),
-                )
-            }
+        clientStateHolder.update {
+            it.copy(
+                dialogState =
+                    ClientDialogState.StartCheer(
+                        displayId = displayId,
+                        offset = offset,
+                        interval = interval,
+                    ),
+            )
         }
     }
 
     private fun onGroupChanged(groupNumber: Int) {
+        viewModelScope.launch {
+            displayRepository.getDisplayDetail(clientStateHolder.value.displays[groupNumber - 1]).handle(
+                onSuccess = { response ->
+                    clientStateHolder.update {
+                        it.copy(
+                            groupNumber = groupNumber,
+                            thumbnailUrl = response?.thumbnailUrl,
+                        )
+                    }
+                },
+                onError = { _, message ->
+                    Log.d(TAG, "onGroupChanged: $message")
+                },
+            )
+        }
         clientStateHolder.update {
             it.copy(groupNumber = groupNumber)
         }

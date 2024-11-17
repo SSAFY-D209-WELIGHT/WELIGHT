@@ -17,6 +17,8 @@ import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
 import com.rohkee.feature.group.dialog.CheerDialog
 
+private const val TAG = "ClientContent"
+
 @Composable
 fun ClientContent(
     modifier: Modifier = Modifier,
@@ -25,7 +27,7 @@ fun ClientContent(
 ) {
     if (state is ClientState.Loaded && state.dialogState is ClientDialogState.StartCheer) {
         CheerDialog(
-            displayId = state.displayId!!,
+            displayId = state.displays[state.groupNumber - 1],
             offset = state.dialogState.offset,
             interval = state.dialogState.interval,
             onDismiss = { onIntent(ClientIntent.CheerDialog.Cancel) },
@@ -40,16 +42,18 @@ fun ClientContent(
                 ClientState.Loading -> {
                     Box(
                         modifier =
-                            Modifier.fillMaxSize().animateGradientBackground(
-                                startColor = AppColor.Background,
-                                endColor = AppColor.OnSurface,
-                            ),
+                            Modifier
+                                .fillMaxSize()
+                                .animateGradientBackground(
+                                    startColor = AppColor.Background,
+                                    endColor = AppColor.OnSurface,
+                                ),
                     )
                 }
 
                 is ClientState.Loaded -> {
                     DetailDisplay(
-                        modifier = Modifier,
+                        modifier = Modifier.fillMaxSize(),
                         imageSource = state.thumbnailUrl,
                     )
                     GroupBottomBar(
@@ -63,7 +67,7 @@ fun ClientContent(
                                 title = state.title,
                                 description = state.description,
                                 groupNumber = state.groupNumber,
-                                groupSize = state.groupSize,
+                                groupSize = state.displays.size,
                             ),
                         onGroupChange = { onIntent(ClientIntent.ChangeGroup(it)) },
                     )
@@ -91,9 +95,8 @@ private fun ClientContentPreview() {
                 title = "제목",
                 description = "설명",
                 groupNumber = 1,
-                groupSize = 5,
                 thumbnailUrl = null,
-                displayId = null,
+                displays = listOf(1L, 2L, 3L),
                 dialogState = ClientDialogState.Closed,
             ),
     )

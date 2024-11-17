@@ -227,7 +227,7 @@ class HostViewModel @Inject constructor(
         longitude: Double,
     ) {
         viewModelScope.launch {
-            dataStoreRepository.getUserId()?.let { userId ->
+            dataStoreRepository.getAccessToken()?.let { token ->
                 val data = hostStateHolder.value
 
                 if (data.list.isEmpty()) return@launch
@@ -238,7 +238,7 @@ class HostViewModel @Inject constructor(
                         description = data.description,
                         location = Location(latitude = latitude, longitude = longitude),
                         displays = data.list.map { Display.Group(it.displayId) },
-                        user = User(id = userId),
+                        user = User(token),
                     ),
                 )
             }

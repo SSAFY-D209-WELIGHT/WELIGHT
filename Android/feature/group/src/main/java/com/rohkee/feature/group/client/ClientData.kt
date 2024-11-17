@@ -8,22 +8,20 @@ data class ClientData(
     val description: String = "",
     val participants: Int = 0,
     val groupNumber: Int = 1,
-    val groupSize: Int = 1,
-    val displayId: Long? = null,
+    val displays: List<Long> = emptyList(),
     val thumbnailUrl: String? = null,
     val dialogState: ClientDialogState = ClientDialogState.Closed,
 ) {
     fun toState(): ClientState =
-        if (displayId == null) {
+        if (displays.isEmpty()) {
             ClientState.Loading
         } else {
             ClientState.Loaded(
                 title = title,
                 description = description,
                 groupNumber = groupNumber,
-                groupSize = groupSize,
                 thumbnailUrl = thumbnailUrl,
-                displayId = displayId,
+                displays = displays,
                 dialogState = dialogState,
             )
         }

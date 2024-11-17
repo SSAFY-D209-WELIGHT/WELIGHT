@@ -85,5 +85,5 @@ sealed interface SocketRequest {
 
 @Serializable
 data class User(
-    val id: Long,
+    val token: String,
 )

@@ -7,9 +7,10 @@ sealed interface ClientState {
         val title: String,
         val description: String,
         val groupNumber: Int,
-        val groupSize: Int,
-        val displayId: Long?,
+        val displays: List<Long>,
         val thumbnailUrl: String?,
         val dialogState: ClientDialogState,
     ) : ClientState
+
+
 }
