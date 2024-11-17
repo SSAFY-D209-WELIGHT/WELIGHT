@@ -214,7 +214,7 @@ class ClientViewModel @Inject constructor(
         displays: List<Long>,
     ) {
         viewModelScope.launch {
-            displayRepository.getDisplayEdit(displays[groupNumber - 1]).handle(
+            displayRepository.getDisplayDetail(displays[groupNumber - 1]).handle(
                 onSuccess = { response ->
                     response?.let {
                         clientStateHolder.update {
@@ -293,7 +293,7 @@ class ClientViewModel @Inject constructor(
     private fun onGroupChanged(groupNumber: Int) {
         viewModelScope.launch {
             displayRepository
-                .getDisplayEdit(clientStateHolder.value.displays[groupNumber - 1])
+                .getDisplayDetail(clientStateHolder.value.displays[groupNumber - 1])
                 .handle(
                     onSuccess = { response ->
                         response?.let {
