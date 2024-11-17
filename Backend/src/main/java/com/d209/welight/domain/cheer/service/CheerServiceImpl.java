@@ -233,7 +233,7 @@ public class CheerServiceImpl implements CheerService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
-        Cheerroom cheerroom = cheerroomRepository.findByNumber(cheeroomNumber)
+        Cheerroom cheerroom = cheerroomRepository.findByNumberAndIsDoneFalse(cheeroomNumber)
                 .orElseThrow(() -> new CheerNotFoundException("응원방을 찾을 수 없습니다."));
 
         Long cheerroomId = cheerroom.getId();
