@@ -104,6 +104,12 @@ class HostViewModel @Inject constructor(
                 emitEvent(HostEvent.ExitPage)
             },
         )
+
+        viewModelScope.launch {
+            webSocketClient.socketEventCallbacks().collect {
+                handleResponse(it)
+            }
+        }
     }
 
     private fun handleResponse(response: SocketResponse) {
