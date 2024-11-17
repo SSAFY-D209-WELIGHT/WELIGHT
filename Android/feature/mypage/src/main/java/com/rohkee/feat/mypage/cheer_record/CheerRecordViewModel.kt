@@ -42,7 +42,7 @@ class CheerRecordViewModel @Inject constructor(
                                                 participationDate = record.participationDate,
                                                 cheerRoomName = record.cheerRoomName,
                                                 participantCount = record.participantCount,
-                                                memo = record.memo,
+                                                memo = record.memo ?: "",
                                                 thumbnailUrl = record.displays.firstOrNull()?.thumbnailUrl,
                                             )
                                         }.toPersistentList(),

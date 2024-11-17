@@ -32,7 +32,7 @@ data class CheerRecord(
     @SerialName("participantCount")
     val participantCount: Int, // 참여 인원
     @SerialName("memo")
-    val memo: String, // 메모
+    val memo: String?, // 메모
     @SerialName("displays")
     val displays: List<DisplayRecord>, // 디스플레이 정보
 )
