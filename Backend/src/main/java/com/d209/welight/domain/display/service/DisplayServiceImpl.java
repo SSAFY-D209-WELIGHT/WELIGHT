@@ -448,24 +448,22 @@ public class DisplayServiceImpl implements DisplayService {
         }
     }
 
-    /*
-     * 디스플레이 저장소 (다운로드, 삭제)
-     * */
     @Override
     @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse downloadDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
-
+    
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-
+    
         // 2. 이미 이 회원이 이 display를 저장했는지 확인
         if (displayStorageRepository.existsByUserAndDisplay(user, display)) {
+            log.error("디스플레이 다운로드 실패: 이미 저장된 디스플레이 - 사용자 ID {} 디스플레이 ID {}", userId, displayUid);
             throw new IllegalStateException("이미 저장한 디스플레이입니다.");
         }
-
+    
         // displayStorage 생성
         // 3. displayStorage 생성 및 저장
         DisplayStorage displayStorage = DisplayStorage.builder()
@@ -475,13 +473,15 @@ public class DisplayServiceImpl implements DisplayService {
                 .isFavorites(false)
                 .favoritesAt(null)
                 .build();
-
+    
         displayStorageRepository.save(displayStorage);
-
+    
         // 4. Display의 Display_download_count 횟수 +1
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() + 1);
         displayRepository.save(display);
-
+    
+        log.info("디스플레이 다운로드 성공: 사용자 ID {} 디스플레이 ID {}", userId, displayUid);
+    
         // 응답 객체 생성 및 반환
         return DisplayCreateResponse.builder()
                 .displayUid(display.getDisplayUid())
@@ -489,32 +489,43 @@ public class DisplayServiceImpl implements DisplayService {
                 .message("디스플레이가 성공적으로 다운로드되었습니다.")
                 .build();
     }
-
+    
     @Override
     @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)
         Display display = displayRepository.findById(displayUid)
                 .orElseThrow(() -> new NotFoundException("디스플레이를 찾을 수 없습니다."));
-
+    
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-
-        // 2. 저장된 디스플레이가 존재하는지 확인
+    
+        // 2. 생성자인 경우 deleteDisplay 호출
+        if (display.getCreatorUid().equals(user.getUserUid())) {
+            deleteDisplay(displayUid, userId);
+            return DisplayCreateResponse.builder()
+                    .displayUid(display.getDisplayUid())
+                    .displayName(display.getDisplayName())
+                    .message("디스플레이가 완전히 삭제되었습니다.")
+                    .build();
+        }
+    
+        // 3. 일반 사용자의 경우 저장소에서만 삭제
         if (!displayStorageRepository.existsByUserAndDisplay(user, display)) {
+            log.error("저장된 디스플레이 삭제 실패: 저장되지 않은 디스플레이 - 사용자 ID {} 디스플레이 ID {}", userId, displayUid);
             throw new IllegalStateException("저장된 디스플레이를 찾을 수 없습니다.");
         }
-
-        // 3. 저장소에서 삭제
+    
         DisplayStorage storedDisplay = displayStorageRepository.findByUserAndDisplay(user, display)
                 .orElseThrow(() -> new EntityNotFoundException("저장한 디스플레이가 아닙니다."));
         displayStorageRepository.delete(storedDisplay);
-
+    
         // 4. Display의 Display_download_count 횟수 -1
         display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
         displayRepository.save(display);
-
-        // 응답 객체 생성 및 반환
+    
+        log.info("저장된 디스플레이 삭제 성공: 사용자 ID {} 디스플레이 ID {}", userId, displayUid);
+    
         return DisplayCreateResponse.builder()
                 .displayUid(display.getDisplayUid())
                 .displayName(display.getDisplayName())

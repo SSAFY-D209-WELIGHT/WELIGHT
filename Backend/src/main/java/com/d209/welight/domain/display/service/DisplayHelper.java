@@ -258,11 +258,17 @@ public class DisplayHelper {
         // 확장자 추출
         String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
 
-        // 경로 구조: {userId}/{type}/{원본파일명}_{timestamp}{확장자}
+        // 파일명에서 특수문자와 공백을 제거하고 안전한 문자로 대체
+        String safeFileName = fileNameWithoutExtension
+        .replaceAll("[^a-zA-Z0-9가-힣]", "_")  // 특수문자와 공백을 언더스코어로 대체
+        .replaceAll("_{2,}", "_")              // 연속된 언더스코어를 하나로 통합
+        .trim();                               // 앞뒤 공백 제거
+
+        // 경로 구조: {userId}/{type}/{안전한파일명}_{timestamp}{확장자}
         return String.format("%s/%s/%s_%s%s",
                 userId,
                 type,
-                fileNameWithoutExtension,
+                safeFileName,
                 timestamp,
                 extension);
     }
