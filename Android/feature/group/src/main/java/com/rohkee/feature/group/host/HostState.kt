@@ -10,7 +10,7 @@ sealed interface HostState {
         val title: String,
         val description: String,
         val list: PersistentList<DisplayCardState>,
-        val dialogState: DialogState,
+        val hostDialogState: HostDialogState,
     ) : HostState
 
     @Immutable
@@ -21,6 +21,6 @@ sealed interface HostState {
         val clients: Int,
         val effect: DisplayEffect,
         val doDetect: Boolean,
-        val dialogState: DialogState,
+        val hostDialogState: HostDialogState,
     ) : HostState
 }

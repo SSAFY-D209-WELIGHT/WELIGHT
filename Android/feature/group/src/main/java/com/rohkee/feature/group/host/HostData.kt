@@ -11,7 +11,7 @@ data class HostData(
     val list: List<GroupDisplayData> = emptyList(),
     val effect: DisplayEffect = DisplayEffect.NONE,
     val doDetect: Boolean = false,
-    val dialogState: DialogState = DialogState.Closed,
+    val hostDialogState: HostDialogState = HostDialogState.Closed,
 ) {
     fun toState() =
         if (roomId > 0) {
@@ -30,7 +30,7 @@ data class HostData(
                 clients = clients,
                 effect = effect,
                 doDetect = doDetect,
-                dialogState = dialogState,
+                hostDialogState = hostDialogState,
             )
         } else {
             HostState.Creation(
@@ -45,7 +45,7 @@ data class HostData(
                                 selected = false,
                             )
                         }.toPersistentList(),
-                dialogState = dialogState,
+                hostDialogState = hostDialogState,
             )
         }
 }
@@ -55,14 +55,14 @@ data class GroupDisplayData(
     val thumbnailUrl: String,
 )
 
-sealed interface DialogState {
-    data object Closed : DialogState
+sealed interface HostDialogState {
+    data object Closed : HostDialogState
 
-    data object SelectDisplay : DialogState
+    data object SelectDisplay : HostDialogState
 
     data class StartCheer(
         val displayId: Long,
         val offset: Float,
         val interval: Float,
-    ) : DialogState
+    ) : HostDialogState
 }

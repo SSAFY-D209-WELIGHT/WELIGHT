@@ -45,7 +45,7 @@ class HostViewModel @Inject constructor(
                         title = "",
                         description = "",
                         list = persistentListOf(),
-                        dialogState = DialogState.Closed,
+                        hostDialogState = HostDialogState.Closed,
                     ),
             )
 
@@ -55,7 +55,7 @@ class HostViewModel @Inject constructor(
 
     fun onIntent(intent: HostIntent) {
         when (intent) {
-            HostIntent.Control.AddDisplayGroup -> hostStateHolder.update { it.copy(dialogState = DialogState.SelectDisplay) }
+            HostIntent.Control.AddDisplayGroup -> hostStateHolder.update { it.copy(hostDialogState = HostDialogState.SelectDisplay) }
 
             is HostIntent.Control.ChangeEffect ->
                 hostStateHolder.update {
@@ -72,7 +72,7 @@ class HostViewModel @Inject constructor(
                     longitude = intent.longitude,
                 )
 
-            HostIntent.SelectionDialog.Cancel -> hostStateHolder.update { it.copy(dialogState = DialogState.Closed) }
+            HostIntent.SelectionDialog.Cancel -> hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
             is HostIntent.SelectionDialog.SelectDisplay ->
                 addDisplayGroup(
                     intent.displayId,
@@ -80,7 +80,7 @@ class HostViewModel @Inject constructor(
                 )
 
             HostIntent.Creation.AddDisplay -> {
-                hostStateHolder.update { it.copy(dialogState = DialogState.SelectDisplay) }
+                hostStateHolder.update { it.copy(hostDialogState = HostDialogState.SelectDisplay) }
             }
 
             is HostIntent.Creation.UpdateDescription -> hostStateHolder.update { it.copy(description = intent.description) }
@@ -172,7 +172,7 @@ class HostViewModel @Inject constructor(
 
     private fun endCheer() {
         webSocketClient.emit(SocketRequest.EndCheer(hostStateHolder.value.roomId))
-        hostStateHolder.update { it.copy(dialogState = DialogState.Closed) }
+        hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
     }
 
     private fun displayControl(
@@ -180,11 +180,11 @@ class HostViewModel @Inject constructor(
         offset: Float,
         interval: Float,
     ) {
-        if (hostStateHolder.value.dialogState is DialogState.StartCheer) {
+        if (hostStateHolder.value.hostDialogState is HostDialogState.StartCheer) {
             hostStateHolder.update {
                 it.copy(
-                    dialogState =
-                        DialogState.StartCheer(
+                    hostDialogState =
+                        HostDialogState.StartCheer(
                             displayId = displayId,
                             offset = offset,
                             interval = interval,
@@ -211,8 +211,8 @@ class HostViewModel @Inject constructor(
     private fun onCheerStart() {
         hostStateHolder.update {
             it.copy(
-                dialogState =
-                    DialogState.StartCheer(
+                hostDialogState =
+                    HostDialogState.StartCheer(
                         displayId = it.list.first().displayId,
                         offset = 0f,
                         interval = 0f,
@@ -272,7 +272,7 @@ class HostViewModel @Inject constructor(
         hostStateHolder.update {
             it.copy(
                 list = newList,
-                dialogState = DialogState.Closed,
+                hostDialogState = HostDialogState.Closed,
             )
         }
     }

@@ -34,15 +34,15 @@ import com.rohkee.core.ui.theme.Pretendard
 data class GroupBottomBarState(
     val title: String,
     val description: String,
-    val groupId: Long,
-    val groupSize: Long,
+    val groupNumber: Int,
+    val groupSize: Int,
 )
 
 @Composable
 fun GroupBottomBar(
     modifier: Modifier = Modifier,
     state: GroupBottomBarState,
-    onGroupChange: (Long) -> Unit = {},
+    onGroupChange: (Int) -> Unit = {},
 ) {
     val (openDropdown, setOpenDropdown) = remember { mutableStateOf(false) }
 
@@ -91,7 +91,7 @@ fun GroupBottomBar(
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 Text(
-                    text = "${state.groupId}번 그룹",
+                    text = "${state.groupNumber}번 그룹",
                     style = Pretendard.SemiBold16,
                     color = AppColor.OnConvex,
                 )
@@ -136,7 +136,7 @@ private fun GroupBottomBarPreview() {
             GroupBottomBarState(
                 title = "제목",
                 description = "설명",
-                groupId = 1,
+                groupNumber = 1,
                 groupSize = 5,
             ),
     )

@@ -6,8 +6,8 @@ sealed interface ClientState {
     data class Loaded(
         val title: String,
         val description: String,
-        val groupId: Long,
-        val groupSize: Long,
+        val groupNumber: Int,
+        val groupSize: Int,
         val displayId: Long?,
         val thumbnailUrl: String?,
     ) : ClientState

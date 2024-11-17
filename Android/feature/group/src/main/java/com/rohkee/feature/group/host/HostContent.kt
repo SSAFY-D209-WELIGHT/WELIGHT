@@ -79,9 +79,9 @@ fun HostContent(
     onIntent: (HostIntent) -> Unit = {},
 ) {
     if (state is HostState.Creation &&
-        state.dialogState is DialogState.SelectDisplay ||
+        state.hostDialogState is HostDialogState.SelectDisplay ||
         state is HostState.WaitingRoom &&
-        state.dialogState is DialogState.SelectDisplay
+        state.hostDialogState is HostDialogState.SelectDisplay
     ) {
         DisplaySelectionDialog(
             modifier = Modifier.fillMaxSize(),
@@ -129,11 +129,11 @@ fun WaitingRoomContent(
 
     val (checked, setChecked) = remember(state) { mutableStateOf(state.doDetect) }
 
-    if (state.dialogState is DialogState.StartCheer) {
+    if (state.hostDialogState is HostDialogState.StartCheer) {
         CheerDialog(
-            displayId = state.dialogState.displayId,
-            offset = state.dialogState.offset,
-            interval = state.dialogState.interval,
+            displayId = state.hostDialogState.displayId,
+            offset = state.hostDialogState.offset,
+            interval = state.hostDialogState.interval,
             onDismiss = { onIntent(HostIntent.CheerDialog.Cancel) },
         )
     }
@@ -416,7 +416,7 @@ private fun WaitingRoomContentPreview() {
                 clients = 15,
                 effect = DisplayEffect.NONE,
                 doDetect = false,
-                dialogState = DialogState.Closed,
+                hostDialogState = HostDialogState.Closed,
             ),
         onIntent = {},
     )
@@ -432,7 +432,7 @@ private fun CreationContentPreview() {
                 title = "title",
                 description = "description",
                 list = persistentListOf(),
-                dialogState = DialogState.Closed,
+                hostDialogState = HostDialogState.Closed,
             ),
         onIntent = {},
     )

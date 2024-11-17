@@ -32,7 +32,7 @@ fun ClientContent(
                         modifier =
                             Modifier.fillMaxSize().animateGradientBackground(
                                 startColor = AppColor.Background,
-                                endColor = AppColor.Surface,
+                                endColor = AppColor.OnSurface,
                             ),
                     )
                 }
@@ -52,7 +52,7 @@ fun ClientContent(
                             GroupBottomBarState(
                                 title = state.title,
                                 description = state.description,
-                                groupId = state.groupId,
+                                groupNumber = state.groupNumber,
                                 groupSize = state.groupSize,
                             ),
                         onGroupChange = { onIntent(ClientIntent.ChangeGroup(it)) },
@@ -66,6 +66,7 @@ fun ClientContent(
                         .fillMaxWidth()
                         .align(Alignment.TopCenter)
                         .padding(top = innerPadding.calculateTopPadding()),
+                onClick = { onIntent(ClientIntent.ExitPage) },
             ) {}
         }
     }
@@ -79,7 +80,7 @@ private fun ClientContentPreview() {
             ClientState.Loaded(
                 title = "제목",
                 description = "설명",
-                groupId = 1,
+                groupNumber = 1,
                 groupSize = 5,
                 thumbnailUrl = null,
                 displayId = null,
