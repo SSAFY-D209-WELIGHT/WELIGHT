@@ -4,6 +4,24 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class CheerResponse(
+    @SerialName("cheerroomUid")
+    val roomId: Long,
+    @SerialName("cheerroomName")
+    val roomName: String,
+    @SerialName("cheerroomDescription")
+    val roomDescription: String,
+    @SerialName("latitiude")
+    val latitude: Double,
+    @SerialName("longitude")
+    val longitude: Double,
+    @SerialName("createdAt")
+    val createdAt: String,
+    @SerialName("participantCount")
+    val participantCount: Int,
+)
+
+@Serializable
 data class CheerRecord(
     @SerialName("participationDate")
     val participationDate: String, // 참여 날짜

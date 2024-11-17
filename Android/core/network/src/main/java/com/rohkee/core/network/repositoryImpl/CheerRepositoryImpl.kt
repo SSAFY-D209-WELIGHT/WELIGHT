@@ -2,7 +2,9 @@ package com.rohkee.core.network.repositoryImpl
 
 import com.rohkee.core.network.ApiResponse
 import com.rohkee.core.network.api.CheerApi
+import com.rohkee.core.network.apiHandler
 import com.rohkee.core.network.model.CheerRecord
+import com.rohkee.core.network.model.CheerResponse
 import com.rohkee.core.network.repository.CheerRepository
 import javax.inject.Inject
 
@@ -30,4 +32,6 @@ class CheerRepositoryImpl @Inject constructor(
                 errorMessage = "알 수 없는 에러가 발생했습니다: ${e.localizedMessage}",
             )
         }
+
+    override suspend fun getCheerRoomList(): ApiResponse<List<CheerResponse>> = apiHandler { cheerApi.getCheerRoomList() }
 }
