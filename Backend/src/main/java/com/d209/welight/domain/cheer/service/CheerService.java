@@ -24,8 +24,8 @@ public interface CheerService {
     public void createRecords(User user, long roomId, CheerRecordRequest cheerRecordRequest);
     public void deleteRecords(User user, long roomId);
 
-    public void enterCheerroom(String cheerNumber, Long cheerroomId);
-    public void leaveCheerroom(String cheerNumber, Long cheerroomId);
+    public void enterCheerroom(String cheerNumber, Long cheerroomNumber);
+    public void leaveCheerroom(String cheerNumber, Long cheerroomNumber);
     public List<CheerHistoryResponse> getUserCheerHistory(String userId);
     public CheerHistoryDetailResponse getCheerHistoryDetail(String userId, Long cheerId);
 

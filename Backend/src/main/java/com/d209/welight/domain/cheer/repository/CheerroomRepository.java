@@ -23,4 +23,6 @@ public interface CheerroomRepository extends JpaRepository<Cheerroom, Long> {
                              @Param("upToKm") Double upToKm);
 
     Optional<Cheerroom> findByNumber(Long cheerroomNumber);
+
+    Optional<Cheerroom> findByNumberAndIsDoneFalse(Long cheeroomNumber);
 }
