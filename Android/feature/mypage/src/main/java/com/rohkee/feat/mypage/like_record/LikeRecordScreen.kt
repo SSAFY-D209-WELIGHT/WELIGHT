@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -64,8 +63,7 @@ fun LikeRecordScreen(
                             columns = GridCells.Fixed(3),
                             modifier =
                             Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             state = rememberLazyGridState(), // 스크롤 상태 관리
