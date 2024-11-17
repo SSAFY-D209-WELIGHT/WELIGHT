@@ -1,6 +1,9 @@
 package com.rohkee.feature.group.client
 
 import androidx.compose.runtime.Immutable
+import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
+import com.rohkee.core.ui.component.display.editor.DisplayImageState
+import com.rohkee.core.ui.component.display.editor.DisplayTextState
 
 data class ClientData(
     val roomId: Long,
@@ -9,21 +12,34 @@ data class ClientData(
     val participants: Int = 0,
     val groupNumber: Int = 1,
     val displays: List<Long> = emptyList(),
-    val thumbnailUrl: String? = null,
+    val imageState: DisplayImageState = DisplayImageState(),
+    val textState: DisplayTextState = DisplayTextState(),
+    val backgroundState: DisplayBackgroundState = DisplayBackgroundState(),
     val dialogState: ClientDialogState = ClientDialogState.Closed,
+    val isCheering: Boolean = false,
 ) {
     fun toState(): ClientState =
         if (displays.isEmpty()) {
             ClientState.Loading
         } else {
-            ClientState.Loaded(
-                title = title,
-                description = description,
-                groupNumber = groupNumber,
-                thumbnailUrl = thumbnailUrl,
-                displays = displays,
-                dialogState = dialogState,
-            )
+            if(!isCheering) {
+                ClientState.Loaded(
+                    title = title,
+                    description = description,
+                    groupNumber = groupNumber,
+                    displays = displays,
+                    dialogState = dialogState,
+                    imageState = imageState,
+                    textState = textState,
+                    backgroundState = backgroundState,
+                )
+            } else {
+                ClientState.Cheering(
+                    imageState = imageState,
+                    textState = textState,
+                    backgroundState = backgroundState
+                )
+            }
         }
 }
 

@@ -1,6 +1,7 @@
 package com.rohkee.feature.group.client
 
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,11 +9,19 @@ import androidx.navigation.toRoute
 import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.network.repository.DisplayRepository
 import com.rohkee.core.network.util.handle
+import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
+import com.rohkee.core.ui.component.display.editor.DisplayImageState
+import com.rohkee.core.ui.component.display.editor.DisplayTextState
+import com.rohkee.core.ui.model.ColorType
+import com.rohkee.core.ui.model.CustomColor
+import com.rohkee.core.ui.util.toComposeColor
+import com.rohkee.core.ui.util.toFontFamily
 import com.rohkee.core.websocket.SocketRequest
 import com.rohkee.core.websocket.SocketResponse
 import com.rohkee.core.websocket.User
 import com.rohkee.core.websocket.WebSocketClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -207,17 +216,60 @@ class ClientViewModel @Inject constructor(
         displays: List<Long>,
     ) {
         viewModelScope.launch {
-            displayRepository.getDisplayDetail(displays[groupNumber - 1]).handle(
+            displayRepository.getDisplayEdit(displays[groupNumber - 1]).handle(
                 onSuccess = { response ->
-                    clientStateHolder.update {
-                        it.copy(
-                            title = title,
-                            description = description,
-                            participants = clientCount,
-                            groupNumber = groupNumber,
-                            displays = displays,
-                            thumbnailUrl = response?.thumbnailUrl,
-                        )
+                    response?.let {
+                        clientStateHolder.update {
+                            it.copy(
+                                title = title,
+                                description = description,
+                                participants = clientCount,
+                                groupNumber = groupNumber,
+                                displays = displays,
+                                imageState =
+                                    response.images.firstOrNull()?.let { image ->
+                                        DisplayImageState(
+                                            imageSource = image.url.toUri(),
+                                            color = CustomColor.Single(color = image.color.toComposeColor()),
+                                            scale = image.scale,
+                                            rotationDegree = image.rotation,
+                                            offsetPercentX = image.offsetX,
+                                            offsetPercentY = image.offsetY,
+                                        )
+                                    } ?: DisplayImageState(),
+                                textState =
+                                    response.texts.firstOrNull()?.let { text ->
+                                        DisplayTextState(
+                                            text = text.text,
+                                            color = CustomColor.Single(color = text.color.toComposeColor()),
+                                            font = text.font.toFontFamily(),
+                                            scale = text.scale,
+                                            rotationDegree = text.rotation,
+                                            offsetPercentX = text.offsetX,
+                                            offsetPercentY = text.offsetY,
+                                        )
+                                    } ?: DisplayTextState(),
+                                backgroundState =
+                                    DisplayBackgroundState(
+                                        color =
+                                            response.background.let {
+                                                if (it.isSingle) {
+                                                    CustomColor.Single(color = it.color1.toComposeColor())
+                                                } else {
+                                                    CustomColor.Gradient(
+                                                        colors =
+                                                            persistentListOf(
+                                                                it.color1.toComposeColor(),
+                                                                it.color2.toComposeColor(),
+                                                            ),
+                                                        type = ColorType.valueOf(it.type),
+                                                    )
+                                                }
+                                            },
+                                        brightness = response.background.brightness,
+                                    ),
+                            )
+                        }
                     }
                 },
                 onError = { _, message ->
@@ -246,19 +298,64 @@ class ClientViewModel @Inject constructor(
 
     private fun onGroupChanged(groupNumber: Int) {
         viewModelScope.launch {
-            displayRepository.getDisplayDetail(clientStateHolder.value.displays[groupNumber - 1]).handle(
-                onSuccess = { response ->
-                    clientStateHolder.update {
-                        it.copy(
-                            groupNumber = groupNumber,
-                            thumbnailUrl = response?.thumbnailUrl,
-                        )
-                    }
-                },
-                onError = { _, message ->
-                    Log.d(TAG, "onGroupChanged: $message")
-                },
-            )
+            displayRepository
+                .getDisplayEdit(clientStateHolder.value.displays[groupNumber - 1])
+                .handle(
+                    onSuccess = { response ->
+                        response?.let {
+                            clientStateHolder.update {
+                                it.copy(
+                                    groupNumber = groupNumber,
+                                    imageState =
+                                        response.images.firstOrNull()?.let { image ->
+                                            DisplayImageState(
+                                                imageSource = image.url.toUri(),
+                                                color = CustomColor.Single(color = image.color.toComposeColor()),
+                                                scale = image.scale,
+                                                rotationDegree = image.rotation,
+                                                offsetPercentX = image.offsetX,
+                                                offsetPercentY = image.offsetY,
+                                            )
+                                        } ?: DisplayImageState(),
+                                    textState =
+                                        response.texts.firstOrNull()?.let { text ->
+                                            DisplayTextState(
+                                                text = text.text,
+                                                color = CustomColor.Single(color = text.color.toComposeColor()),
+                                                font = text.font.toFontFamily(),
+                                                scale = text.scale,
+                                                rotationDegree = text.rotation,
+                                                offsetPercentX = text.offsetX,
+                                                offsetPercentY = text.offsetY,
+                                            )
+                                        } ?: DisplayTextState(),
+                                    backgroundState =
+                                        DisplayBackgroundState(
+                                            color =
+                                                response.background.let {
+                                                    if (it.isSingle) {
+                                                        CustomColor.Single(color = it.color1.toComposeColor())
+                                                    } else {
+                                                        CustomColor.Gradient(
+                                                            colors =
+                                                                persistentListOf(
+                                                                    it.color1.toComposeColor(),
+                                                                    it.color2.toComposeColor(),
+                                                                ),
+                                                            type = ColorType.valueOf(it.type),
+                                                        )
+                                                    }
+                                                },
+                                            brightness = response.background.brightness,
+                                        ),
+                                )
+                            }
+                        }
+                    },
+                    onError = { _, message ->
+                        Log.d(TAG, "onGroupChanged: $message")
+                    },
+                )
         }
         clientStateHolder.update {
             it.copy(groupNumber = groupNumber)

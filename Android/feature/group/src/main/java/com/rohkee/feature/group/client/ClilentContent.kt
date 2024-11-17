@@ -10,7 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.rohkee.core.ui.component.appbar.GradientAppBar
-import com.rohkee.core.ui.component.display.detail.DetailDisplay
+import com.rohkee.core.ui.component.display.editor.CustomDisplay
+import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
+import com.rohkee.core.ui.component.display.editor.DisplayImageState
+import com.rohkee.core.ui.component.display.editor.DisplayTextState
 import com.rohkee.core.ui.component.group.GroupBottomBar
 import com.rohkee.core.ui.component.group.GroupBottomBarState
 import com.rohkee.core.ui.theme.AppColor
@@ -52,9 +55,11 @@ fun ClientContent(
                 }
 
                 is ClientState.Loaded -> {
-                    DetailDisplay(
+                    CustomDisplay(
                         modifier = Modifier.fillMaxSize(),
-                        imageSource = state.thumbnailUrl,
+                        imageState = state.imageState,
+                        textState = state.textState,
+                        backgroundState = state.backgroundState,
                     )
                     GroupBottomBar(
                         modifier =
@@ -70,6 +75,15 @@ fun ClientContent(
                                 groupSize = state.displays.size,
                             ),
                         onGroupChange = { onIntent(ClientIntent.ChangeGroup(it)) },
+                    )
+                }
+
+                is ClientState.Cheering -> {
+                    CustomDisplay(
+                        modifier = Modifier.fillMaxSize(),
+                        imageState = state.imageState,
+                        textState = state.textState,
+                        backgroundState = state.backgroundState,
                     )
                 }
             }
@@ -95,9 +109,11 @@ private fun ClientContentPreview() {
                 title = "제목",
                 description = "설명",
                 groupNumber = 1,
-                thumbnailUrl = null,
                 displays = listOf(1L, 2L, 3L),
                 dialogState = ClientDialogState.Closed,
+                imageState = DisplayImageState(),
+                textState = DisplayTextState(),
+                backgroundState = DisplayBackgroundState(),
             ),
     )
 }
