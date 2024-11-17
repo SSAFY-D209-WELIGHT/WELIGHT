@@ -121,10 +121,9 @@ public class CheerServiceImpl implements CheerService {
         log.info("위치 기반 응원방 조회 완료 - 조회된 응원방 개수={}", cheerrooms.size());
         return cheerrooms.stream()
                 .map(cheerroom -> {
-                    // 참가자 수 조회
+                    // 활성 상태인 참여자 수만 조회 (lastExitTime이 null인 참여자)
                     int participantCount = cheerParticipationRepository
-                            .countParticipantsByCheerroomId(cheerroom.getId());
-                    // CheerroomResponse 생성
+                            .countActiveParticipantsByCheerroomId(cheerroom.getId());
                     return CheerroomResponse.from(cheerroom, participantCount);
                 })
                 .collect(Collectors.toList());
@@ -136,7 +135,16 @@ public class CheerServiceImpl implements CheerService {
         Cheerroom cheerroom = cheerroomRepository.findById(cheerId)
                 .orElseThrow(() -> new CheerNotFoundException("존재하지 않는 응원방입니다."));
 
-        List<ParticipantsResponse> participantsResponses = cheerroom.getParticipantResponses();
+        // 현재 활성 상태인 참여자만 조회 (lastExitTime이 null인 참여자)
+        List<CheerParticipation> activeParticipations = cheerParticipationRepository
+                .findByCheerroomAndLastExitTimeIsNull(cheerroom);
+
+        List<ParticipantsResponse> participantsResponses = activeParticipations.stream()
+                .map(participation -> ParticipantsResponse.builder()
+                        .userNickname(participation.getUser().getUserNickname())
+                        .isLeader(participation.isOwner())
+                        .build())
+                .collect(Collectors.toList());
 
         log.info("응원방 참여자 목록 조회 완료 - 응원방ID={}, 참여자 수={}",
                 cheerId, participantsResponses.size());
@@ -254,6 +262,8 @@ public class CheerServiceImpl implements CheerService {
             participation.updateEntry();
         }
 
+        // 입장 시 마지막 퇴장 시간을 null로 설정
+        participation.setLastExitTime(null);
         cheerParticipationRepository.save(participation);
         log.info("응원방 입장 완료 - userId: {}, cheerroomNumber: {}, entryCount: {}",
                 userId, cheeroomNumber, participation.getEntryCount());

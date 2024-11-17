@@ -6,6 +6,7 @@ import com.d209.welight.domain.cheer.entity.cheerparticipation.CheerParticipatio
 import com.d209.welight.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -40,4 +41,8 @@ public interface CheerParticipationRepository extends JpaRepository<CheerPartici
             "AND cp.cheerroom.id = :cheerroomUid")
     Optional<CheerParticipation> findByUserAndCheerroom(
             Long userUid, Long cheerroomUid);
+
+    @Query("SELECT COUNT(cp) FROM CheerParticipation cp " +
+            "WHERE cp.cheerroom.id = :cheerroomId AND cp.lastExitTime IS NULL")
+    int countActiveParticipantsByCheerroomId(@Param("cheerroomId") Long cheerroomId);
 }
