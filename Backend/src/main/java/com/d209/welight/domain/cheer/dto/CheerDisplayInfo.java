@@ -11,5 +11,5 @@ public class CheerDisplayInfo {
     private Long displayUid;
     private String displayName;
     private String thumbnailUrl;
-    private LocalDateTime usedAt;
+    private String usedAt;
 }

@@ -331,23 +331,34 @@ public class CheerServiceImpl implements CheerService {
                 cheerParticipationRepository.findUserParticipationHistory(user.getUserUid());
 
         List<CheerHistoryResponse> historyResponses = participations.stream()
-                .map(participation -> CheerHistoryResponse.builder()
-                        .participationDate(participation.getLastExitTime().format(
-                                DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
-                        .cheerroomName(participation.getCheerroom().getName())
-                        .participantCount(cheerParticipationRepository
-                                .countParticipantsByCheerroomId(participation.getCheerroom().getId()))
-                        .memo(participation.getMemo())
-                        .displays(participation.getCheerroom().getDisplays().stream()
-                                .map(cheerroomDisplay -> CheerDisplayInfo.builder()
+                .map(participation -> {
+                    // 참여 날짜 형식 확인 및 수정
+                    String participationDate = participation.getLastExitTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd a h시"));
+
+                    // 디스플레이 사용 날짜 형식 확인 및 수정
+                    List<CheerDisplayInfo> displays = participation.getCheerroom().getDisplays().stream()
+                            .map(cheerroomDisplay -> {
+
+                                return CheerDisplayInfo.builder()
                                         .displayUid(cheerroomDisplay.getDisplay().getDisplayUid())
                                         .displayName(cheerroomDisplay.getDisplay().getDisplayName())
                                         .thumbnailUrl(cheerroomDisplay.getDisplay().getDisplayThumbnailUrl())
-                                        .usedAt(cheerroomDisplay.getUsedAt())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .build())
+                                        .usedAt(cheerroomDisplay.getUsedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    return CheerHistoryResponse.builder()
+                            .participationDate(participationDate)
+                            .cheerroomName(participation.getCheerroom().getName())
+                            .participantCount(cheerParticipationRepository
+                                    .countParticipantsByCheerroomId(participation.getCheerroom().getId()))
+                            .memo(participation.getMemo())
+                            .displays(displays)
+                            .build();
+                })
                 .collect(Collectors.toList());
+                
         log.info("사용자 응원 히스토리 조회 완료 - 사용자ID={}, 히스토리 수={}",
                 userId, historyResponses.size());
         return historyResponses;
@@ -434,7 +445,7 @@ public class CheerServiceImpl implements CheerService {
                         .displayUid(cd.getDisplay().getDisplayUid())
                         .displayName(cd.getDisplay().getDisplayName())
                         .thumbnailUrl(cd.getDisplay().getDisplayThumbnailUrl())
-                        .usedAt(LocalDateTime.now())
+                        .usedAt(cheerroomDisplay.getUsedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
                         .build())
                 .collect(Collectors.toList());
 
