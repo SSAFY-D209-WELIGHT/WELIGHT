@@ -149,6 +149,7 @@ fun InfoEditDialog(
                             modifier = Modifier.clickable { addToTagList(tagText) },
                             text = stringResource(R.string.dialog_info_tag_add),
                             style = Pretendard.SemiBold16,
+                            color = AppColor.OnConvex,
                         )
                     }
                 },
