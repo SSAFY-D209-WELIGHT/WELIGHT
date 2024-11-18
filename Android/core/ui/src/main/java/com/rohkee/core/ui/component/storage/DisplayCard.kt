@@ -27,7 +27,7 @@ data class DisplayCardState(
 @Composable
 fun DisplayCard(
     modifier: Modifier = Modifier,
-    state: DisplayCardState,
+    state: DisplayCardState = DisplayCardState(),
     onCardSelected: () -> Unit = {},
 ) {
     GradientImageLoader(

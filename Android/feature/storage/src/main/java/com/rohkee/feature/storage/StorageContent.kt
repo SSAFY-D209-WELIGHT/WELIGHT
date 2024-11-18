@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -23,6 +25,7 @@ import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
 import com.rohkee.core.ui.component.storage.InfiniteHorizontalPager
 import com.rohkee.core.ui.component.storage.NoContentCard
+import com.rohkee.core.ui.component.storage.RatioHorizontalPager
 
 /**
  * 보관함 화면
@@ -80,6 +83,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LoadedContent(
     modifier: Modifier = Modifier,
@@ -96,18 +100,23 @@ private fun LoadedContent(
         return NoContent(modifier = modifier)
     }
 
-    InfiniteHorizontalPager(
+    PullToRefreshBox(
         modifier = modifier,
-        pageCount = displayList.itemCount,
-    ) { index ->
-        displayList[index]?.let { item ->
-            // DisplayCardWithFavorite(
-            DisplayCard(
-                modifier = Modifier.clip(RoundedCornerShape(8.dp)),
-                state = item,
-                onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
-                // onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
-            )
+        isRefreshing = displayList.loadState.refresh is LoadState.Loading,
+        onRefresh = { displayList.refresh() },
+    ) {
+        RatioHorizontalPager(
+            pageCount = displayList.itemCount,
+        ) { index ->
+            displayList[index]?.let { item ->
+                // DisplayCardWithFavorite(
+                DisplayCard(
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                    state = item,
+                    onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
+                    // onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
+                )
+            }
         }
     }
 }

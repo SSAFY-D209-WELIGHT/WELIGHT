@@ -214,6 +214,13 @@ internal fun MutableStateFlow<DisplayEditorData>.selectBackground() =
 internal fun MutableStateFlow<DisplayEditorData>.deselectObject() =
     update {
         this.value
+            .copyWithText(isSelected = false)
+            .copyWithImage(isSelected = false)
+    }
+
+internal fun MutableStateFlow<DisplayEditorData>.closeBottomBar() =
+    update {
+        this.value
             .copy(bottomBarState = EditingState.None)
             .copyWithText(isSelected = false)
             .copyWithImage(isSelected = false)

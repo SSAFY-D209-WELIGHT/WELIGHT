@@ -1,6 +1,7 @@
 package com.rohkee.core.ui.component.group
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,15 +35,15 @@ import com.rohkee.core.ui.theme.Pretendard
 data class GroupBottomBarState(
     val title: String,
     val description: String,
-    val groupId: Long,
-    val groupSize: Long,
+    val groupNumber: Int,
+    val groupSize: Int,
 )
 
 @Composable
 fun GroupBottomBar(
     modifier: Modifier = Modifier,
     state: GroupBottomBarState,
-    onGroupChange: (Long) -> Unit = {},
+    onGroupChange: (Int) -> Unit = {},
 ) {
     val (openDropdown, setOpenDropdown) = remember { mutableStateOf(false) }
 
@@ -86,12 +87,13 @@ fun GroupBottomBar(
                     Modifier
                         .wrapContentWidth()
                         .background(color = AppColor.Convex, shape = RoundedCornerShape(8.dp))
-                        .padding(start = 16.dp, top = 4.dp, bottom = 4.dp, end = 8.dp),
+                        .padding(start = 16.dp, top = 4.dp, bottom = 4.dp, end = 8.dp)
+                        .clickable { setOpenDropdown(true) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 Text(
-                    text = "${state.groupId}번 그룹",
+                    text = "${state.groupNumber}번 그룹",
                     style = Pretendard.SemiBold16,
                     color = AppColor.OnConvex,
                 )
@@ -136,7 +138,7 @@ private fun GroupBottomBarPreview() {
             GroupBottomBarState(
                 title = "제목",
                 description = "설명",
-                groupId = 1,
+                groupNumber = 1,
                 groupSize = 5,
             ),
     )

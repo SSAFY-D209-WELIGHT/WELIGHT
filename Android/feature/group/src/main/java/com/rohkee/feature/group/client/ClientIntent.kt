@@ -4,6 +4,10 @@ sealed interface ClientIntent {
     data object ExitPage : ClientIntent
 
     data class ChangeGroup(
-        val groupId: Long,
+        val groupNumber: Int,
     ) : ClientIntent
+
+    sealed interface CheerDialog : ClientIntent {
+        data object Cancel : CheerDialog
+    }
 }

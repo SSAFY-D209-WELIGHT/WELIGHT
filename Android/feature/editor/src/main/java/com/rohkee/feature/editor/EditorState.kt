@@ -70,4 +70,7 @@ sealed interface DialogState {
     data class InfoEdit(
         val info: EditorInfoState? = null,
     ) : DialogState
+
+    @Immutable
+    data object Saving : DialogState
 }

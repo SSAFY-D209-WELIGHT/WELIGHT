@@ -70,6 +70,44 @@ fun InfiniteHorizontalPager(
 }
 
 @Composable
+fun RatioHorizontalPager(
+    modifier: Modifier = Modifier,
+    initialPage: Int = 0,
+    pageCount: Int,
+    pageRatio: Float = 0.7f,
+    onPageChanged: (Int) -> Unit = {},
+    itemContent: @Composable (index: Int) -> Unit,
+) {
+    if (pageCount == 0) return
+
+    val config = LocalConfiguration.current
+    val width = remember { (config.screenWidthDp * pageRatio).dp }
+    val padding = remember { (config.screenWidthDp * (1 - pageRatio) / 2f).dp }
+
+    val pagerState =
+        rememberPagerState(
+            initialPage = initialPage,
+            pageCount = { pageCount },
+        )
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            onPageChanged(page)
+        }
+    }
+
+    HorizontalPager(
+        modifier = modifier,
+        state = pagerState,
+        pageSpacing = 8.dp,
+        pageSize = PageSize.Fixed(width),
+        contentPadding = PaddingValues(horizontal = padding),
+    ) { page ->
+        itemContent(page)
+    }
+}
+
+@Composable
 fun PagerIndicator(
     modifier: Modifier = Modifier,
     pageCount: Int,

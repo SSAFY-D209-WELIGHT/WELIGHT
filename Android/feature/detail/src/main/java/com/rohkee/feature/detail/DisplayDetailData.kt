@@ -20,6 +20,7 @@ data class DisplayDetailData(
     val tags: PersistentList<String> = persistentListOf(),
     val author: String = "",
     val liked: Boolean = false,
+    val stored: Boolean = false,
     val like: Int = 0,
     val download: Int = 0,
     val comment: Int = 0,
@@ -50,7 +51,7 @@ data class DisplayDetailData(
                 )
             },
             detailAppBarState =
-            if (!isAuthor) {
+            if (!stored) {
                 DetailAppBarState.View
             } else if (isPublished) {
                 DetailAppBarState.Editable.Shared(

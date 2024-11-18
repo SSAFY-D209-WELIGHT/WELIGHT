@@ -1,5 +1,6 @@
 package com.rohkee.feature.detail
 
+import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +10,12 @@ import com.rohkee.core.network.util.handle
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
+import com.rohkee.core.ui.model.ColorType
+import com.rohkee.core.ui.model.CustomColor
+import com.rohkee.core.ui.util.toComposeColor
+import com.rohkee.core.ui.util.toFontFamily
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,13 +89,53 @@ class DetailViewModel @Inject constructor(
                             title = data.title,
                             tags = data.tags.toPersistentList(),
                             author = data.authorName,
+                            stored = data.stored,
                             liked = data.liked,
                             like = data.likes,
                             download = data.downloads,
                             comment = data.comments,
-                            displayImageState = DisplayImageState(),
-                            displayTextState = DisplayTextState(),
-                            displayBackgroundState = DisplayBackgroundState(),
+                            displayImageState =
+                                response.images.firstOrNull()?.let { image ->
+                                    DisplayImageState(
+                                        imageSource = image.url.toUri(),
+                                        color = CustomColor.Single(color = image.color.toComposeColor()),
+                                        scale = image.scale,
+                                        rotationDegree = image.rotation,
+                                        offsetPercentX = image.offsetX,
+                                        offsetPercentY = image.offsetY,
+                                    )
+                                } ?: DisplayImageState(),
+                            displayTextState =
+                                response.texts.firstOrNull()?.let { text ->
+                                    DisplayTextState(
+                                        text = text.text,
+                                        color = CustomColor.Single(color = text.color.toComposeColor()),
+                                        font = text.font.toFontFamily(),
+                                        scale = text.scale,
+                                        rotationDegree = text.rotation,
+                                        offsetPercentX = text.offsetX,
+                                        offsetPercentY = text.offsetY,
+                                    )
+                                } ?: DisplayTextState(),
+                            displayBackgroundState =
+                                DisplayBackgroundState(
+                                    color =
+                                        response.background.let {
+                                            if (it.isSingle) {
+                                                CustomColor.Single(color = it.color1.toComposeColor())
+                                            } else {
+                                                CustomColor.Gradient(
+                                                    colors =
+                                                        persistentListOf(
+                                                            it.color1.toComposeColor(),
+                                                            it.color2.toComposeColor(),
+                                                        ),
+                                                    type = ColorType.valueOf(it.type),
+                                                )
+                                            }
+                                        },
+                                    brightness = response.background.brightness,
+                                ),
                         ),
                     )
                 }
@@ -194,8 +240,10 @@ class DetailViewModel @Inject constructor(
     private fun duplicateDisplay() {
         viewModelScope.launch {
             displayRepository.duplicateDisplay(id).handle(
-                onSuccess = {
-                    detailEvent.emit(DetailEvent.Duplicate.Success(displayId = id))
+                onSuccess = { response ->
+                    response?.let {
+                        detailEvent.emit(DetailEvent.Duplicate.Success(displayId = response.id))
+                    }
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Duplicate.Error) },
             )
