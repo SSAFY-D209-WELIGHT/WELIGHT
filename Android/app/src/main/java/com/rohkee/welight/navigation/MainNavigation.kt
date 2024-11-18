@@ -1,7 +1,7 @@
 package com.rohkee.welight.navigation
 
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.rohkee.core.ui.component.common.CommonSnackbar
 import com.rohkee.feat.login.LoginRoute
 import com.rohkee.feature.detail.DetailRoute
 import com.rohkee.feature.detail.DetailScreen
@@ -29,16 +30,14 @@ fun MainNavigation(
     navController: NavHostController = rememberNavController(),
 ) {
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember{ SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     fun showSnackbar(message: String) {
-        scope.launch { snackbarHostState.showSnackbar(message) }
+        scope.launch { snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short) }
     }
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        }
+        snackbarHost = { CommonSnackbar(snackbarHostState = snackbarHostState) },
     ) { innerPadding ->
         NavHost(
             modifier = modifier,
@@ -52,6 +51,7 @@ fun MainNavigation(
                             popUpTo(Login) { inclusive = true }
                         }
                     },
+                    onShowSnackbar = { showSnackbar(it) },
                 )
             }
 
@@ -83,6 +83,12 @@ fun MainNavigation(
                             popUpTo(DetailRoute(currentId)) { inclusive = true }
                         }
                     },
+                    onPublishDisplay = { id ->
+                        navController.navigate(DetailRoute(displayId = id)) {
+                            popUpTo(DetailRoute(currentId)) { inclusive = true }
+                        }
+                    },
+                    onShowSnackbar = { msg -> showSnackbar(msg) }
                 )
             }
 
@@ -97,6 +103,7 @@ fun MainNavigation(
                         }
                     },
                     onPopBackStack = { navController.popBackStack() },
+                    onShowSnackBar = { showSnackbar(it) },
                 )
             }
 
@@ -104,9 +111,6 @@ fun MainNavigation(
                 HostScreen(
                     showSnackbar = { showSnackbar(it) },
                     onPopBackStack = { navController.popBackStack() },
-                    onStartCheer = {
-                        // TODO: 응원 시작
-                    },
                 )
             }
 

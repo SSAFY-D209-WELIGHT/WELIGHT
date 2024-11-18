@@ -26,7 +26,8 @@ fun TitleRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .wrapContentHeight()
+                .clickable { onEditClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
@@ -38,7 +39,7 @@ fun TitleRow(
         )
         if (editable) {
             Icon(
-                modifier = Modifier.clickable { onEditClick() },
+                modifier = Modifier,
                 imageVector = Icons.Rounded.Edit,
                 tint = AppColor.OnSurface,
                 contentDescription = "Edit",

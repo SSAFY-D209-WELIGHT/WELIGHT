@@ -39,7 +39,6 @@ fun EditorScreen(
     editorViewModel.editorEvent.collectWithLifecycle { event ->
         when (event) {
             is EditorEvent.ExitPage -> onPopBackStack()
-            is EditorEvent.ShowSnackBar -> onShowSnackBar(event.message)
             EditorEvent.OpenPhotoGallery -> photoGalleryLauncher.launch("image/*")
             is EditorEvent.Save.Success -> onNavigateToDisplayDetail(event.displayId)
             EditorEvent.Save.Failure -> { // TODO : Snackbar

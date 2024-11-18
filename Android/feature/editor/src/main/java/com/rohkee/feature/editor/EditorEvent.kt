@@ -5,10 +5,6 @@ sealed interface EditorEvent {
 
     data object ExitPage : EditorEvent
 
-    data class ShowSnackBar(
-        val message: String,
-    ) : EditorEvent
-
     sealed interface Save : EditorEvent {
         data class Success(
             val displayId: Long,

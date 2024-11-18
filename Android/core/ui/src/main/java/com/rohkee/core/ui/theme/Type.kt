@@ -25,6 +25,13 @@ object Pretendard {
             fontWeight = FontWeight.SemiBold,
         )
 
+    val SemiBold18 =
+        TextStyle(
+            fontSize = 18.sp,
+            fontFamily = pretendardFamily,
+            fontWeight = FontWeight.SemiBold,
+        )
+
     val SemiBold16 =
         TextStyle(
             fontSize = 16.sp,

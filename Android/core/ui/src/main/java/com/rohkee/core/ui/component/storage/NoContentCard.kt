@@ -44,9 +44,9 @@ fun NoContentCard(modifier: Modifier = Modifier) {
                 contentDescription = null,
             )
             Text(
-                "나만의 응원봉을 만들어\n" +
-                    "응원해보세요!",
-                style = Pretendard.SemiBold20,
+                "나만의 응원 디스플레이를\n" +
+                    "만들어보세요!",
+                style = Pretendard.SemiBold18,
                 textAlign = TextAlign.Center,
                 color = AppColor.OnBackground
             )

@@ -17,6 +17,7 @@ import com.rohkee.core.ui.util.toFontFamily
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,11 +55,11 @@ class DetailViewModel @Inject constructor(
     fun onIntent(intent: DetailIntent) {
         when (intent) {
             DetailIntent.Comment -> openComments()
-            DetailIntent.Delete -> deleteDisplay()
+            DetailIntent.Delete -> tryDelete()
             DetailIntent.Download -> download()
             DetailIntent.Duplicate -> duplicateDisplay()
             DetailIntent.Edit -> editDisplay()
-            DetailIntent.Post -> postToBoard()
+            DetailIntent.Post -> tryPosting()
             DetailIntent.ToggleFavorite -> toggleFavorite()
             DetailIntent.ToggleLike -> toggleLike()
             DetailIntent.ToggleUI -> {
@@ -66,6 +67,9 @@ class DetailViewModel @Inject constructor(
             }
 
             DetailIntent.ExitPage -> emitEvent(DetailEvent.ExitPage)
+            DetailIntent.Dialog.Publish -> postToBoard()
+            DetailIntent.Dialog.Delete -> deleteDisplay()
+            DetailIntent.Dialog.Close -> closeDialog()
         }
     }
 
@@ -197,27 +201,43 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private var downloadJob: Job? = null
+
     private fun download() {
-        viewModelScope.launch {
-            displayRepository.importDisplayToMyStorage(id).handle(
-                onSuccess = {
-                    detailStateHolder.update { data ->
-                        data.copy(download = data.download + 1)
-                    }
-                    if (it != null) {
-                        detailEvent.emit(DetailEvent.Download.Success(it.id))
-                    }
-                },
-                onError = { _, _ -> detailEvent.emit(DetailEvent.Download.Error) },
-            )
+        if (detailStateHolder.value.stored) {
+            emitEvent(DetailEvent.Download.Reject)
+            return
         }
+
+        downloadJob?.cancel()
+        downloadJob =
+            viewModelScope.launch {
+                displayRepository.importDisplayToMyStorage(id).handle(
+                    onSuccess = {
+                        detailStateHolder.update { data ->
+                            data.copy(download = data.download + 1)
+                        }
+                        if (it != null) {
+                            detailEvent.emit(DetailEvent.Download.Success(it.id))
+                        }
+                    },
+                    onError = { _, _ -> detailEvent.emit(DetailEvent.Download.Error) },
+                )
+            }
     }
 
     private fun openComments() {
         // TODO : open comments
     }
 
+    private fun tryPosting() {
+        detailStateHolder.update {
+            it.copy(dialogState = DetailDialogState.Publish)
+        }
+    }
+
     private fun postToBoard() {
+        closeDialog()
         viewModelScope.launch {
             displayRepository.publishDisplay(id).handle(
                 onSuccess = {
@@ -250,7 +270,14 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private fun tryDelete() {
+        detailStateHolder.update {
+            it.copy(dialogState = DetailDialogState.Delete)
+        }
+    }
+
     private fun deleteDisplay() {
+        closeDialog()
         viewModelScope.launch {
             displayRepository.deleteDisplayFromStorage(id).handle(
                 onSuccess = {
@@ -258,6 +285,12 @@ class DetailViewModel @Inject constructor(
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Delete.Error) },
             )
+        }
+    }
+
+    private fun closeDialog() {
+        detailStateHolder.update {
+            it.copy(dialogState = DetailDialogState.Closed)
         }
     }
 }

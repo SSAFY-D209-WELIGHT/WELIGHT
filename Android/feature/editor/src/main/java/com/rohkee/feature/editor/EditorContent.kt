@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,8 +14,6 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.rohkee.core.ui.component.appbar.SavableAppBar
 import com.rohkee.core.ui.component.display.editor.BackgroundToolBar
@@ -30,10 +27,10 @@ import com.rohkee.core.ui.component.display.editor.InfoToolBar
 import com.rohkee.core.ui.component.display.editor.TextToolBar
 import com.rohkee.core.ui.dialog.AskingDialog
 import com.rohkee.core.ui.dialog.ColorPickerDialog
+import com.rohkee.core.ui.dialog.LoadingDialog
 import com.rohkee.core.ui.dialog.TextInputDialog
 import com.rohkee.core.ui.dialog.WarningDialog
 import com.rohkee.core.ui.theme.AppColor
-import com.rohkee.core.ui.theme.Pretendard
 import com.rohkee.core.ui.util.animateGradientBackground
 import com.rohkee.feat.display.R
 
@@ -92,6 +89,7 @@ private fun EditContent(
         is DialogState.ColorPicker ->
             ColorPickerDialog(
                 color = dialog.color,
+                gradientEnabled = dialog.enableGradient,
                 onConfirm = { onIntent(EditorIntent.Dialog.ColorPicked(it)) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )
@@ -137,24 +135,9 @@ private fun EditContent(
             )
 
         is DialogState.Saving -> {
-            Dialog(
-                onDismissRequest = {},
-                properties =
-                    DialogProperties(
-                        dismissOnBackPress = false,
-                        dismissOnClickOutside = false,
-                        usePlatformDefaultWidth = false,
-                        decorFitsSystemWindows = false,
-                    ),
-            ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "저장 중입니다...",
-                        color = AppColor.OnSurface,
-                        style = Pretendard.SemiBold24,
-                    )
-                }
-            }
+            LoadingDialog(
+                message = "저장중입니다"
+            )
         }
     }
 

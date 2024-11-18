@@ -27,6 +27,11 @@ class CheerRecordViewModel @Inject constructor(
     }
 
     private fun loadData() {
+        if(_cheerRecords.value is CheerRecordUIState.Loaded) {
+            _cheerRecords.update { state ->
+                (state as CheerRecordUIState.Loaded).copy(isRefreshing = true)
+            }
+        }
         viewModelScope.launch {
             cheerRepository.getCheerRecords().handle(
                 onSuccess = { records ->
@@ -46,6 +51,7 @@ class CheerRecordViewModel @Inject constructor(
                                                 thumbnailUrl = record.displays.firstOrNull()?.thumbnailUrl,
                                             )
                                         }.toPersistentList(),
+                                isRefreshing = false
                             )
                         }
                     }
@@ -56,5 +62,9 @@ class CheerRecordViewModel @Inject constructor(
                 },
             )
         }
+    }
+
+    fun onRefresh() {
+        loadData()
     }
 }

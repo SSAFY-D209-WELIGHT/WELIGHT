@@ -20,10 +20,22 @@ sealed interface DetailState {
         val displayImageState: DisplayImageState,
         val displayTextState: DisplayTextState,
         val displayBackgroundState: DisplayBackgroundState,
+        val dialogState: DetailDialogState,
     ) : DetailState
 
     @Immutable
     data class Error(
         val message: String,
     ) : DetailState
+}
+
+sealed interface DetailDialogState {
+    @Immutable
+    data object Closed : DetailDialogState
+
+    @Immutable
+    data object Publish : DetailDialogState
+
+    @Immutable
+    data object Delete : DetailDialogState
 }
