@@ -201,7 +201,10 @@ class DetailViewModel @Inject constructor(
     private var downloadJob: Job? = null
 
     private fun download() {
-        if (detailStateHolder.value.stored) return
+        if (detailStateHolder.value.stored) {
+            emitEvent(DetailEvent.Download.Reject)
+            return
+        }
 
         downloadJob?.cancel()
         downloadJob =

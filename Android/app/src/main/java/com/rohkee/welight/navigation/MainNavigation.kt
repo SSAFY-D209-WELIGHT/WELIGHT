@@ -83,6 +83,12 @@ fun MainNavigation(
                             popUpTo(DetailRoute(currentId)) { inclusive = true }
                         }
                     },
+                    onPublishDisplay = { id ->
+                        navController.navigate(DetailRoute(displayId = id)) {
+                            popUpTo(DetailRoute(currentId)) { inclusive = true }
+                        }
+                    },
+                    onShowSnackbar = { msg -> showSnackbar(msg) }
                 )
             }
 

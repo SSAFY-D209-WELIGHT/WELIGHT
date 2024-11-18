@@ -15,30 +15,51 @@ fun DetailScreen(
     onEditDisplay: (displayId: Long) -> Unit = {},
     onDuplicateDisplay: (displayId: Long) -> Unit = {},
     onDownloadDisplay: (displayId: Long) -> Unit = {},
+    onPublishDisplay: (displayId: Long) -> Unit = {},
+    onShowSnackbar: (message: String) -> Unit = {},
 ) {
     val state by detailViewModel.detailState.collectAsStateWithLifecycle()
 
     detailViewModel.detailEvent.collectWithLifecycle { event ->
         when (event) {
             DetailEvent.ExitPage -> onPopBackStack()
-            is DetailEvent.Download.Success -> onDownloadDisplay(event.displayId)
+            is DetailEvent.Download.Success -> {
+                onDownloadDisplay(event.displayId)
+                onShowSnackbar("내 보관함에 추가되었습니다.")
+            }
+            DetailEvent.Download.Reject -> {
+                onShowSnackbar("보관함에 존재하는 디스플레이입니다.")
+            }
             DetailEvent.Download.Error -> {
-                // TODO: 에러 처리
+                onShowSnackbar("다운로드 중 오류가 발생하였습니다.")
             }
-            DetailEvent.Delete.Success -> onPopBackStack()
+
+            DetailEvent.Delete.Success -> {
+                onPopBackStack()
+                onShowSnackbar("삭제되었습니다.")
+            }
+
             DetailEvent.Delete.Error -> {
-                // TODO: 에러 처리
+                onShowSnackbar("삭제 중 오류가 발생하였습니다.")
             }
-            is DetailEvent.Duplicate.Success -> onDuplicateDisplay(event.displayId)
+
+            is DetailEvent.Duplicate.Success -> {
+                onDuplicateDisplay(event.displayId)
+                onShowSnackbar("내 보관함에 복제되었습니다.")
+            }
+
             DetailEvent.Duplicate.Error -> {
-                // TODO: 에러 처리
+                onShowSnackbar("복제 중 오류가 발생하였습니다.")
             }
+
             is DetailEvent.EditDisplay -> onEditDisplay(event.displayId)
-            DetailEvent.Publish.Error -> {
-                // TODO: 에러 처리
-            }
             is DetailEvent.Publish.Success -> {
-                // TODO: 게시판에 게시
+                onPublishDisplay(event.displayId)
+                onShowSnackbar("게시판에 공유되었습니다.")
+            }
+
+            DetailEvent.Publish.Error -> {
+                onShowSnackbar("공유 중 오류가 발생하였습니다.")
             }
         }
     }
