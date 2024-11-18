@@ -521,7 +521,7 @@ private fun DisplayEditorData.toDisplayRequest(
                         brightness = this.editorBackgroundState.brightness,
                         isSingle = false,
                         color1 = color.primary.toHexString(),
-                        color2 = color.primary.toHexString(),
+                        color2 = color.colors.getOrElse(1, { color.primary }).toHexString(),
                         type = color.type.name,
                     )
                 }
