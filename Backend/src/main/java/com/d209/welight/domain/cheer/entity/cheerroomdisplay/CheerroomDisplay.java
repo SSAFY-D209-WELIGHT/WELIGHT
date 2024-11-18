@@ -28,6 +28,7 @@ public class CheerroomDisplay {
     @JoinColumn(name = "DISPLAY_UID")
     private Display display;
 
+    @Builder.Default
     @Column(name = "USED_AT", nullable = false)
-    private LocalDateTime usedAt;
+    private LocalDateTime usedAt = LocalDateTime.now();
 } 

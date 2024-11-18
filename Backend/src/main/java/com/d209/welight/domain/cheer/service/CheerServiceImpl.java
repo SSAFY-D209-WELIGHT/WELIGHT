@@ -336,15 +336,14 @@ public class CheerServiceImpl implements CheerService {
 
                     // 디스플레이 사용 날짜 형식 확인 및 수정
                     List<CheerDisplayInfo> displays = participation.getCheerroom().getDisplays().stream()
-                            .map(cheerroomDisplay -> {
-
-                                return CheerDisplayInfo.builder()
-                                        .displayUid(cheerroomDisplay.getDisplay().getDisplayUid())
-                                        .displayName(cheerroomDisplay.getDisplay().getDisplayName())
-                                        .thumbnailUrl(cheerroomDisplay.getDisplay().getDisplayThumbnailUrl())
-                                        .usedAt(cheerroomDisplay.getUsedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
-                                        .build();
-                            })
+                            .map(cheerroomDisplay ->
+                                    CheerDisplayInfo.builder()
+                                            .displayUid(cheerroomDisplay.getDisplay().getDisplayUid())
+                                            .displayName(cheerroomDisplay.getDisplay().getDisplayName())
+                                            .thumbnailUrl(cheerroomDisplay.getDisplay().getDisplayThumbnailUrl())
+                                            .usedAt(cheerroomDisplay.getUsedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd a h시")))
+                                            .build()
+                            )
                             .collect(Collectors.toList());
 
                     return CheerHistoryResponse.builder()

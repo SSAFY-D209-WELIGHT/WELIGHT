@@ -367,16 +367,29 @@ public class DisplayServiceImpl implements DisplayService {
 
             // 3. 컨텐츠 복사 또는 업데이트
             // 3-1. 태그 처리 및 저장
-            displayHelper.updateTags(savedDisplay, originalDisplay, request);
+            List<String> newTags = displayHelper.getTagsFromDisplay(originalDisplay, request.getTags());
+            displayHelper.saveTags(savedDisplay, newTags);
 
             // 3-2. 이미지 처리
-            displayHelper.updateImages(savedDisplay, originalDisplay, request, userId);
+            if (request.getImages() != null) {
+                displayHelper.saveImages(savedDisplay, request.getImages());
+            } else {
+                displayHelper.duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
+            }
 
             // 3-3. 텍스트 처리
-            displayHelper.updateTexts(savedDisplay, originalDisplay, request);
+            if (request.getTexts() != null) {
+                displayHelper.saveTexts(savedDisplay, request.getTexts());
+            } else {
+                displayHelper.duplicateTexts(originalDisplay.getTexts(), savedDisplay);
+            }
 
             // 3-4. 배경 및 색상 처리
-            displayHelper.updateBackground(savedDisplay, originalDisplay, request);
+            if (request.getBackground() != null) {
+                displayHelper.saveBackground(savedDisplay, request.getBackground());
+            } else {
+                displayHelper.duplicateBackground(originalDisplay.getBackground(), savedDisplay);
+            }
 
             log.info("디스플레이 ID: {}의 수정이 완료되었습니다.", savedDisplay.getDisplayUid());
 
@@ -491,7 +504,6 @@ public class DisplayServiceImpl implements DisplayService {
     }
     
     @Override
-    @Transactional
     @CacheEvict(value = {"allDisplays", "myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse deleteStoredDisplay(String userId, long displayUid) {
         // 1. Display정보 불러오기 (Display 존재 여부 확인)

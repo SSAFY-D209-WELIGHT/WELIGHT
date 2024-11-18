@@ -350,35 +350,6 @@ public class DisplayHelper {
                 .build();
     }
 
-    public void updateTags(Display savedDisplay, Display originalDisplay, DisplayCreateRequest request) {
-        List<String> newTags = getTagsFromDisplay(originalDisplay, request.getTags());
-        saveTags(savedDisplay, newTags);
-    }
-
-    public void updateImages(Display savedDisplay, Display originalDisplay, DisplayCreateRequest request, String userId) {
-        if (request.getImages() != null) {
-            saveImages(savedDisplay, request.getImages());
-        } else {
-            duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
-        }
-    }
-
-    public void updateTexts(Display savedDisplay, Display originalDisplay, DisplayCreateRequest request) {
-        if (request.getTexts() != null) {
-            saveTexts(savedDisplay, request.getTexts());
-        } else {
-            duplicateTexts(originalDisplay.getTexts(), savedDisplay);
-        }
-    }
-
-    public void updateBackground(Display savedDisplay, Display originalDisplay, DisplayCreateRequest request) {
-        if (request.getBackground() != null) {
-            saveBackground(savedDisplay, request.getBackground());
-        } else {
-            duplicateBackground(originalDisplay.getBackground(), savedDisplay);
-        }
-    }
-
     public List<DisplayImageDto> convertImagesToDto(List<DisplayImage> images) {
         return images.stream()
                 .map(image -> DisplayImageDto.builder()
