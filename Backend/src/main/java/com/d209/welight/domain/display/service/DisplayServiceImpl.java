@@ -436,21 +436,7 @@ public class DisplayServiceImpl implements DisplayService {
             throw new RuntimeException("S3 파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
         }
 
-        // 4. 연관된 데이터 삭제
-        try {
-            displayTagRepository.deleteByDisplay(display);
-            displayImageRepository.deleteByDisplay(display);
-            displayTextRepository.deleteByDisplay(display);
-            displayBackgroundRepository.deleteByDisplay(display);
-            displayLikeRepository.deleteByDisplay(display);
-            displayStorageRepository.deleteByDisplay(display);
-            displayCommentRepository.deleteByDisplay(display);
-        } catch (Exception e) {
-            log.error("연관 데이터 삭제 중 오류 발생: ", e);
-            throw new RuntimeException("연관 데이터 삭제 중 오류가 발생했습니다: " + e.getMessage());
-        }
-
-        // 5. 디스플레이 삭제
+        // 4. 디스플레이 삭제
         try {
             displayRepository.delete(display);
             eventPublisher.publishEvent(new DisplayEvent("DELETE", display));
