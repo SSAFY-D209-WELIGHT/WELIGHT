@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        tempoDetector = TempoDetector(this)
+        tempoDetector = TempoDetector()
 
         permissionGranted = checkAudioPermission()
         if (!permissionGranted) {

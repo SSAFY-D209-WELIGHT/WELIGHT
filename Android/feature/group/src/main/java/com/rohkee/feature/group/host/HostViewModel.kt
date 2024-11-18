@@ -3,6 +3,7 @@ package com.rohkee.feature.group.host
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rohkee.core.audio.TempoDetector
 import com.rohkee.core.datastore.repository.DataStoreRepository
 import com.rohkee.core.websocket.Display
 import com.rohkee.core.websocket.Location
@@ -30,6 +31,7 @@ private const val TAG = "HostViewModel"
 class HostViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val webSocketClient: WebSocketClient,
+    private val tempoDetector: TempoDetector,
 ) : ViewModel() {
     private val hostStateHolder = MutableStateFlow<HostData>(HostData())
 
@@ -90,6 +92,8 @@ class HostViewModel @Inject constructor(
             HostIntent.CheerDialog.Cancel -> endCheer()
             is HostIntent.Control.ChangeInterval -> hostStateHolder.update { it.copy(interval = intent.interval) }
             is HostIntent.Control.ToggleDetect -> hostStateHolder.update { it.copy(doDetect = intent.doDetect) }
+            HostIntent.Permission.Granted -> hostStateHolder.update { it.copy(hasPermission = true) }
+            HostIntent.Permission.Rejected -> hostStateHolder.update { it.copy(hasPermission = false) }
         }
     }
 
@@ -176,6 +180,7 @@ class HostViewModel @Inject constructor(
 
     private fun endCheer() {
         webSocketClient.emit(SocketRequest.EndCheer(hostStateHolder.value.roomId))
+        tempoDetector.stopDetection()
         hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
     }
 
@@ -216,7 +221,8 @@ class HostViewModel @Inject constructor(
         // TODO : 응원 시작 로직
         viewModelScope.launch {
             val state = hostStateHolder.value
-            val interval = if (state.effect == DisplayEffect.NONE) 0.0f else state.interval
+            val interval =
+                (if (state.effect == DisplayEffect.NONE || state.doDetect) 0.0f else state.interval) * 1000
 
             Log.d(TAG, "onCheerStart: $state $interval")
             webSocketClient.emit(
@@ -233,7 +239,7 @@ class HostViewModel @Inject constructor(
                                         DisplayEffect.CROSS -> if (index % 2 == 0) 0.0f else 1.0f
                                         DisplayEffect.WAVE -> index / state.list.size.toFloat()
                                     },
-                                interval = interval * 1000,
+                                interval = interval,
                             )
                         },
                 ),
@@ -244,9 +250,50 @@ class HostViewModel @Inject constructor(
                     hostDialogState =
                         HostDialogState.StartCheer(
                             displayId = it.list.first().displayId,
-                            offset = 0.5f,
+                            offset = 0.0f,
                             interval = interval,
                         ),
+                )
+            }
+
+            if (state.doDetect && state.hasPermission) {
+                tempoDetector.startDetection(
+                    onTempoUpdate = { bpm ->
+                        Log.d(TAG, "onCheerStart: $bpm")
+                        if (bpm > 0) {
+                            val autoInterval = 60 / bpm.toFloat() * 1000
+
+                            webSocketClient.emit(
+                                SocketRequest.ControlDisplay(
+                                    roomId = state.roomId,
+                                    displays =
+                                        state.list.mapIndexed { index, groupDisplayData ->
+                                            Display.Control(
+                                                displayId = groupDisplayData.displayId,
+                                                offset =
+                                                    when (state.effect) {
+                                                        DisplayEffect.NONE -> 0.0f
+                                                        DisplayEffect.FLASH -> 0.0f
+                                                        DisplayEffect.CROSS -> if (index % 2 == 0) 0.0f else 1.0f
+                                                        DisplayEffect.WAVE -> index / state.list.size.toFloat()
+                                                    },
+                                                interval = autoInterval * 1000,
+                                            )
+                                        },
+                                ),
+                            )
+                            hostStateHolder.update {
+                                it.copy(
+                                    hostDialogState =
+                                        HostDialogState.StartCheer(
+                                            displayId = it.list.first().displayId,
+                                            offset = 0.0f,
+                                            interval = autoInterval * 1000,
+                                        ),
+                                )
+                            }
+                        }
+                    },
                 )
             }
         }
@@ -313,5 +360,6 @@ class HostViewModel @Inject constructor(
             webSocketClient.emit(SocketRequest.CloseRoom(hostStateHolder.value.roomId))
         }
         webSocketClient.closeSocket()
+        tempoDetector.stopDetection()
     }
 }

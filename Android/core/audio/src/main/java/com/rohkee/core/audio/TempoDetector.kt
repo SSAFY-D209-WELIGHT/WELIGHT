@@ -18,19 +18,19 @@ class TempoDetector {
     private val onsetThreshold = 0.1
 
     // Callbacks
-    private var onTempoUpdate: ((String) -> Unit)? = null
+    private var onTempoUpdate: ((Int) -> Unit)? = null
     private var onBeatDetected: (() -> Unit)? = null
 
     @Synchronized
     fun startDetection(
-        onTempoUpdate: (String) -> Unit,
+        onTempoUpdate: (Int) -> Unit,
         onBeatDetected: (() -> Unit)? = null,
     ) {
-        // Prevent multiple instances
-        if (dispatcher != null) return
-
         this.onTempoUpdate = onTempoUpdate
         this.onBeatDetected = onBeatDetected
+
+        // Prevent multiple instances
+        if (dispatcher != null) return
 
         dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(sampleRate, bufferSize, 0)
 
@@ -77,7 +77,7 @@ class TempoDetector {
             val bpm = (60000.0 / averageInterval).roundToInt()
 
             if (bpm in 40..220) {
-                onTempoUpdate?.invoke("$bpm BPM")
+                onTempoUpdate?.invoke(bpm)
             }
         }
     }
