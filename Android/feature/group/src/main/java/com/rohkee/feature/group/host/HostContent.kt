@@ -154,7 +154,7 @@ fun WaitingRoomContent(
             onClick = { onIntent(HostIntent.Control.Exit) },
         ) { }
         DisplayList(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.aspectRatio(1.2f),
             list = state.list,
             onAdd = { onIntent(HostIntent.Control.AddDisplayGroup) },
         )
@@ -162,6 +162,7 @@ fun WaitingRoomContent(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .weight(1f)
                     .background(color = AppColor.Surface)
                     .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -195,78 +196,80 @@ fun WaitingRoomContent(
                 val effect = DisplayEffect.parse(it)
                 onIntent(HostIntent.Control.ChangeEffect(effect))
             }
-            Text(
-                text = "효과 간격",
-                style = Pretendard.Regular14,
-                color = AppColor.OnBackgroundTransparent,
-            )
-            Slider(
-                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-                enabled = !state.doDetect,
-                value = state.interval,
-                valueRange = 0.2f..3.0f,
-                onValueChange = { onIntent(HostIntent.Control.ChangeInterval(it)) },
-                colors =
-                SliderDefaults.colors(
-                    activeTrackColor = AppColor.Active,
-                    inactiveTrackColor = AppColor.Inactive,
-                ),
-                thumb = {
-                    Box(
-                        modifier =
-                        Modifier
-                            .background(
-                                color = if (state.doDetect) AppColor.OverSurface else AppColor.Convex,
-                                shape = RoundedCornerShape(4.dp),
-                            ).padding(horizontal = 8.dp, vertical = 4.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            modifier = Modifier.width(32.dp),
-                            text = String.format("%.1f", state.interval),
-                            style = Pretendard.SemiBold16,
-                            textAlign = TextAlign.Center,
-                            color = AppColor.OnConvex,
-                        )
-                    }
-                },
-            )
-            Row(
-                modifier = Modifier.wrapContentHeight(),
-                verticalAlignment = Alignment.Top,
-            ) {
-                Text(text = "음원 감지", style = Pretendard.Medium16, color = AppColor.OnSurface)
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    modifier = Modifier.height(24.dp),
-                    checked = state.doDetect,
-                    onCheckedChange = { onIntent(HostIntent.Control.ToggleDetect(it)) },
-                    colors =
-                    SwitchDefaults.colors().copy(
-                        checkedThumbColor = AppColor.OnConvex,
-                        checkedTrackColor = AppColor.Convex,
-                        checkedBorderColor = AppColor.OnConvex,
-                        uncheckedThumbColor = AppColor.Surface,
-                        uncheckedTrackColor = AppColor.Inactive,
-                        uncheckedBorderColor = AppColor.Surface,
-                    ),
+            if (state.effect != DisplayEffect.NONE) {
+                Text(
+                    text = "효과 간격",
+                    style = Pretendard.Regular14,
+                    color = AppColor.OnBackgroundTransparent,
                 )
+                Slider(
+                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    enabled = !state.doDetect,
+                    value = state.interval,
+                    valueRange = 0.2f..3.0f,
+                    onValueChange = { onIntent(HostIntent.Control.ChangeInterval(it)) },
+                    colors =
+                        SliderDefaults.colors(
+                            activeTrackColor = AppColor.Active,
+                            inactiveTrackColor = AppColor.Inactive,
+                        ),
+                    thumb = {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .background(
+                                        color = if (state.doDetect) AppColor.OverSurface else AppColor.Convex,
+                                        shape = RoundedCornerShape(4.dp),
+                                    ).padding(horizontal = 8.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                modifier = Modifier.width(32.dp),
+                                text = String.format("%.1f", state.interval),
+                                style = Pretendard.SemiBold16,
+                                textAlign = TextAlign.Center,
+                                color = AppColor.OnConvex,
+                            )
+                        }
+                    },
+                )
+                Row(
+                    modifier = Modifier.wrapContentHeight(),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(text = "음원 감지", style = Pretendard.Medium16, color = AppColor.OnSurface)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Switch(
+                        modifier = Modifier.height(24.dp),
+                        checked = state.doDetect,
+                        onCheckedChange = { onIntent(HostIntent.Control.ToggleDetect(it)) },
+                        colors =
+                            SwitchDefaults.colors().copy(
+                                checkedThumbColor = AppColor.OnConvex,
+                                checkedTrackColor = AppColor.Convex,
+                                checkedBorderColor = AppColor.OnConvex,
+                                uncheckedThumbColor = AppColor.Surface,
+                                uncheckedTrackColor = AppColor.Inactive,
+                                uncheckedBorderColor = AppColor.Surface,
+                            ),
+                    )
+                }
             }
+            Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier =
-                Modifier
-                    .padding(top = 48.dp)
-                    .fillMaxWidth()
-                    .background(
-                        color = AppColor.Contrast,
-                        shape = RoundedCornerShape(4.dp),
-                    ).clickable { onIntent(HostIntent.Control.StartCheer) }
-                    .padding(16.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = AppColor.Contrast,
+                            shape = RoundedCornerShape(4.dp),
+                        ).clickable { onIntent(HostIntent.Control.StartCheer) }
+                        .padding(16.dp),
             ) {
                 Text(
                     modifier =
-                    Modifier
-                        .align(Alignment.Center),
+                        Modifier
+                            .align(Alignment.Center),
                     text = "응원 시작",
                     style = Pretendard.SemiBold20,
                     color = AppColor.OnContrast,

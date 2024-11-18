@@ -27,8 +27,6 @@ fun CheerDialog(
 
     LaunchedEffect(displayId) { cheerDialogViewModel.loadDisplay(displayId) }
 
-    LaunchedEffect(offset, interval) { cheerDialogViewModel.animate(offset, interval) }
-
     Dialog(
         onDismissRequest = onDismiss,
         properties =
@@ -40,12 +38,18 @@ fun CheerDialog(
     ) {
         DialogContent(
             state = state,
+            offset = offset,
+            interval = interval,
         )
     }
 }
 
 @Composable
-private fun DialogContent(state: CheerDialogState) {
+private fun DialogContent(
+    state: CheerDialogState,
+    offset: Float,
+    interval: Float,
+) {
     when (state) {
         CheerDialogState.Loading -> {
             Box(
@@ -65,7 +69,7 @@ private fun DialogContent(state: CheerDialogState) {
                     textState = state.textState,
                     backgroundState = state.backgroundState,
                 )
-                AnimatedBlocker(interval = state.interval, offset = state.offset)
+                AnimatedBlocker(interval = interval, offset = offset)
             }
     }
 }

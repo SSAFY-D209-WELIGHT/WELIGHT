@@ -213,16 +213,6 @@ class HostViewModel @Inject constructor(
     }
 
     private fun onCheerStart() {
-        hostStateHolder.update {
-            it.copy(
-                hostDialogState =
-                    HostDialogState.StartCheer(
-                        displayId = it.list.first().displayId,
-                        offset = 0f,
-                        interval = 0f,
-                    ),
-            )
-        }
         // TODO : 응원 시작 로직
         viewModelScope.launch {
             val state = hostStateHolder.value
@@ -248,6 +238,17 @@ class HostViewModel @Inject constructor(
                         },
                 ),
             )
+            // 호스트 디스플레이 조작
+            hostStateHolder.update {
+                it.copy(
+                    hostDialogState =
+                        HostDialogState.StartCheer(
+                            displayId = it.list.first().displayId,
+                            offset = 0.5f,
+                            interval = interval,
+                        ),
+                )
+            }
         }
     }
 
