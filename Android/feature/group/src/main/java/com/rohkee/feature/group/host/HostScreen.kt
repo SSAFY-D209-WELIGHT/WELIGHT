@@ -15,22 +15,21 @@ fun HostScreen(
     hostViewModel: HostViewModel = hiltViewModel(),
     showSnackbar: (String) -> Unit = {},
     onPopBackStack: () -> Unit = {},
-    onStartCheer: (id: Long) -> Unit = {},
 ) {
     val hostUIState by hostViewModel.hostState.collectAsStateWithLifecycle()
 
     hostViewModel.hostEvent.collectWithLifecycle { event ->
         when (event) {
             HostEvent.ExitPage -> onPopBackStack()
-            is HostEvent.StartCheer -> onStartCheer(event.roomId)
+            is HostEvent.EmptyDisplayList -> showSnackbar("디스플레이를 등록해주세요.")
         }
     }
 
     MultiplePermissionHandler(
         permissions =
-        listOf(
-            Manifest.permission.RECORD_AUDIO,
-        ),
+            listOf(
+                Manifest.permission.RECORD_AUDIO,
+            ),
     ) { result ->
         if (result.all { it.value }) {
             hostViewModel.onIntent(HostIntent.Permission.Granted)

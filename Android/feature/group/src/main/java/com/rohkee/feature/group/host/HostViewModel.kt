@@ -60,7 +60,6 @@ class HostViewModel @Inject constructor(
 
     fun onIntent(intent: HostIntent) {
         when (intent) {
-
             HostIntent.Control.AddDisplayGroup -> hostStateHolder.update { it.copy(hostDialogState = HostDialogState.SelectDisplay) }
 
             is HostIntent.Control.ChangeEffect ->
@@ -270,23 +269,24 @@ class HostViewModel @Inject constructor(
             dataStoreRepository.getAccessToken()?.let { token ->
                 val data = hostStateHolder.value
 
-                if (data.list.isEmpty()) return@launch
-
-                webSocketClient.emit(
-                    SocketRequest.CreateRoom(
-                        title = data.title,
-                        description = data.description,
-                        location = Location(latitude = latitude, longitude = longitude),
-                        displays = data.list.map { Display.Group(it.displayId) },
-                        user = User(token),
-                    ),
-                )
-            }
-
-            hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Loading) }
-            delay(1000)
-            if (hostStateHolder.value.hostDialogState is HostDialogState.Loading) {
-                hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
+                if (data.list.isEmpty()) {
+                    emitEvent(HostEvent.EmptyDisplayList)
+                } else {
+                    webSocketClient.emit(
+                        SocketRequest.CreateRoom(
+                            title = data.title,
+                            description = data.description,
+                            location = Location(latitude = latitude, longitude = longitude),
+                            displays = data.list.map { Display.Group(it.displayId) },
+                            user = User(token),
+                        ),
+                    )
+                    hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Loading) }
+                    delay(1000)
+                    if (hostStateHolder.value.hostDialogState is HostDialogState.Loading) {
+                        hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
+                    }
+                }
             }
         }
     }

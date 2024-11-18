@@ -1,17 +1,25 @@
 package com.rohkee.welight.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.feat.login.LoginRoute
 import com.rohkee.feature.detail.DetailRoute
 import com.rohkee.feature.detail.DetailScreen
@@ -29,16 +37,25 @@ fun MainNavigation(
     navController: NavHostController = rememberNavController(),
 ) {
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember{ SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     fun showSnackbar(message: String) {
-        scope.launch { snackbarHostState.showSnackbar(message) }
+        scope.launch { snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short) }
     }
 
     Scaffold(
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        }
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                SnackbarHost(hostState = snackbarHostState) { data ->
+                    Snackbar(
+                        snackbarData = data,
+                        containerColor = AppColor.Convex,
+                        contentColor = AppColor.OnConvex,
+                        modifier = Modifier.padding(top = 16.dp).padding(16.dp),
+                    )
+                }
+            }
+        },
     ) { innerPadding ->
         NavHost(
             modifier = modifier,
@@ -104,9 +121,6 @@ fun MainNavigation(
                 HostScreen(
                     showSnackbar = { showSnackbar(it) },
                     onPopBackStack = { navController.popBackStack() },
-                    onStartCheer = {
-                        // TODO: 응원 시작
-                    },
                 )
             }
 
