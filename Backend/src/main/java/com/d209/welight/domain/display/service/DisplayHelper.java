@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -263,6 +266,9 @@ public class DisplayHelper {
         .replaceAll("[^a-zA-Z0-9가-힣]", "_")  // 특수문자와 공백을 언더스코어로 대체
         .replaceAll("_{2,}", "_")              // 연속된 언더스코어를 하나로 통합
         .trim();                               // 앞뒤 공백 제거
+
+        // URL 인코딩 추가
+        safeFileName = URLEncoder.encode(safeFileName, StandardCharsets.UTF_8);
 
         // 경로 구조: {userId}/{type}/{안전한파일명}_{timestamp}{확장자}
         return String.format("%s/%s/%s_%s%s",

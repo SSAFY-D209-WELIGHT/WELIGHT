@@ -223,6 +223,7 @@ public class DisplayServiceImpl implements DisplayService {
                                 .isFavorite(isFavorite)  // 즐겨찾기 여부 추가
                                 .build();
                     })
+                    .sorted((d1, d2) -> Boolean.compare(d2.isFavorite(), d1.isFavorite())) // 즐겨찾기 여부로 정렬
                     .collect(Collectors.toList());
 
             log.info("사용자 {}의 디스플레이 목록 조회 완료: {} 개의 디스플레이 반환", userId, displayInfos.size());
