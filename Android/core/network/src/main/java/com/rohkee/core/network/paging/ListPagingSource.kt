@@ -12,7 +12,11 @@ import retrofit2.Response
 class ListPagingSource<T : DisplayResponse>(
     private val api: suspend (page: Int, size: Int) -> Response<PageResponse<T>>,
 ) : PagingSource<Int, T>() {
-    override fun getRefreshKey(state: PagingState<Int, T>): Int? = state.anchorPosition
+    override fun getRefreshKey(state: PagingState<Int, T>): Int? =
+        state.anchorPosition?.let { anchorPosition ->
+            val anchorPage = state.closestPageToPosition(anchorPosition)
+            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+        }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> {
         val currentPage = params.key ?: 0

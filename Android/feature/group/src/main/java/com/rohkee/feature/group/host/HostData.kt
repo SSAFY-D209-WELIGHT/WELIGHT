@@ -68,4 +68,6 @@ sealed interface HostDialogState {
         val offset: Float,
         val interval: Float,
     ) : HostDialogState
+
+    data object Loading : HostDialogState
 }

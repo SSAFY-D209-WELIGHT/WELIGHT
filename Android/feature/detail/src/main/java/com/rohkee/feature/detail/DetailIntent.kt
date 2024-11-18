@@ -20,4 +20,12 @@ sealed interface DetailIntent {
     data object Duplicate : DetailIntent
 
     data object Delete : DetailIntent
+
+    sealed interface Dialog : DetailIntent {
+        data object Close : Dialog
+
+        data object Publish : Dialog
+
+        data object Delete : Dialog
+    }
 }

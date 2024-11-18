@@ -16,6 +16,9 @@ val googleClientId: String =
         }
     }
 
+val properties = Properties()
+properties.load(rootProject.file("local.properties").inputStream())
+
 android {
     namespace = "com.rohkee.feat.login"
 
@@ -24,6 +27,7 @@ android {
 
         // 따옴표 이스케이프 처리 추가
         buildConfigField("String", "GOOGLE_OAUTH_CLIENT_ID", "\"${googleClientId.replace("\"", "\\\"")}\"")
+        buildConfigField("String", "VERSION", properties["VERSION"] as String)
 
         // 웹 클라이언트 ID도 추가
         manifestPlaceholders["GOOGLE_OAUTH_CLIENT_ID"] = googleClientId

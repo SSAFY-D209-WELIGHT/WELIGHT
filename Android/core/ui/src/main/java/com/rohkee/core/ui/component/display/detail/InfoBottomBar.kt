@@ -61,6 +61,7 @@ sealed interface DetailInfoState {
             val like: Int,
             val download: Int,
             val comment: Int,
+            val stored: Boolean,
         ) : Loaded
     }
 }
@@ -163,6 +164,7 @@ private fun SharedInfoBottomBar(
             like = state.like,
             download = state.download,
             comment = state.comment,
+            hasDownloaded = state.stored,
             onLikeClick = onLikeClick,
             onDownloadClick = onDownloadClick,
             onCommentClick = onCommentClick,
@@ -176,6 +178,7 @@ private fun DetailInfoRow(
     liked: Boolean,
     like: Int,
     download: Int,
+    hasDownloaded: Boolean = false,
     comment: Int,
     onLikeClick: () -> Unit = {},
     onDownloadClick: () -> Unit = {},
@@ -199,6 +202,7 @@ private fun DetailInfoRow(
             icon = painterResource(R.drawable.download),
             number = download,
             onClick = onDownloadClick,
+            enabled = !hasDownloaded,
         )
         Spacer(modifier = Modifier.weight(1f))
 //        IconWithNumber(
@@ -215,6 +219,7 @@ private fun IconWithNumber(
     modifier: Modifier = Modifier,
     icon: Painter,
     number: Int,
+    enabled: Boolean = true,
     onClick: () -> Unit = {},
 ) {
     Row(
@@ -226,12 +231,12 @@ private fun IconWithNumber(
             modifier = Modifier.size(24.dp),
             painter = icon,
             contentDescription = null,
-            tint = AppColor.OnBackground,
+            tint = if(enabled) AppColor.OnBackground else AppColor.Inactive,
         )
         Text(
             text = number.toString(),
             style = Pretendard.Medium16,
-            color = AppColor.OnBackground,
+            color = if(enabled) AppColor.OnBackground else AppColor.Inactive,
         )
     }
 }
@@ -268,6 +273,7 @@ private fun SharedInfoBottomBarPreview() {
                 like = 10,
                 download = 20,
                 comment = 30,
+                stored = false,
             ),
     )
 }

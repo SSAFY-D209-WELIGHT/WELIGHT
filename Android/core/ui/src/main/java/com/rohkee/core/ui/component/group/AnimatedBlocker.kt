@@ -57,7 +57,7 @@ fun AnimatedBlocker(
                     targetValue = 0f,
                     animationSpec =
                         tween(
-                            durationMillis = currentInterval,
+                            durationMillis = currentInterval / 2,
                             easing = LinearEasing,
                         ),
                 )
@@ -66,7 +66,7 @@ fun AnimatedBlocker(
                     targetValue = 1f,
                     animationSpec =
                         tween(
-                            durationMillis = currentInterval,
+                            durationMillis = currentInterval / 2,
                             easing = LinearEasing,
                         ),
                 )

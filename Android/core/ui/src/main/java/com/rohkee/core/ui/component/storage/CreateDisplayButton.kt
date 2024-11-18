@@ -56,7 +56,7 @@ fun CreateDisplayButton(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "새로운 응원도구 만들기",
+                text = "응원 디스플레이 만들기",
                 textAlign = TextAlign.Center,
                 color = AppColor.OnSurface,
                 style = Pretendard.Medium20,

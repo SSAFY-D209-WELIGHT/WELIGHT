@@ -13,6 +13,8 @@ import com.rohkee.core.ui.component.display.detail.DetailAppBarState
 import com.rohkee.core.ui.component.display.detail.DetailInfoState
 import com.rohkee.core.ui.component.display.detail.InfoBottomBar
 import com.rohkee.core.ui.component.display.editor.CustomDisplay
+import com.rohkee.core.ui.dialog.AskingDialog
+import com.rohkee.core.ui.dialog.WarningDialog
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
 import kotlinx.collections.immutable.persistentListOf
@@ -56,6 +58,27 @@ private fun EditContent(
     state: DetailState.Loaded,
     onIntent: (DetailIntent) -> Unit = {},
 ) {
+    when (state.dialogState) {
+        DetailDialogState.Closed -> {}
+        DetailDialogState.Delete ->
+            WarningDialog(
+                title = "디스플레이 삭제",
+                content = "디스플레이를 삭제합니다.\n정말로 삭제하시겠습니까?",
+                onConfirm = { onIntent(DetailIntent.Dialog.Delete) },
+                onDismiss = { onIntent(DetailIntent.Dialog.Close) },
+            )
+
+        DetailDialogState.Publish ->
+            AskingDialog(
+                title = "게시판에 공유하기",
+                content = "공유 후에는 수정이 불가합니다.\n공유하시겠습니까?",
+                onConfirm = {
+                    onIntent(DetailIntent.Dialog.Publish)
+                },
+                onDismiss = { onIntent(DetailIntent.Dialog.Close) },
+            )
+    }
+
     Scaffold(
         modifier = modifier,
     ) { innerPadding ->
@@ -113,6 +136,7 @@ fun DetailContentPreview() {
                 displayImageState = TODO(),
                 displayTextState = TODO(),
                 displayBackgroundState = TODO(),
+                dialogState = DetailDialogState.Closed
             ),
         onIntent = {},
     )

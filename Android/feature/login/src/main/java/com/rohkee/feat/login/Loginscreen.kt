@@ -2,6 +2,7 @@ package com.rohkee.feat.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -26,7 +33,15 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     onGoogleSignInSuccess: (GoogleSignInAccount) -> Unit,
     onGoogleLoginClick: () -> Unit,
+    onShowSnackbar: (String) -> Unit,
 ) {
+    var tapped by remember { mutableStateOf(0) }
+
+    LaunchedEffect(tapped) {
+        if(tapped >= 3)
+            onShowSnackbar(BuildConfig.VERSION)
+    }
+
     // UI 설정
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -47,7 +62,10 @@ fun LoginScreen(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .height(125.dp),
+                        .height(125.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures { tapped += 1 }
+                        },
             )
 
             Spacer(modifier = Modifier.weight(1f)) // 로고와 하단 버튼 사이의 여백

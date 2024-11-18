@@ -1,10 +1,15 @@
 package com.rohkee.feature.storage
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -56,7 +61,10 @@ fun StorageContent(
             }
 
             is StorageState.NoData -> {
-                NoContent(modifier = Modifier.weight(1f))
+                NoContent(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+                )
             }
 
             is StorageState.Error -> {
@@ -97,7 +105,10 @@ private fun LoadedContent(
     ) {
         return LoadingContent(modifier = modifier)
     } else if (displayList.itemCount == 0) {
-        return NoContent(modifier = modifier)
+        return NoContent(
+            modifier = modifier,
+            onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+        )
     }
 
     PullToRefreshBox(
@@ -105,27 +116,33 @@ private fun LoadedContent(
         isRefreshing = displayList.loadState.refresh is LoadState.Loading,
         onRefresh = { displayList.refresh() },
     ) {
-        RatioHorizontalPager(
-            pageCount = displayList.itemCount,
-        ) { index ->
-            displayList[index]?.let { item ->
-                // DisplayCardWithFavorite(
-                DisplayCard(
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)),
-                    state = item,
-                    onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
-                    // onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
-                )
+        Column(
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        ) {
+            RatioHorizontalPager(
+                pageCount = displayList.itemCount,
+            ) { index ->
+                displayList[index]?.let { item ->
+                    // DisplayCardWithFavorite(
+                    DisplayCard(
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                        state = item,
+                        onCardSelected = { onIntent(StorageIntent.SelectDisplay(displayId = item.cardId)) },
+                        // onFavoriteSelected = { onIntent(StorageIntent.ToggleFavorite(displayId = item.cardId)) },
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun NoContent(modifier: Modifier = Modifier) {
-    InfiniteHorizontalPager(
-        modifier = modifier,
-        pageCount = 3,
+private fun NoContent(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    Box(
+        modifier = modifier.clickable { onClick() },
     ) {
         NoContentCard(modifier = modifier)
     }

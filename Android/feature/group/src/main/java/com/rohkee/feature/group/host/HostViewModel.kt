@@ -14,6 +14,7 @@ import com.rohkee.core.websocket.WebSocketClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -268,17 +269,26 @@ class HostViewModel @Inject constructor(
             dataStoreRepository.getAccessToken()?.let { token ->
                 val data = hostStateHolder.value
 
-                if (data.list.isEmpty()) return@launch
-
-                webSocketClient.emit(
-                    SocketRequest.CreateRoom(
-                        title = data.title,
-                        description = data.description,
-                        location = Location(latitude = latitude, longitude = longitude),
-                        displays = data.list.map { Display.Group(it.displayId) },
-                        user = User(token),
-                    ),
-                )
+                if (data.title.isEmpty()) {
+                    emitEvent(HostEvent.EmptyTitle)
+                } else if (data.list.isEmpty()) {
+                    emitEvent(HostEvent.EmptyDisplayList)
+                } else {
+                    webSocketClient.emit(
+                        SocketRequest.CreateRoom(
+                            title = data.title,
+                            description = data.description,
+                            location = Location(latitude = latitude, longitude = longitude),
+                            displays = data.list.map { Display.Group(it.displayId) },
+                            user = User(token),
+                        ),
+                    )
+                    hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Loading) }
+                    delay(1000)
+                    if (hostStateHolder.value.hostDialogState is HostDialogState.Loading) {
+                        hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
+                    }
+                }
             }
         }
     }
@@ -317,6 +327,7 @@ class HostViewModel @Inject constructor(
 
     private var lastStartedTime = 0L
     private var lastInterval = 0f
+
     private fun detection() {
         val state = hostStateHolder.value
         // reset

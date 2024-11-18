@@ -59,6 +59,7 @@ sealed interface DialogState {
     @Immutable
     data class ColorPicker(
         val color: CustomColor? = null,
+        val enableGradient: Boolean = false,
     ) : DialogState
 
     @Immutable

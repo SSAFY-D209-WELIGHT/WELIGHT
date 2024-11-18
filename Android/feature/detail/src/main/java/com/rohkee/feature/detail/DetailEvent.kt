@@ -8,6 +8,8 @@ sealed interface DetailEvent {
             val displayId: Long,
         ) : Download
 
+        data object Reject : Download
+
         data object Error : Download
     }
 
