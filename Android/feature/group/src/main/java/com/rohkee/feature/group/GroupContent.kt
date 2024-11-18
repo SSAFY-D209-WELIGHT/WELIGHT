@@ -10,8 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.pullToRefresh
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -33,8 +32,6 @@ fun GroupContent(
     state: GroupState,
     onIntent: (GroupIntent) -> Unit = {},
 ) {
-    val pullRefreshState = rememberPullToRefreshState()
-
     Scaffold(
         modifier = modifier,
         topBar = { TitleAppBar(title = "단체 응원") },
@@ -67,31 +64,33 @@ fun GroupContent(
                     onClick = { onIntent(GroupIntent.LoadGroupList) },
                 )
             }
-            LazyColumn(
-                modifier =
-                    Modifier.fillMaxWidth().weight(1f).pullToRefresh(
-                        state = pullRefreshState,
-                        isRefreshing = state is GroupState.Loading,
-                        onRefresh = { onIntent(GroupIntent.LoadGroupList) },
-                    ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+            PullToRefreshBox(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            isRefreshing = state is GroupState.Loading,
+            onRefresh = { onIntent(GroupIntent.LoadGroupList) },
             ) {
-                when (state) {
-                    is GroupState.Loading -> {
-                        items(3) {
-                            LoadingListItem()
+            LazyColumn(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    when (state) {
+                        is GroupState.Loading -> {
+                            items(3) {
+                                LoadingListItem()
+                            }
                         }
-                    }
 
-                    is GroupState.Loaded -> {
-                        items(state.cardList) {
-                            CardListItem(
-                                state = it,
-                                onJoinClick = { id -> onIntent(GroupIntent.GroupJoin(id)) },
-                            )
-                        }
+                        is GroupState.Loaded -> {
+                            items(state.cardList) {
+                                CardListItem(
+                                    state = it,
+                                    onJoinClick = { id -> onIntent(GroupIntent.GroupJoin(id)) },
+                                )
+                            }
                     }
                 }
+            }
             }
         }
     }

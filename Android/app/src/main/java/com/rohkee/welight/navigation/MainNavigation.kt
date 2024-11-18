@@ -1,6 +1,11 @@
 package com.rohkee.welight.navigation
 
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,88 +21,100 @@ import com.rohkee.feature.group.client.ClientRoute
 import com.rohkee.feature.group.client.ClientScreen
 import com.rohkee.feature.group.host.HostRoute
 import com.rohkee.feature.group.host.HostScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
-    NavHost(
-        modifier = modifier,
-        navController = navController,
-        startDestination = Login,
-    ) {
-        composable<Login> {
-            LoginRoute(
-                onLoginSuccess = {
-                    navController.navigate(Home) {
-                        popUpTo(Login) { inclusive = true }
-                    }
-                },
-            )
-        }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember{ SnackbarHostState() }
 
-        composable<Home> {
-            BottomTabSubNavigation(
-                onNavigateToDisplayDetail = { id -> navController.navigate(DetailRoute(displayId = id)) },
-                onNavigateToCreateNewDisplay = { navController.navigate(EditorRoute(null)) },
-                onNavigateToGroupRoom = { id -> navController.navigate(ClientRoute(id)) },
-                onNavigateToCreateGroupRoom = { navController.navigate(HostRoute) },
-            )
-        }
+    fun showSnackbar(message: String) {
+        scope.launch { snackbarHostState.showSnackbar(message) }
+    }
 
-        composable<DetailRoute> {
-            val currentId = it.toRoute<DetailRoute>().displayId
-            DetailScreen(
-                onPopBackStack = { navController.popBackStack() },
-                onEditDisplay = { id ->
-                    navController.navigate(EditorRoute(displayId = id)) {
-                        popUpTo(DetailRoute(currentId)) { inclusive = true }
-                    }
-                },
-                onDuplicateDisplay = { id ->
-                    navController.navigate(DetailRoute(displayId = id)) {
-                        popUpTo(DetailRoute(currentId)) { inclusive = true }
-                    }
-                },
-                onDownloadDisplay = { id ->
-                    navController.navigate(DetailRoute(displayId = id)) {
-                        popUpTo(DetailRoute(currentId)) { inclusive = true }
-                    }
-                },
-            )
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
-
-        composable<EditorRoute> {
-            EditorScreen(
-                onNavigateToDisplayDetail = { id ->
-                    navController.navigate(DetailRoute(displayId = id)) {
-                        popUpTo(Home) {
-                            inclusive = false
+    ) { innerPadding ->
+        NavHost(
+            modifier = modifier,
+            navController = navController,
+            startDestination = Login,
+        ) {
+            composable<Login> {
+                LoginRoute(
+                    onLoginSuccess = {
+                        navController.navigate(Home) {
+                            popUpTo(Login) { inclusive = true }
                         }
-                        launchSingleTop = true
-                    }
-                },
-                onPopBackStack = { navController.popBackStack() },
-            )
-        }
+                    },
+                )
+            }
 
-        composable<HostRoute> {
-            HostScreen(
-                onPopBackStack = { navController.popBackStack() },
-                onStartCheer = {
-                    // TODO: 응원 시작
-                },
-            )
-        }
+            composable<Home> {
+                BottomTabSubNavigation(
+                    onNavigateToDisplayDetail = { id -> navController.navigate(DetailRoute(displayId = id)) },
+                    onNavigateToCreateNewDisplay = { navController.navigate(EditorRoute(null)) },
+                    onNavigateToGroupRoom = { id -> navController.navigate(ClientRoute(id)) },
+                    onNavigateToCreateGroupRoom = { navController.navigate(HostRoute) },
+                )
+            }
 
-        composable<ClientRoute> {
-            ClientScreen(
-                onPopBackStack = { navController.popBackStack() },
-                onStartCheer = {
-                    // TODO: 응원 시작
-                },
-            )
+            composable<DetailRoute> {
+                val currentId = it.toRoute<DetailRoute>().displayId
+                DetailScreen(
+                    onPopBackStack = { navController.popBackStack() },
+                    onEditDisplay = { id ->
+                        navController.navigate(EditorRoute(displayId = id)) {
+                            popUpTo(DetailRoute(currentId)) { inclusive = true }
+                        }
+                    },
+                    onDuplicateDisplay = { id ->
+                        navController.navigate(DetailRoute(displayId = id)) {
+                            popUpTo(DetailRoute(currentId)) { inclusive = true }
+                        }
+                    },
+                    onDownloadDisplay = { id ->
+                        navController.navigate(DetailRoute(displayId = id)) {
+                            popUpTo(DetailRoute(currentId)) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
+            composable<EditorRoute> {
+                EditorScreen(
+                    onNavigateToDisplayDetail = { id ->
+                        navController.navigate(DetailRoute(displayId = id)) {
+                            popUpTo(Home) {
+                                inclusive = false
+                            }
+                            launchSingleTop = true
+                        }
+                    },
+                    onPopBackStack = { navController.popBackStack() },
+                )
+            }
+
+            composable<HostRoute> {
+                HostScreen(
+                    showSnackbar = { showSnackbar(it) },
+                    onPopBackStack = { navController.popBackStack() },
+                    onStartCheer = {
+                        // TODO: 응원 시작
+                    },
+                )
+            }
+
+            composable<ClientRoute> {
+                ClientScreen(
+                    onPopBackStack = { navController.popBackStack() },
+                )
+            }
         }
     }
 }

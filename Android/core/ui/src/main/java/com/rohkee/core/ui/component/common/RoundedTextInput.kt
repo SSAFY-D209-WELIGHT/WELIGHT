@@ -41,6 +41,7 @@ fun RoundedTextInput(
         isError = isError,
         shape = RoundedCornerShape(4.dp),
         textStyle = Pretendard.Medium20.copy(color = AppColor.OnSurface),
+        singleLine = true,
         placeholder = {
             Text(text = hint, style = Pretendard.Medium20)
         },

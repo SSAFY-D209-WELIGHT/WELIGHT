@@ -114,7 +114,7 @@ class EditorViewModel @Inject constructor(
 
             is EditorIntent.TextObject.Tapped -> editorStateHolder.selectTextObject()
 
-            is EditorIntent.Background.Tapped -> editorStateHolder.selectBackground()
+            is EditorIntent.Background.Tapped -> editorStateHolder.deselectObject()
 
             // InfoToolBar
             EditorIntent.InfoToolBar.EditText -> tryEditText()
@@ -129,7 +129,7 @@ class EditorViewModel @Inject constructor(
 
             // TextToolBar
             EditorIntent.TextToolBar.Close ->
-                editorStateHolder.deselectObject()
+                editorStateHolder.closeBottomBar()
 
             EditorIntent.TextToolBar.Delete ->
                 editorStateHolder.updateDialog(dialogState = DialogState.TextDeleteWarning)
@@ -148,7 +148,7 @@ class EditorViewModel @Inject constructor(
 
             // ImageToolBar
             EditorIntent.ImageToolBar.Close ->
-                editorStateHolder.updateBottomBar(editingState = EditingState.None)
+                editorStateHolder.closeBottomBar()
 
             EditorIntent.ImageToolBar.Delete ->
                 editorStateHolder.updateDialog(dialogState = DialogState.ImageDeleteWarning)
@@ -167,7 +167,7 @@ class EditorViewModel @Inject constructor(
 
             // BackgroundToolBar
             EditorIntent.BackgroundToolBar.Close ->
-                editorStateHolder.updateBottomBar(editingState = EditingState.None)
+                editorStateHolder.closeBottomBar()
 
             EditorIntent.BackgroundToolBar.Delete ->
                 editorStateHolder.updateDialog(dialogState = DialogState.BackgroundDeleteWarning)
@@ -315,12 +315,15 @@ class EditorViewModel @Inject constructor(
         bitmap: GraphicsLayer,
     ) {
         val editorData = editorStateHolder.value
+        editorStateHolder.deselectObject()
 
         if (editorData.editorInfoState.title
                 .isEmpty()
         ) {
             editorStateHolder.updateDialog(dialogState = DialogState.InfoEdit(editorData.editorInfoState))
             return
+        } else {
+            editorStateHolder.updateDialog(dialogState = DialogState.Saving)
         }
         viewModelScope.launch {
             val userId = datastoreRepository.getUserId()
@@ -394,7 +397,7 @@ class EditorViewModel @Inject constructor(
                             emitEvent(EditorEvent.ExitPage)
                         },
                         onError = { _, message ->
-                            // TODO 저장 실패
+                            editorStateHolder.updateDialog(dialogState = DialogState.Closed)
                         },
                     )
                 }

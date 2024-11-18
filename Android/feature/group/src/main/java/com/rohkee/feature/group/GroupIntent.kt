@@ -8,4 +8,9 @@ sealed interface GroupIntent{
     data class GroupJoin(
         val id: Long,
     ) : GroupIntent
+
+    data class UpdateLocation(
+        val latitude: Double,
+        val longitude: Double,
+    ) : GroupIntent
 }

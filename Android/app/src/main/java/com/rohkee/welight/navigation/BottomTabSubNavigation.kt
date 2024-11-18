@@ -96,7 +96,6 @@ fun BottomTabSubNavigation(
 
             composable<GroupRoute> {
                 GroupScreen(
-                    onPopBackStack = {},
                     onNavigateToGroupRoom = onNavigateToGroupRoom,
                     onNavigateToCreateGroupRoom = onNavigateToCreateGroupRoom,
                 )

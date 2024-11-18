@@ -2,10 +2,20 @@ package com.rohkee.feature.group.host
 
 sealed interface HostIntent {
     sealed interface Creation : HostIntent {
-        data class Confirm(
+        data class UpdateTitle(
             val title: String,
+        ) : Creation
+
+        data class UpdateDescription(
             val description: String,
         ) : Creation
+
+        data class CreateRoom(
+            val latitude: Double,
+            val longitude: Double,
+        ) : Creation
+
+        data object AddDisplay : Creation
 
         data object Cancel : Creation
     }
@@ -19,15 +29,27 @@ sealed interface HostIntent {
             val effect: DisplayEffect,
         ) : Control
 
+        data class ChangeInterval(
+            val interval: Float,
+        ) : Control
+
+        data class ToggleDetect(
+            val doDetect: Boolean,
+        ) : Control
+
         data object StartCheer : Control
     }
 
-    sealed interface Dialog : HostIntent {
-        data object Cancel : Dialog
+    sealed interface SelectionDialog : HostIntent {
+        data object Cancel : SelectionDialog
 
         data class SelectDisplay(
             val displayId: Long,
             val thumbnailUrl: String,
-        ) : Dialog
+        ) : SelectionDialog
+    }
+
+    sealed interface CheerDialog : HostIntent {
+        data object Cancel : CheerDialog
     }
 }

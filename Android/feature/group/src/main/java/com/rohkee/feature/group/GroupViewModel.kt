@@ -1,8 +1,11 @@
 package com.rohkee.feature.group
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rohkee.core.network.repository.CheerRepository
+import com.rohkee.core.network.util.handle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GroupViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
+    private val cheerRepository: CheerRepository,
 ) : ViewModel() {
     private val groupStateHolder = MutableStateFlow<GroupData>(GroupData())
 
@@ -41,6 +45,10 @@ class GroupViewModel @Inject constructor(
             GroupIntent.CreateGroup -> emitEvent(GroupEvent.OpenRoomCreation)
             is GroupIntent.GroupJoin -> emitEvent(GroupEvent.OpenClient(intent.id))
             GroupIntent.LoadGroupList -> viewModelScope.launch { loadData() }
+            is GroupIntent.UpdateLocation ->
+                groupStateHolder.update {
+                    it.copy(currentPostion = LatLng(intent.latitude, intent.longitude))
+                }
         }
     }
 
@@ -52,8 +60,32 @@ class GroupViewModel @Inject constructor(
 
     private suspend fun loadData() {
         groupStateHolder.update { it.invalidate() }
-        // TODO: load data from repository
-        delay(1000)
-        groupStateHolder.update { it.validate() }
+        delay(300)
+        cheerRepository
+            .getCheerRoomList(
+                latitude = groupStateHolder.value.currentPostion.latitude,
+                longitude = groupStateHolder.value.currentPostion.longitude,
+            ).handle(
+                onSuccess = { response ->
+                    groupStateHolder.update {
+                        it.copy(
+                            isValid = true,
+                            list =
+                                response?.map { data ->
+                                    RoomData(
+                                        title = data.roomName,
+                                        description = data.roomDescription,
+                                        participants = data.participantCount,
+                                        roomId = data.roomId,
+                                    )
+                                } ?: emptyList(),
+                        )
+                    }
+                },
+                onError = { _, message ->
+                    groupStateHolder.update { it.validate() }
+                    Log.d("TAG", "loadData: $message")
+                },
+            )
     }
 }
