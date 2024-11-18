@@ -334,7 +334,7 @@ class EditorViewModel @Inject constructor(
                 val userId = datastoreRepository.getUserId()
                 val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
                 val thumbnailName =
-                    "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
+                    "${editorStateHolder.value.editorInfoState.title.replace(" ", "")}-${System.currentTimeMillis()}.png"
                 val file = thumbnailBitmap.saveToInternalStorage(thumbnailName, context)
 
                 val imageFile =
@@ -359,7 +359,7 @@ class EditorViewModel @Inject constructor(
                     }.combine(
                         // 이미지 정보를 내부 저장소에서 가져왔을 경우
                         if (imageFile != null) {
-                            uploadRepository.upload("$userId/images/${imageFile.name}", imageFile).map {
+                            uploadRepository.upload("$userId/images/${imageFile.name.replace(" ", "")}", imageFile).map {
                                 it.process(
                                     onSuccess = { upload ->
                                         when (upload) {

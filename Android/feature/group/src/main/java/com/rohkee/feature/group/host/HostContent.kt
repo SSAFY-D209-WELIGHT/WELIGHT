@@ -2,6 +2,7 @@ package com.rohkee.feature.group.host
 
 import android.Manifest
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -34,12 +37,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -62,6 +67,7 @@ import com.rohkee.feature.group.util.MultiplePermissionHandler
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class DisplayEffect(
     val text: String,
@@ -207,7 +213,10 @@ fun WaitingRoomContent(
                     color = AppColor.OnBackgroundTransparent,
                 )
                 Slider(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
                     enabled = !state.doDetect,
                     value = state.interval,
                     valueRange = 0.2f..3.0f,
@@ -291,6 +300,7 @@ fun WaitingRoomContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("MissingPermission")
 @Composable
 private fun CreationContent(
@@ -305,6 +315,12 @@ private fun CreationContent(
 
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    val config = LocalConfiguration.current
+    val halfHeight = remember { (config.screenHeightDp * 0.4) }
+
+    val scrollState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     MultiplePermissionHandler(
         permissions =
@@ -323,7 +339,6 @@ private fun CreationContent(
 
     LaunchedEffect(Unit) {
         delay(100)
-        focusRequester.requestFocus()
     }
 
     Column(
@@ -341,41 +356,65 @@ private fun CreationContent(
                 onIntent(
                     HostIntent.Creation.CreateRoom(latitude = latitude, longitude = longitude),
                 )
+                scope.launch { scrollState.scrollToItem(4) }
             },
         )
-        RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "응원방 이름")
-        RoundedTextInput(
+
+        LazyColumn(
             modifier =
                 Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .focusRequester(focusRequester),
-            autofocus = true,
-            value = state.title,
-            hint = "제목", // TODO : string resource
-            isError = state.title.isEmpty(),
-            errorMessage = "제목을 입력해주세요.", // TODO : string resource,
-            onValueChange = { onIntent(HostIntent.Creation.UpdateTitle(it)) },
-        )
-        RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "응원방 설명")
-        RoundedTextInput(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            autofocus = true,
-            value = state.description,
-            hint = "설명", // TODO : string resource
-            isError = false,
-            errorMessage = "",
-            onValueChange = { onIntent(HostIntent.Creation.UpdateDescription(it)) },
-        )
-        RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "디스플레이 목록")
-        DisplayList(
-            modifier = Modifier,
-            list = state.list,
-            onAdd = { onIntent(HostIntent.Creation.AddDisplay) },
-        )
+                    .weight(1f),
+            state = scrollState,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item { RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "응원방 이름") }
+            item {
+                RoundedTextInput(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .focusRequester(focusRequester),
+                    autofocus = true,
+                    value = state.title,
+                    hint = "제목", // TODO : string resource
+                    isError = state.title.isEmpty(),
+                    errorMessage = "제목을 입력해주세요.", // TODO : string resource,
+                    onValueChange = { onIntent(HostIntent.Creation.UpdateTitle(it)) },
+                )
+            }
+            item { RowTitleText(modifier = Modifier.padding(horizontal = 16.dp), text = "응원방 설명") }
+            item {
+                RoundedTextInput(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    autofocus = true,
+                    value = state.description,
+                    hint = "설명", // TODO : string resource
+                    isError = false,
+                    errorMessage = "",
+                    onValueChange = { onIntent(HostIntent.Creation.UpdateDescription(it)) },
+                )
+            }
+            item {
+                RowTitleText(
+                    modifier =
+                        Modifier
+                            .padding(horizontal = 16.dp),
+                    text = "디스플레이 목록",
+                )
+            }
+            item {
+                DisplayList(
+                    modifier = Modifier,
+                    list = state.list,
+                    onAdd = { onIntent(HostIntent.Creation.AddDisplay) },
+                )
+            }
+            item { Spacer(modifier = Modifier.height(halfHeight.dp)) }
+        }
     }
 }
 
@@ -421,7 +460,10 @@ private fun DisplayList(
             }
         } else {
             DisplayCard(
-                modifier = Modifier.aspectRatio(0.5f).clip(RoundedCornerShape(4.dp)),
+                modifier =
+                    Modifier
+                        .aspectRatio(0.5f)
+                        .clip(RoundedCornerShape(4.dp)),
                 state = list[index],
                 onCardSelected = {},
             )
