@@ -518,8 +518,6 @@ public class DisplayServiceImpl implements DisplayService {
                 .orElseThrow(() -> new EntityNotFoundException("저장한 디스플레이가 아닙니다."));
         displayStorageRepository.delete(storedDisplay);
     
-        // 4. Display의 Display_download_count 횟수 -1
-        display.setDisplayDownloadCount(display.getDisplayDownloadCount() - 1);
         displayRepository.save(display);
     
         log.info("저장된 디스플레이 삭제 성공: 사용자 ID {} 디스플레이 ID {}", userId, displayUid);
