@@ -11,6 +11,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rohkee.core.ui.component.display.editor.CustomDisplay
+import com.rohkee.core.ui.component.group.AnimatedBlocker
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.animateGradientBackground
 
@@ -57,11 +58,14 @@ private fun DialogContent(state: CheerDialogState) {
         }
 
         is CheerDialogState.Loaded ->
-            CustomDisplay(
-                modifier = Modifier.fillMaxSize(),
-                imageState = state.imageState,
-                textState = state.textState,
-                backgroundState = state.backgroundState,
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                CustomDisplay(
+                    modifier = Modifier.fillMaxSize(),
+                    imageState = state.imageState,
+                    textState = state.textState,
+                    backgroundState = state.backgroundState,
+                )
+                AnimatedBlocker(interval = state.interval, offset = state.offset)
+            }
     }
 }

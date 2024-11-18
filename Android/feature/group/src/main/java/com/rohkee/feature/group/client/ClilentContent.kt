@@ -1,28 +1,20 @@
 package com.rohkee.feature.group.client
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.rohkee.core.ui.component.appbar.GradientAppBar
 import com.rohkee.core.ui.component.display.editor.CustomDisplay
 import com.rohkee.core.ui.component.display.editor.DisplayBackgroundState
 import com.rohkee.core.ui.component.display.editor.DisplayImageState
 import com.rohkee.core.ui.component.display.editor.DisplayTextState
+import com.rohkee.core.ui.component.group.AnimatedBlocker
 import com.rohkee.core.ui.component.group.GroupBottomBar
 import com.rohkee.core.ui.component.group.GroupBottomBarState
 import com.rohkee.core.ui.theme.AppColor
@@ -121,31 +113,7 @@ private fun CheeringContent(
             backgroundState = state.backgroundState,
         )
 
-        if (state.interval > 0f) {
-            val infiniteTransition = rememberInfiniteTransition(label = "flicker animation")
-
-            val animatedValue by infiniteTransition.animateFloat(
-                initialValue = state.offset,
-                targetValue = if (state.offset < 1f) 1f else 0f,
-                animationSpec =
-                    infiniteRepeatable(
-                        animation =
-                            tween(
-                                durationMillis = state.interval.toInt(),
-                                easing = LinearEasing,
-                            ),
-                        repeatMode = RepeatMode.Reverse,
-                    ),
-                label = "animate offset",
-            )
-
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(color = Color.Black.copy(alpha = animatedValue)),
-            )
-        }
+        AnimatedBlocker(interval = state.interval, offset = state.offset)
     }
 }
 

@@ -88,8 +88,21 @@ class CheerDialogViewModel @Inject constructor(
         }
     }
 
-    fun animate(offset: Float, interval: Float) {
+    fun animate(
+        offset: Float,
+        interval: Float,
+    ) {
+        when (val state = _state.value) {
+            is CheerDialogState.Loaded ->
+                _state.update {
+                    state.copy(
+                        offset = offset,
+                        interval = interval,
+                    )
+                }
 
+            else -> {}
+        }
     }
 }
 
@@ -101,5 +114,7 @@ sealed interface CheerDialogState {
         val imageState: DisplayImageState,
         val textState: DisplayTextState,
         val backgroundState: DisplayBackgroundState,
+        val interval: Float = 0f,
+        val offset: Float = 0f,
     ) : CheerDialogState
 }
