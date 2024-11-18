@@ -1,0 +1,52 @@
+spring:
+  main:
+    web-application-type: servlet
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+
+  profiles:
+    include: s3, db, security
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jpa:
+    hibernate:
+      ddl-auto: none  # 스키마 자동 생성 전략 (update, create, create-drop 등)
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      dialect: org.hibernate.dialect.MySQLDialect  # MySQL 방언 설정
+    show-sql: true  # SQL 쿼리 로깅 여부
+    properties:
+      hibernate:
+        format_sql: true  # SQL 쿼리 포맷팅 여부
+
+  elasticsearch:
+    uris: k11d209.p.ssafy.io:9200
+    data:
+      elasticsearch:
+        repositories:
+          enabled: true
+        properties:
+          index:
+            create: true
+            setting-path: classpath:elasticsearch/settings/
+            mapping-path: classpath:elasticsearch/mappings/
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    root: INFO    # 전체 애플리케이션의 기본 로그 레벨 설정
+    com.d209.welight: DEBUG   # 특정 패키지에 대한 로그 레벨 설정
+    org.springframework.web: INFO   # 스프링 웹 관련 로그 레벨 설정
+
+
+

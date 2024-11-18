@@ -1,0 +1,101 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "9090:8080"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    environment:
+      TZ: 'Asia/Seoul'
+      JENKINS_OPTS: --prefix=/jenkins
+    networks:
+      - welight-network
+
+  mysql:
+    image: mysql:8.0.38
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    env_file:
+      - .env
+    environment:
+      TZ: 'Asia/Seoul'
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --pid-file=/var/lib/mysql/mysqld.pid
+    networks:
+      - welight-network
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+    env_file:
+      - .env
+    environment:
+      TZ: 'Asia/Seoul'
+    networks:
+      - welight-network
+
+  fastapi:
+    build:
+      context: ./fastapi
+    container_name: fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      TZ: 'Asia/Seoul'
+    networks:
+      - welight-network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:rw
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    networks:
+      - welight-network
+      # - elastic-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    networks:
+      - welight-network
+
+volumes:
+  jenkins_data:
+  mysql_data:
+  redis_data:
+
+networks:
+  welight-network:
+    external: true
+  # elastic-network:
+  #   external: true
