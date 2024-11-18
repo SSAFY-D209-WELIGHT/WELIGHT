@@ -81,5 +81,6 @@ fun LoginRoute(
                 loginViewModel.launchSignIn()
             }
         },
+        onShowSnackbar = { msg -> onShowSnackbar(msg) },
     )
 }

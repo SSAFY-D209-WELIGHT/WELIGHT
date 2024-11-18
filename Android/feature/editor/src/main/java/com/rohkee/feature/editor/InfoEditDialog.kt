@@ -98,7 +98,7 @@ fun InfoEditDialog(
     }
 
     Dialog(
-        onDismissRequest = {},
+        onDismissRequest = { onDismiss() },
         properties =
             DialogProperties(
                 usePlatformDefaultWidth = false,

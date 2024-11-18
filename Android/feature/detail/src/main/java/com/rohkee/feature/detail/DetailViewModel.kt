@@ -237,13 +237,13 @@ class DetailViewModel @Inject constructor(
     }
 
     private fun postToBoard() {
+        closeDialog()
         viewModelScope.launch {
             displayRepository.publishDisplay(id).handle(
                 onSuccess = {
                     detailStateHolder.update { data -> data.copy(isPublished = true) }
                     if (it != null) {
                         detailEvent.emit(DetailEvent.Publish.Success(it.id))
-                        closeDialog()
                     }
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Publish.Error) },
@@ -277,11 +277,11 @@ class DetailViewModel @Inject constructor(
     }
 
     private fun deleteDisplay() {
+        closeDialog()
         viewModelScope.launch {
             displayRepository.deleteDisplayFromStorage(id).handle(
                 onSuccess = {
                     detailEvent.emit(DetailEvent.Delete.Success)
-                    closeDialog()
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Delete.Error) },
             )
