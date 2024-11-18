@@ -350,9 +350,9 @@ public class DisplayServiceImpl implements DisplayService {
 
         try {
             // 2. 기존 디스플레이 업데이트
-            originalDisplay.setDisplayName(request.getDisplayName() != null ? request.getDisplayName() : originalDisplay.getDisplayName());
-            originalDisplay.setDisplayThumbnailUrl(request.getDisplayThumbnailUrl() != null ? request.getDisplayThumbnailUrl() : originalDisplay.getDisplayThumbnailUrl());
-            originalDisplay.setDisplayIsPosted(request.getDisplayIsPosted() != null ? request.getDisplayIsPosted() : originalDisplay.getDisplayIsPosted());
+            originalDisplay.setDisplayName(request.getDisplayName());
+            originalDisplay.setDisplayThumbnailUrl(request.getDisplayThumbnailUrl());
+            originalDisplay.setDisplayIsPosted(request.getDisplayIsPosted());
 
             // 3. 기존 관련 데이터 삭제
             originalDisplay.getTags().clear();
@@ -360,18 +360,32 @@ public class DisplayServiceImpl implements DisplayService {
             originalDisplay.getTexts().clear();
             originalDisplay.setBackground(null);
 
-            // 4. 새로운 데이터 저장
             if (request.getTags() != null) {
-                displayHelper.saveTags(originalDisplay, request.getTags());
+                originalDisplay.getTags().clear(); // 기존 태그 비우기
+                List<DisplayTag> displayTags = request.getTags().stream()
+                        .map(tag -> new DisplayTag(originalDisplay, tag))
+                        .collect(Collectors.toList());
+                originalDisplay.getTags().addAll(displayTags); // 새 태그 추가
             }
+            
             if (request.getImages() != null) {
-                displayHelper.saveImages(originalDisplay, request.getImages());
+                originalDisplay.getImages().clear(); // 기존 이미지 비우기
+                List<DisplayImage> displayImages = request.getImages().stream()
+                        .map(image -> new DisplayImage(originalDisplay, image))
+                        .collect(Collectors.toList());
+                originalDisplay.getImages().addAll(displayImages); // 새 이미지 추가
             }
+            
             if (request.getTexts() != null) {
-                displayHelper.saveTexts(originalDisplay, request.getTexts());
+                originalDisplay.getTexts().clear(); // 기존 텍스트 비우기
+                List<DisplayText> displayTexts = request.getTexts().stream()
+                        .map(text -> new DisplayText(originalDisplay, text))
+                        .collect(Collectors.toList());
+                originalDisplay.getTexts().addAll(displayTexts); // 새 텍스트 추가
             }
+            
             if (request.getBackground() != null) {
-                displayHelper.saveBackground(originalDisplay, request.getBackground());
+                originalDisplay.setBackground(new DisplayBackground(originalDisplay, request.getBackground()));
             }
 
             eventPublisher.publishEvent(new DisplayEvent("UPDATE", originalDisplay));

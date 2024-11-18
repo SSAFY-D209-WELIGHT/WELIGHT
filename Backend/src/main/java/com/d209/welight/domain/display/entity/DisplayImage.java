@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.entity;
 
+import com.d209.welight.domain.display.dto.DisplayImageDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,4 +45,15 @@ public class DisplayImage {
     @Builder.Default
     @Column(name = "DISPLAY_IMG_CREATED_AT", nullable = false)
     private LocalDateTime displayImgCreatedAt = LocalDateTime.now();
+
+    public DisplayImage(Display display, DisplayImageDto imageDto) {
+        this.display = display;
+        this.displayImgUrl = imageDto.getDisplayImgUrl();
+        this.displayImgColor = imageDto.getDisplayImgColor();
+        this.displayImgScale = imageDto.getDisplayImgScale();
+        this.displayImgRotation = imageDto.getDisplayImgRotation();
+        this.displayImgOffsetx = imageDto.getDisplayImgOffsetx();
+        this.displayImgOffsety = imageDto.getDisplayImgOffsety();
+        this.displayImgCreatedAt = LocalDateTime.now();
+    }
 }

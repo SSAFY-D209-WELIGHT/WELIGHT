@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.entity;
 
+import com.d209.welight.domain.display.dto.DisplayTextDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,4 +47,16 @@ public class DisplayText{
     @Builder.Default
     @Column(name = "DISPLAY_TEXT_CREATED_AT", nullable = false)
     private LocalDateTime displayTextCreatedAt = LocalDateTime.now();
+
+    public DisplayText(Display display, DisplayTextDto textDto) {
+        this.display = display;
+        this.displayTextDetail = textDto.getDisplayTextDetail();
+        this.displayTextColor = textDto.getDisplayTextColor();
+        this.displayTextFont = textDto.getDisplayTextFont();
+        this.displayTextRotation = textDto.getDisplayTextRotation();
+        this.displayTextScale = textDto.getDisplayTextScale();
+        this.displayTextOffsetx = textDto.getDisplayTextOffsetx();
+        this.displayTextOffsety = textDto.getDisplayTextOffsety();
+        this.displayTextCreatedAt = LocalDateTime.now();
+    }
 }

@@ -27,4 +27,10 @@ public class DisplayTag {
     @Column(name = "DISPLAY_TAG_CREATED_AT", nullable = false)
     private LocalDateTime displayTagCreatedAt;
 
+    public DisplayTag(Display display, String tagText) {
+        this.display = display;
+        this.displayTagText = tagText;
+        this.displayTagCreatedAt = LocalDateTime.now();
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.d209.welight.domain.display.entity;
 
+import com.d209.welight.domain.display.dto.DisplayBackgroundDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -46,4 +47,14 @@ public class DisplayBackground {
 
     @Column(name = "DISPLAY_BACKGROUND_GRADATION_TYPE", length = 50, nullable = true)
     private String displayBackgroundGradationType;
+
+    public DisplayBackground(Display display, DisplayBackgroundDto backgroundDto) {
+        this.display = display;
+        this.displayBackgroundBrightness = backgroundDto.getDisplayBackgroundBrightness();
+        this.displayColorSolid = backgroundDto.getDisplayColorSolid();
+        this.displayBackgroundGradationColor1 = backgroundDto.getDisplayBackgroundGradationColor1();
+        this.displayBackgroundGradationColor2 = backgroundDto.getDisplayBackgroundGradationColor2();
+        this.displayBackgroundGradationType = backgroundDto.getDisplayBackgroundGradationType();
+        this.displayBackgroundCreatedAt = LocalDateTime.now();
+    }
 }
