@@ -17,10 +17,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,8 +44,8 @@ import android.graphics.Color as AndroidColor
 private enum class ColorSelectionType(
     val text: String,
 ) {
-    SINGLE("색상 선택"),
-    GRADIENT("그라데이션 선택"),
+    SINGLE("단색"),
+    GRADIENT("그라데이션"),
 }
 
 private enum class OrderType {
@@ -146,41 +143,44 @@ fun ColorPickerDialog(
                     modifier = Modifier.weight(1f),
                 ) {
                     Row(
-                        modifier = Modifier.wrapContentWidth().clickable { setOpenDropdown(true) },
+                        modifier = Modifier.wrapContentWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Text(
-                            text = selectedType.text,
+                            modifier = Modifier.clickable { setSelectedType(ColorSelectionType.SINGLE) },
+                            text = ColorSelectionType.SINGLE.text,
                             style = Pretendard.SemiBold20,
-                            color = AppColor.OnSurface,
+                            color = if (selectedType == ColorSelectionType.SINGLE) AppColor.Active else AppColor.Inactive,
                         )
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "open dropdown",
-                            tint = AppColor.OnSurface,
-                        )
-                    }
-                    DropdownMenu(
-                        modifier = Modifier.background(color = AppColor.OverSurface),
-                        expanded = openDropdown,
-                        onDismissRequest = { setOpenDropdown(false) },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(text = "색상 선택", style = Pretendard.SemiBold16) },
-                            onClick = {
-                                setSelectedType(ColorSelectionType.SINGLE)
-                                setSelectedOrder(OrderType.PRIMARY)
-                                setOpenDropdown(false)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(text = "그라데이션 선택", style = Pretendard.SemiBold16) },
-                            onClick = {
-                                setSelectedType(ColorSelectionType.GRADIENT)
-                                setSelectedOrder(OrderType.PRIMARY)
-                                setOpenDropdown(false)
-                            },
+                        Text(
+                            modifier = Modifier.clickable { setSelectedType(ColorSelectionType.GRADIENT) },
+                            text = ColorSelectionType.GRADIENT.text,
+                            style = Pretendard.SemiBold20,
+                            color = if (selectedType == ColorSelectionType.GRADIENT) AppColor.Active else AppColor.Inactive,
                         )
                     }
+//                    DropdownMenu(
+//                        modifier = Modifier.background(color = AppColor.OverSurface),
+//                        expanded = openDropdown,
+//                        onDismissRequest = { setOpenDropdown(false) },
+//                    ) {
+//                        DropdownMenuItem(
+//                            text = { Text(text = "색상 선택", style = Pretendard.SemiBold16) },
+//                            onClick = {
+//                                setSelectedType(ColorSelectionType.SINGLE)
+//                                setSelectedOrder(OrderType.PRIMARY)
+//                                setOpenDropdown(false)
+//                            },
+//                        )
+//                        DropdownMenuItem(
+//                            text = { Text(text = "그라데이션 선택", style = Pretendard.SemiBold16) },
+//                            onClick = {
+//                                setSelectedType(ColorSelectionType.GRADIENT)
+//                                setSelectedOrder(OrderType.PRIMARY)
+//                                setOpenDropdown(false)
+//                            },
+//                        )
+//                    }
                 }
                 Icon(
                     imageVector = Icons.Default.Close,
