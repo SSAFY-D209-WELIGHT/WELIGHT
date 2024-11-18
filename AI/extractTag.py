@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 # Configuration
-GOOGLE_CREDENTIALS_PATH = "C:/Users/SSAFY/Desktop/d209-me/testcahtbot-f58ecbe6e49d.json"
+GOOGLE_CREDENTIALS_PATH = "C:/Users/SSAFY/Desktop/d209me/testcahtbot-f58ecbe6e49d.json"
 PROJECT_ID = "testcahtbot"
 LOCATION = "asia-northeast3"
 MODEL_NAME = "gemini-1.5-flash-002"

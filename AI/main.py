@@ -20,7 +20,7 @@ import json
 ## DB
 # from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+# from typing import List
 import models
 from database import get_db
 from datetime import datetime
@@ -28,6 +28,12 @@ from datetime import datetime
 ## extractTag.py
 from extractTag import router as generate_router # 라우터 임포트
 from extractTag import generate_analysis, load_image_from_url
+
+# Set Google Cloud credentials and initialize Vertex AI
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_CREDENTIALS_PATH
+# vertexai.init(project=PROJECT_ID, location=LOCATION)
+
+
 # FastAPI app initialization
 app = FastAPI(
     title="Image Processing API",
