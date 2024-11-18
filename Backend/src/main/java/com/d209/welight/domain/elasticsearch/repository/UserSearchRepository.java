@@ -22,7 +22,6 @@ public interface UserSearchRepository extends ElasticsearchRepository<UserDocume
             "}")
     Page<UserDocument> findByUserIdContaining(String userId, Pageable pageable);
 
-
     @Query("{" +
             "\"bool\": {" +
             "\"should\": [" +
