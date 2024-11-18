@@ -114,7 +114,7 @@ fun HostContent(
     ) { innerPadding ->
         when (state) {
             is HostState.Creation -> {
-                if (state.hostDialogState is HostDialogState.Loading) LoadingDialog(message = "응워방 생성 중입니다")
+                if (state.hostDialogState is HostDialogState.Loading) LoadingDialog(message = "응원방 생성 중 입니다")
 
                 CreationContent(
                     modifier = Modifier.padding(innerPadding),
