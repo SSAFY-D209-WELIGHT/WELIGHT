@@ -17,6 +17,7 @@ import com.rohkee.core.ui.util.toFontFamily
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -197,20 +198,26 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private var downloadJob: Job? = null
+
     private fun download() {
-        viewModelScope.launch {
-            displayRepository.importDisplayToMyStorage(id).handle(
-                onSuccess = {
-                    detailStateHolder.update { data ->
-                        data.copy(download = data.download + 1)
-                    }
-                    if (it != null) {
-                        detailEvent.emit(DetailEvent.Download.Success(it.id))
-                    }
-                },
-                onError = { _, _ -> detailEvent.emit(DetailEvent.Download.Error) },
-            )
-        }
+        if (detailStateHolder.value.stored) return
+
+        downloadJob?.cancel()
+        downloadJob =
+            viewModelScope.launch {
+                displayRepository.importDisplayToMyStorage(id).handle(
+                    onSuccess = {
+                        detailStateHolder.update { data ->
+                            data.copy(download = data.download + 1)
+                        }
+                        if (it != null) {
+                            detailEvent.emit(DetailEvent.Download.Success(it.id))
+                        }
+                    },
+                    onError = { _, _ -> detailEvent.emit(DetailEvent.Download.Error) },
+                )
+            }
     }
 
     private fun openComments() {

@@ -42,6 +42,7 @@ data class DisplayDetailData(
                     like = like,
                     download = download,
                     comment = comment,
+                    stored = stored,
                 )
             } else {
                 DetailInfoState.Loaded.Default(
