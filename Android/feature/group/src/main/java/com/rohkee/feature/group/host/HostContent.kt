@@ -2,6 +2,9 @@ package com.rohkee.feature.group.host
 
 import android.Manifest
 import android.annotation.SuppressLint
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +47,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -90,6 +95,35 @@ fun HostContent(
     state: HostState,
     onIntent: (HostIntent) -> Unit = {},
 ) {
+    val context = LocalContext.current as ComponentActivity
+
+    LaunchedEffect(state) {
+        when (state) {
+            is HostState.WaitingRoom -> {
+                when (state.hostDialogState) {
+                    is HostDialogState.StartCheer ->
+                        context.enableEdgeToEdge(
+                            statusBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
+                            navigationBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
+                        )
+
+                    else ->
+                        context.enableEdgeToEdge(
+                            statusBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+                            navigationBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+                        )
+                }
+            }
+
+            else -> {
+                context.enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+                    navigationBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+                )
+            }
+        }
+    }
+
     if (state is HostState.Creation &&
         state.hostDialogState is HostDialogState.SelectDisplay ||
         state is HostState.WaitingRoom &&
@@ -141,15 +175,6 @@ fun WaitingRoomContent(
     onIntent: (HostIntent) -> Unit,
 ) {
     val options = remember { DisplayEffect.entries.map { it.text }.toPersistentList() }
-
-    if (state.hostDialogState is HostDialogState.StartCheer) {
-        CheerDialog(
-            displayId = state.hostDialogState.displayId,
-            offset = state.hostDialogState.offset,
-            interval = state.hostDialogState.interval,
-            onDismiss = { onIntent(HostIntent.CheerDialog.Cancel) },
-        )
-    }
 
     Column(
         modifier =
@@ -297,6 +322,15 @@ fun WaitingRoomContent(
                 }
             }
         }
+    }
+
+    if (state.hostDialogState is HostDialogState.StartCheer) {
+        CheerDialog(
+            displayId = state.hostDialogState.displayId,
+            offset = state.hostDialogState.offset,
+            interval = state.hostDialogState.interval,
+            onDismiss = { onIntent(HostIntent.CheerDialog.Cancel) },
+        )
     }
 }
 

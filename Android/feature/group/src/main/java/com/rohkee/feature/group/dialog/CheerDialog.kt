@@ -1,13 +1,18 @@
 package com.rohkee.feature.group.dialog
 
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rohkee.core.ui.component.display.editor.CustomDisplay
@@ -27,21 +32,34 @@ fun CheerDialog(
 
     LaunchedEffect(displayId) { cheerDialogViewModel.loadDisplay(displayId) }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties =
-            DialogProperties(
-                dismissOnClickOutside = false,
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false,
-            ),
-    ) {
-        DialogContent(
-            state = state,
-            offset = offset,
-            interval = interval,
+    val context = LocalContext.current as ComponentActivity
+
+    BackHandler {
+        onDismiss()
+    }
+
+    LaunchedEffect(state) {
+        context.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
+            navigationBarStyle = SystemBarStyle.dark(Color.Transparent.toArgb()),
         )
     }
+
+    DialogContent(
+        state = state,
+        offset = offset,
+        interval = interval,
+    )
+//    Dialog(
+//        onDismissRequest = onDismiss,
+//        properties =
+//            DialogProperties(
+//                dismissOnClickOutside = false,
+//                usePlatformDefaultWidth = false,
+//                decorFitsSystemWindows = false,
+//            ),
+//    ) {
+//    }
 }
 
 @Composable
