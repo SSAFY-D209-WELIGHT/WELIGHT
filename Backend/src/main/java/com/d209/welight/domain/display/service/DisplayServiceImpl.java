@@ -293,6 +293,8 @@ public class DisplayServiceImpl implements DisplayService {
         // displayStorage 생성 및 저장
         displayHelper.saveDisplayStorage(user, savedDisplay);
 
+        eventPublisher.publishEvent(new DisplayEvent("CREATE", savedDisplay));
+
         // 응답 객체 생성 및 반환
         return DisplayCreateResponse.builder()
                 .displayUid(savedDisplay.getDisplayUid())
@@ -335,7 +337,6 @@ public class DisplayServiceImpl implements DisplayService {
     @Override
     @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
     public DisplayCreateResponse updateDisplay(Long displayId, DisplayCreateRequest request, String userId) {
-
         // 1. 권한 확인
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
@@ -354,10 +355,10 @@ public class DisplayServiceImpl implements DisplayService {
             originalDisplay.setDisplayIsPosted(request.getDisplayIsPosted() != null ? request.getDisplayIsPosted() : originalDisplay.getDisplayIsPosted());
 
             // 3. 기존 관련 데이터 삭제
-            displayTagRepository.deleteByDisplay(originalDisplay);
-            displayImageRepository.deleteByDisplay(originalDisplay);
-            displayTextRepository.deleteByDisplay(originalDisplay);
-            displayBackgroundRepository.deleteByDisplay(originalDisplay);
+            originalDisplay.getTags().clear();
+            originalDisplay.getImages().clear();
+            originalDisplay.getTexts().clear();
+            originalDisplay.setBackground(null);
 
             // 4. 새로운 데이터 저장
             if (request.getTags() != null) {
@@ -390,7 +391,7 @@ public class DisplayServiceImpl implements DisplayService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true, beforeInvocation = true)
+    @CacheEvict(value = {"allDisplays","myDisplays", "displayDetails"}, allEntries = true)
     public void deleteDisplay(Long displayUid, String userId) {
         // 1. Display와 User 정보 확인
         Display display = displayRepository.findById(displayUid)
