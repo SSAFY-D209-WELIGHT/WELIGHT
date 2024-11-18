@@ -21,6 +21,7 @@ fun HostScreen(
     hostViewModel.hostEvent.collectWithLifecycle { event ->
         when (event) {
             HostEvent.ExitPage -> onPopBackStack()
+            is HostEvent.EmptyTitle -> showSnackbar("제목을 입력해주세요.")
             is HostEvent.EmptyDisplayList -> showSnackbar("디스플레이를 등록해주세요.")
         }
     }

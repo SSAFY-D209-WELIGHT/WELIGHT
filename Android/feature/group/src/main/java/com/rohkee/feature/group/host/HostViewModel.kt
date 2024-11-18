@@ -269,7 +269,9 @@ class HostViewModel @Inject constructor(
             dataStoreRepository.getAccessToken()?.let { token ->
                 val data = hostStateHolder.value
 
-                if (data.list.isEmpty()) {
+                if (data.title.isEmpty()) {
+                    emitEvent(HostEvent.EmptyTitle)
+                } else if (data.list.isEmpty()) {
                     emitEvent(HostEvent.EmptyDisplayList)
                 } else {
                     webSocketClient.emit(

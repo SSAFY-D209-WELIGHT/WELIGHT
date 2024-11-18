@@ -339,6 +339,7 @@ private fun CreationContent(
 
     LaunchedEffect(Unit) {
         delay(100)
+        focusRequester.requestFocus()
     }
 
     Column(
@@ -356,7 +357,13 @@ private fun CreationContent(
                 onIntent(
                     HostIntent.Creation.CreateRoom(latitude = latitude, longitude = longitude),
                 )
-                scope.launch { scrollState.scrollToItem(4) }
+                scope.launch {
+                    if (state.title.isEmpty()) {
+                        scrollState.scrollToItem(1)
+                    } else if (state.list.isEmpty()) {
+                        scrollState.scrollToItem(4)
+                    }
+                }
             },
         )
 
