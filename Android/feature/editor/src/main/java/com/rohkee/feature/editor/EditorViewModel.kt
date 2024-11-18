@@ -37,6 +37,7 @@ import com.rohkee.feature.editor.navigation.EditorRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -310,6 +311,8 @@ class EditorViewModel @Inject constructor(
         }
     }
 
+    private var savingJob: Job? = null
+
     private fun saveDisplay(
         context: Context,
         bitmap: GraphicsLayer,
@@ -325,83 +328,85 @@ class EditorViewModel @Inject constructor(
         } else {
             editorStateHolder.updateDialog(dialogState = DialogState.Saving)
         }
-        viewModelScope.launch {
-            val userId = datastoreRepository.getUserId()
-            val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
-            val thumbnailName =
-                "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
-            val file = thumbnailBitmap.saveToInternalStorage(thumbnailName, context)
+        savingJob?.cancel()
+        savingJob =
+            viewModelScope.launch {
+                val userId = datastoreRepository.getUserId()
+                val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
+                val thumbnailName =
+                    "${editorStateHolder.value.editorInfoState.title}-${System.currentTimeMillis()}.png"
+                val file = thumbnailBitmap.saveToInternalStorage(thumbnailName, context)
 
-            val imageFile =
-                editorStateHolder.value.editorImageState.imageSource?.let { uri ->
-                    getFileFromUri(context, uri)
-                }
+                val imageFile =
+                    editorStateHolder.value.editorImageState.imageSource?.let { uri ->
+                        getFileFromUri(context, uri)
+                    }
 
-            Log.d("TAG", "saveDisplay: $imageFile")
+                Log.d("TAG", "saveDisplay: $imageFile")
 
-            uploadRepository
-                .upload("$userId/thumbnails/$thumbnailName", file)
-                .map {
-                    it.process(
-                        onSuccess = { upload ->
-                            when (upload) {
-                                is Upload.Completed -> upload.uploadedFile
-                                else -> ""
+                uploadRepository
+                    .upload("$userId/thumbnails/$thumbnailName", file)
+                    .map {
+                        it.process(
+                            onSuccess = { upload ->
+                                when (upload) {
+                                    is Upload.Completed -> upload.uploadedFile
+                                    else -> ""
+                                }
+                            },
+                            onError = { _, _ -> "" },
+                        )
+                    }.combine(
+                        // 이미지 정보를 내부 저장소에서 가져왔을 경우
+                        if (imageFile != null) {
+                            uploadRepository.upload("$userId/images/${imageFile.name}", imageFile).map {
+                                it.process(
+                                    onSuccess = { upload ->
+                                        when (upload) {
+                                            is Upload.Completed -> upload.uploadedFile
+                                            else -> ""
+                                        }
+                                    },
+                                    onError = { _, _ -> "" },
+                                )
+                            }
+                        } else {
+                            flow {
+                                // 외부 저장소에서 가져온 경우
+                                emit(editorData.editorImageState.imageSource?.toString() ?: "")
                             }
                         },
-                        onError = { _, _ -> "" },
-                    )
-                }.combine(
-                    // 이미지 정보를 내부 저장소에서 가져왔을 경우
-                    if (imageFile != null) {
-                        uploadRepository.upload("$userId/images/${imageFile.name}", imageFile).map {
-                            it.process(
-                                onSuccess = { upload ->
-                                    when (upload) {
-                                        is Upload.Completed -> upload.uploadedFile
-                                        else -> ""
-                                    }
-                                },
-                                onError = { _, _ -> "" },
+                    ) { thumbnailUrl, imageUrl ->
+                        if (editorData.isEditMode) {
+                            displayRepository.editDisplay(
+                                id = editorData.displayId!!,
+                                display =
+                                    editorData.toDisplayRequest(
+                                        thumbnailUrl = thumbnailUrl,
+                                        imageUrl = imageUrl,
+                                    ),
+                            )
+                        } else {
+                            displayRepository.createDisplay(
+                                display =
+                                    editorData.toDisplayRequest(
+                                        thumbnailUrl = thumbnailUrl,
+                                        imageUrl = imageUrl,
+                                    ),
                             )
                         }
-                    } else {
-                        flow {
-                            // 외부 저장소에서 가져온 경우
-                            emit(editorData.editorImageState.imageSource?.toString() ?: "")
-                        }
-                    },
-                ) { thumbnailUrl, imageUrl ->
-                    if (editorData.isEditMode) {
-                        displayRepository.editDisplay(
-                            id = editorData.displayId!!,
-                            display =
-                                editorData.toDisplayRequest(
-                                    thumbnailUrl = thumbnailUrl,
-                                    imageUrl = imageUrl,
-                                ),
-                        )
-                    } else {
-                        displayRepository.createDisplay(
-                            display =
-                                editorData.toDisplayRequest(
-                                    thumbnailUrl = thumbnailUrl,
-                                    imageUrl = imageUrl,
-                                ),
+                    }.collectLatest { response ->
+                        response.handle(
+                            onSuccess = {
+                                // 저장 성공
+                                emitEvent(EditorEvent.ExitPage)
+                            },
+                            onError = { _, message ->
+                                editorStateHolder.updateDialog(dialogState = DialogState.Closed)
+                            },
                         )
                     }
-                }.collectLatest { response ->
-                    response.handle(
-                        onSuccess = {
-                            // 저장 성공
-                            emitEvent(EditorEvent.ExitPage)
-                        },
-                        onError = { _, message ->
-                            editorStateHolder.updateDialog(dialogState = DialogState.Closed)
-                        },
-                    )
-                }
-        }
+            }
     }
 }
 
