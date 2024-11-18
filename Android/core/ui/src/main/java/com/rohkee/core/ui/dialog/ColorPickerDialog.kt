@@ -110,10 +110,10 @@ fun ColorPickerDialog(
                 }
 
                 is CustomColor.Single -> {
-                    AndroidColor.colorToHSV(color.color.toArgb(), hsv)
+                    AndroidColor.colorToHSV(Color.Black.toArgb(), hsv)
                 }
 
-                else -> AndroidColor.colorToHSV(Color.Red.toArgb(), hsv)
+                else -> AndroidColor.colorToHSV(Color.Black.toArgb(), hsv)
             }
             mutableStateOf(
                 Triple(hsv[0], hsv[1], hsv[2]),
