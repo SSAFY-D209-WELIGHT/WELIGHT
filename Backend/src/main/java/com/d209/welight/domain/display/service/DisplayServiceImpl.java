@@ -348,59 +348,42 @@ public class DisplayServiceImpl implements DisplayService {
         }
 
         try {
+            // 2. 기존 디스플레이 업데이트
+            originalDisplay.setDisplayName(request.getDisplayName() != null ? request.getDisplayName() : originalDisplay.getDisplayName());
+            originalDisplay.setDisplayThumbnailUrl(request.getDisplayThumbnailUrl() != null ? request.getDisplayThumbnailUrl() : originalDisplay.getDisplayThumbnailUrl());
+            originalDisplay.setDisplayIsPosted(request.getDisplayIsPosted() != null ? request.getDisplayIsPosted() : originalDisplay.getDisplayIsPosted());
 
-            // 2. 새로운 디스플레이 생성 (기존 정보 복사)
-            Display newDisplay = Display.builder()
-                    .creatorUid(user.getUserUid())
-                    .displayName(request.getDisplayName() != null ? request.getDisplayName() : originalDisplay.getDisplayName())
-                    .displayThumbnailUrl(request.getDisplayThumbnailUrl() != null ? request.getDisplayThumbnailUrl() : originalDisplay.getDisplayThumbnailUrl())
-                    .displayIsPosted(request.getDisplayIsPosted() != null ? request.getDisplayIsPosted() : originalDisplay.getDisplayIsPosted())
-                    .displayCreatedAt(LocalDateTime.now())
-                    .displayDownloadCount(0L)
-                    .displayLikeCount(0L)
-                    .build();
-            
-            // 수정된(새로운) 디스플레이 저장
-            Display savedDisplay = displayRepository.save(newDisplay);
+            // 3. 기존 관련 데이터 삭제
+            displayTagRepository.deleteByDisplay(originalDisplay);
+            displayImageRepository.deleteByDisplay(originalDisplay);
+            displayTextRepository.deleteByDisplay(originalDisplay);
+            displayBackgroundRepository.deleteByDisplay(originalDisplay);
 
-            eventPublisher.publishEvent(new DisplayEvent("UPDATE",savedDisplay));
-
-            // 3. 컨텐츠 복사 또는 업데이트
-            // 3-1. 태그 처리 및 저장
-            List<String> newTags = displayHelper.getTagsFromDisplay(originalDisplay, request.getTags());
-            displayHelper.saveTags(savedDisplay, newTags);
-
-            // 3-2. 이미지 처리
+            // 4. 새로운 데이터 저장
+            if (request.getTags() != null) {
+                displayHelper.saveTags(originalDisplay, request.getTags());
+            }
             if (request.getImages() != null) {
-                displayHelper.saveImages(savedDisplay, request.getImages());
-            } else {
-                displayHelper.duplicateImages(originalDisplay.getImages(), savedDisplay, userId);
+                displayHelper.saveImages(originalDisplay, request.getImages());
             }
-
-            // 3-3. 텍스트 처리
             if (request.getTexts() != null) {
-                displayHelper.saveTexts(savedDisplay, request.getTexts());
-            } else {
-                displayHelper.duplicateTexts(originalDisplay.getTexts(), savedDisplay);
+                displayHelper.saveTexts(originalDisplay, request.getTexts());
             }
-
-            // 3-4. 배경 및 색상 처리
             if (request.getBackground() != null) {
-                displayHelper.saveBackground(savedDisplay, request.getBackground());
-            } else {
-                displayHelper.duplicateBackground(originalDisplay.getBackground(), savedDisplay);
+                displayHelper.saveBackground(originalDisplay, request.getBackground());
             }
 
-            log.info("디스플레이 ID: {}의 수정이 완료되었습니다.", savedDisplay.getDisplayUid());
+            log.info("디스플레이 ID: {}의 수정이 완료되었습니다.", originalDisplay.getDisplayUid());
 
             return DisplayCreateResponse.builder()
-                    .displayUid(savedDisplay.getDisplayUid())
-                    .displayName(savedDisplay.getDisplayName())
+                    .displayUid(originalDisplay.getDisplayUid())
+                    .displayName(originalDisplay.getDisplayName())
                     .message("디스플레이가 성공적으로 수정되었습니다.")
                     .build();
 
         } catch (Exception e) {
-            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다.");
+            log.error("디스플레이 수정 중 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("디스플레이 수정 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
