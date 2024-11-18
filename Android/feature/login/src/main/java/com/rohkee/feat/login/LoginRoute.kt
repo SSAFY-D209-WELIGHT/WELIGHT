@@ -14,7 +14,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rohkee.core.ui.dialog.LoadingDialog
 
 @Composable
-fun LoginRoute(onLoginSuccess: () -> Unit) {
+fun LoginRoute(
+    onLoginSuccess: () -> Unit,
+    onShowSnackbar: (String) -> Unit,
+) {
     // 현재 컨텍스트와 액티비티 참조 가져오기
     val context = LocalContext.current
     val activity = context as Activity
@@ -29,7 +32,7 @@ fun LoginRoute(onLoginSuccess: () -> Unit) {
     LaunchedEffect(loginState) {
         when (loginState) {
             is LoginState.Success -> onLoginSuccess()
-            else -> {  }
+            else -> {}
         }
     }
 
@@ -44,6 +47,7 @@ fun LoginRoute(onLoginSuccess: () -> Unit) {
                         Log.d("MainActivity", "User logged in: ${account.displayName}")
                     },
                     onFail = {
+                        onShowSnackbar("로그인 중 오류가 발생하였습니다.")
                         setLoading(false)
                     },
                 )

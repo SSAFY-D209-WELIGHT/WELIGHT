@@ -1,6 +1,5 @@
 package com.rohkee.welight.navigation
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -52,6 +51,7 @@ fun MainNavigation(
                             popUpTo(Login) { inclusive = true }
                         }
                     },
+                    onShowSnackbar = { showSnackbar(it) },
                 )
             }
 
