@@ -28,7 +28,9 @@ fun LoadingDialog(
             ),
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 CircularProgressIndicator(
                     color = AppColor.OnBackground
                 )
