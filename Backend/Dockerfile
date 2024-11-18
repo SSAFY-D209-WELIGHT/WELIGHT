@@ -10,6 +10,9 @@ COPY . /spring_back
 # Install ffmpeg
 RUN apk update && apk add --no-cache ffmpeg
 
+# tzdata 패키지 설치 및 타임존 설정
+RUN ln -snf /usr/share/zoneinfo/Asia/Seoul /etc/localtime && echo Asia/Seoul > /etc/timezone
+
 # Run Gradle build
 RUN chmod +x ./gradlew
 RUN ./gradlew clean build -x test
