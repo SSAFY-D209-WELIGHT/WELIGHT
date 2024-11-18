@@ -1,6 +1,11 @@
 package com.rohkee.feature.group.host
 
 sealed interface HostIntent {
+    sealed interface Permission : HostIntent {
+        data object Granted : Permission
+        data object Rejected : Permission
+    }
+
     sealed interface Creation : HostIntent {
         data class UpdateTitle(
             val title: String,
