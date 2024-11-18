@@ -55,11 +55,11 @@ class DetailViewModel @Inject constructor(
     fun onIntent(intent: DetailIntent) {
         when (intent) {
             DetailIntent.Comment -> openComments()
-            DetailIntent.Delete -> deleteDisplay()
+            DetailIntent.Delete -> tryDelete()
             DetailIntent.Download -> download()
             DetailIntent.Duplicate -> duplicateDisplay()
             DetailIntent.Edit -> editDisplay()
-            DetailIntent.Post -> postToBoard()
+            DetailIntent.Post -> tryPosting()
             DetailIntent.ToggleFavorite -> toggleFavorite()
             DetailIntent.ToggleLike -> toggleLike()
             DetailIntent.ToggleUI -> {
@@ -67,6 +67,9 @@ class DetailViewModel @Inject constructor(
             }
 
             DetailIntent.ExitPage -> emitEvent(DetailEvent.ExitPage)
+            DetailIntent.Dialog.Publish -> postToBoard()
+            DetailIntent.Dialog.Delete -> deleteDisplay()
+            DetailIntent.Dialog.Close -> closeDialog()
         }
     }
 
@@ -227,6 +230,12 @@ class DetailViewModel @Inject constructor(
         // TODO : open comments
     }
 
+    private fun tryPosting() {
+        detailStateHolder.update {
+            it.copy(dialogState = DetailDialogState.Publish)
+        }
+    }
+
     private fun postToBoard() {
         viewModelScope.launch {
             displayRepository.publishDisplay(id).handle(
@@ -234,6 +243,7 @@ class DetailViewModel @Inject constructor(
                     detailStateHolder.update { data -> data.copy(isPublished = true) }
                     if (it != null) {
                         detailEvent.emit(DetailEvent.Publish.Success(it.id))
+                        closeDialog()
                     }
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Publish.Error) },
@@ -260,14 +270,27 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    private fun tryDelete() {
+        detailStateHolder.update {
+            it.copy(dialogState = DetailDialogState.Delete)
+        }
+    }
+
     private fun deleteDisplay() {
         viewModelScope.launch {
             displayRepository.deleteDisplayFromStorage(id).handle(
                 onSuccess = {
                     detailEvent.emit(DetailEvent.Delete.Success)
+                    closeDialog()
                 },
                 onError = { _, _ -> detailEvent.emit(DetailEvent.Delete.Error) },
             )
+        }
+    }
+
+    private fun closeDialog() {
+        detailStateHolder.update {
+            it.copy(dialogState = DetailDialogState.Closed)
         }
     }
 }

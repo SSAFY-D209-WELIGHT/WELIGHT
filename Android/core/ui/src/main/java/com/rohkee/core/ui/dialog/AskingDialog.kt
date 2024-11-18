@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -100,7 +101,7 @@ fun PlainDialog(
         ) {
             if (title.isNotEmpty()) {
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier.padding(top = 8.dp),
                     text = title,
                     style = Pretendard.Medium24,
                     color = AppColor.OnSurface,
@@ -112,6 +113,7 @@ fun PlainDialog(
                     text = content,
                     style = Pretendard.Medium16,
                     color = AppColor.OnSurface,
+                    textAlign = TextAlign.Center,
                 )
             }
             Row(

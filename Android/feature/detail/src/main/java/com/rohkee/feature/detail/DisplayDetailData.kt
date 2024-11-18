@@ -27,6 +27,7 @@ data class DisplayDetailData(
     val displayImageState: DisplayImageState = DisplayImageState(),
     val displayTextState: DisplayTextState = DisplayTextState(),
     val displayBackgroundState: DisplayBackgroundState = DisplayBackgroundState(),
+    val dialogState: DetailDialogState = DetailDialogState.Closed,
 ) {
     fun toState(): DetailState =
         DetailState.Loaded(
@@ -66,5 +67,6 @@ data class DisplayDetailData(
             displayImageState = displayImageState,
             displayTextState = displayTextState,
             displayBackgroundState = displayBackgroundState,
+            dialogState = dialogState
         )
 }
