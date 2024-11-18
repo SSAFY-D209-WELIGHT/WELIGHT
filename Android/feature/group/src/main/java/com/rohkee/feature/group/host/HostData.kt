@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.toPersistentList
 
 data class HostData(
     val roomId: Long = 0,
+    val hasPermission: Boolean = false,
     val title: String = "",
     val description: String = "",
     val clients: Int = 0,
