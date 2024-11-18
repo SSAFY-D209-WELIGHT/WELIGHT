@@ -373,6 +373,7 @@ public class DisplayServiceImpl implements DisplayService {
                 displayHelper.saveBackground(originalDisplay, request.getBackground());
             }
 
+            eventPublisher.publishEvent(new DisplayEvent("UPDATE", originalDisplay));
             log.info("디스플레이 ID: {}의 수정이 완료되었습니다.", originalDisplay.getDisplayUid());
 
             return DisplayCreateResponse.builder()
