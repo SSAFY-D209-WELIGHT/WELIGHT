@@ -1,5 +1,6 @@
 package com.rohkee.feature.storage
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,7 +61,10 @@ fun StorageContent(
             }
 
             is StorageState.NoData -> {
-                NoContent(modifier = Modifier.weight(1f))
+                NoContent(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+                )
             }
 
             is StorageState.Error -> {
@@ -101,7 +105,10 @@ private fun LoadedContent(
     ) {
         return LoadingContent(modifier = modifier)
     } else if (displayList.itemCount == 0) {
-        return NoContent(modifier = modifier)
+        return NoContent(
+            modifier = modifier,
+            onClick = { onIntent(StorageIntent.CreateNewDisplay) },
+        )
     }
 
     PullToRefreshBox(
@@ -130,9 +137,12 @@ private fun LoadedContent(
 }
 
 @Composable
-private fun NoContent(modifier: Modifier = Modifier) {
+private fun NoContent(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
     Box(
-        modifier = modifier,
+        modifier = modifier.clickable { onClick() },
     ) {
         NoContentCard(modifier = modifier)
     }
