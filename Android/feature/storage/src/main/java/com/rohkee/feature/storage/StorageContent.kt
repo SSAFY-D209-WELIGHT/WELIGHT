@@ -1,6 +1,7 @@
 package com.rohkee.feature.storage
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -123,9 +124,8 @@ private fun LoadedContent(
 
 @Composable
 private fun NoContent(modifier: Modifier = Modifier) {
-    InfiniteHorizontalPager(
+    Box(
         modifier = modifier,
-        pageCount = 3,
     ) {
         NoContentCard(modifier = modifier)
     }
