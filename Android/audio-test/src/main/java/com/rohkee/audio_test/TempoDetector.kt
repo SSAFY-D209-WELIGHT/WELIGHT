@@ -1,13 +1,12 @@
 package com.rohkee.audio_test
 
-import android.content.Context
 import be.tarsos.dsp.AudioDispatcher
 import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.onsets.ComplexOnsetDetector
 import be.tarsos.dsp.onsets.OnsetHandler
 import kotlin.math.roundToInt
 
-class TempoDetector(private val context: Context) {
+class TempoDetector {
     private var dispatcher: AudioDispatcher? = null
     private var lastBeatTime = 0L
     private var beatIntervals = mutableListOf<Long>()
