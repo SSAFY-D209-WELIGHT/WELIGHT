@@ -1,10 +1,17 @@
 package com.rohkee.feature.detail
 
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.util.collectWithLifecycle
 
 @Composable
@@ -18,6 +25,7 @@ fun DetailScreen(
     onPublishDisplay: (displayId: Long) -> Unit = {},
     onShowSnackbar: (message: String) -> Unit = {},
 ) {
+    val context = LocalContext.current as ComponentActivity
     val state by detailViewModel.detailState.collectAsStateWithLifecycle()
 
     detailViewModel.detailEvent.collectWithLifecycle { event ->
@@ -62,6 +70,13 @@ fun DetailScreen(
                 onShowSnackbar("공유 중 오류가 발생하였습니다.")
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        context.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+            navigationBarStyle = SystemBarStyle.dark(AppColor.BackgroundTransparent.toArgb()),
+        )
     }
 
     DetailContent(
