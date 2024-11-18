@@ -221,18 +221,21 @@ class EditorViewModel @Inject constructor(
                 editorStateHolder.updateState(
                     editingState = EditingState.None,
                     displayTextState = DisplayTextState(),
+                    dialogState = DialogState.Closed,
                 )
 
             EditorIntent.Dialog.DeleteImage ->
                 editorStateHolder.updateState(
                     editingState = EditingState.None,
                     displayImageState = DisplayImageState(),
+                    dialogState = DialogState.Closed,
                 )
 
             EditorIntent.Dialog.DeleteBackground ->
                 editorStateHolder.updateState(
                     editingState = EditingState.None,
                     displayBackgroundState = DisplayBackgroundState(),
+                    dialogState = DialogState.Closed,
                 )
 
             is EditorIntent.Dialog.EditText ->
@@ -334,7 +337,12 @@ class EditorViewModel @Inject constructor(
                 val userId = datastoreRepository.getUserId()
                 val thumbnailBitmap = bitmap.toImageBitmap().asAndroidBitmap()
                 val thumbnailName =
-                    "${editorStateHolder.value.editorInfoState.title.replace(" ", "")}-${System.currentTimeMillis()}.png"
+                    "${
+                        editorStateHolder.value.editorInfoState.title.replace(
+                            " ",
+                            "",
+                        )
+                    }-${System.currentTimeMillis()}.png"
                 val file = thumbnailBitmap.saveToInternalStorage(thumbnailName, context)
 
                 val imageFile =
@@ -359,17 +367,26 @@ class EditorViewModel @Inject constructor(
                     }.combine(
                         // 이미지 정보를 내부 저장소에서 가져왔을 경우
                         if (imageFile != null) {
-                            uploadRepository.upload("$userId/images/${imageFile.name.replace(" ", "")}", imageFile).map {
-                                it.process(
-                                    onSuccess = { upload ->
-                                        when (upload) {
-                                            is Upload.Completed -> upload.uploadedFile
-                                            else -> ""
-                                        }
-                                    },
-                                    onError = { _, _ -> "" },
-                                )
-                            }
+                            uploadRepository
+                                .upload(
+                                    "$userId/images/${
+                                        imageFile.name.replace(
+                                            " ",
+                                            "",
+                                        )
+                                    }",
+                                    imageFile,
+                                ).map {
+                                    it.process(
+                                        onSuccess = { upload ->
+                                            when (upload) {
+                                                is Upload.Completed -> upload.uploadedFile
+                                                else -> ""
+                                            }
+                                        },
+                                        onError = { _, _ -> "" },
+                                    )
+                                }
                         } else {
                             flow {
                                 // 외부 저장소에서 가져온 경우

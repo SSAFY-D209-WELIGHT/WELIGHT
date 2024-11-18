@@ -19,11 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -35,11 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.rohkee.core.ui.component.appbar.ConfirmAppBar
+import com.rohkee.core.ui.component.common.CommonSnackbar
 import com.rohkee.core.ui.component.common.RoundedTextInput
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 import com.rohkee.feat.display.R
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -58,7 +63,9 @@ fun InfoEditDialog(
     val (tagListSizeError, setTagListSizeError) = remember { mutableStateOf(false) }
     val (hasEdited, setHasEdited) = remember { mutableStateOf(false) }
 
-
+    val focusRequester = remember { FocusRequester() }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     fun inputTitle(title: String) {
         setHasEdited(true)
@@ -82,7 +89,11 @@ fun InfoEditDialog(
 
     fun addToTagList(tag: String) {
         setTagListSizeError(tagList.size >= 10)
-        if (tagList.size < 10) setTagList(tagList + tag)
+        if (tagList.size < 10) {
+            setTagList(tagList + tag)
+        } else {
+            scope.launch { snackbarHostState.showSnackbar("태그는 10개까지 입력이 가능합니다.") }
+        }
         setTagText("")
     }
 
@@ -94,79 +105,88 @@ fun InfoEditDialog(
                 decorFitsSystemWindows = false,
             ),
     ) {
-        val focusRequester = remember { FocusRequester() }
-
         LaunchedEffect(Unit) {
             delay(100)
             focusRequester.requestFocus()
+            if (titleText.isEmpty()) snackbarHostState.showSnackbar("제목을 입력해주세요.")
         }
 
-        Column(
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .background(color = AppColor.BackgroundTransparent)
-                    .imePadding(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            ConfirmAppBar(
-                modifier = Modifier.fillMaxWidth(),
-                onCloseClick = onDismiss,
-                onConfirmClick = {
-                    if (hasEdited && titleText.isNotBlank()) {
-                        onConfirm(titleText, tagList)
-                    } else {
-                        setHasEdited(true)
-                    }
-                },
-            )
-            RoundedTextInput(
-                modifier = Modifier.fillMaxWidth().padding(16.dp).focusRequester(focusRequester),
-                autofocus = true,
-                value = titleText,
-                hint = stringResource(R.string.dialog_info_title_hint),
-                isError = (hasEdited && titleText.isBlank()) || titleSizeError,
-                errorMessage = stringResource(R.string.dialog_info_title_error),
-                onValueChange = { inputTitle(it) },
-            )
-            RoundedTextInput(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                autofocus = true,
-                value = tagText,
-                hint = stringResource(R.string.dialog_info_tag_hint),
-                isError = tagSizeError,
-                errorMessage = stringResource(R.string.dialog_info_title_error),
-                onValueChange = { inputTag(it) },
-                trailingContent = {
-                    Box(
-                        modifier =
-                            Modifier
-                                .padding(end = 8.dp)
-                                .background(color = AppColor.Convex, shape = RoundedCornerShape(4.dp))
-                                .padding(8.dp),
-                    ) {
-                        Text(
-                            modifier = Modifier.clickable { addToTagList(tagText) },
-                            text = stringResource(R.string.dialog_info_tag_add),
-                            style = Pretendard.SemiBold16,
-                            color = AppColor.OnConvex,
+        Scaffold(
+            snackbarHost = { CommonSnackbar(snackbarHostState = snackbarHostState) },
+        ) { innerPadding ->
+            Column(
+                modifier =
+                    modifier
+                        .fillMaxSize()
+                        .background(color = AppColor.BackgroundTransparent)
+                        .imePadding(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                ConfirmAppBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    onCloseClick = onDismiss,
+                    onConfirmClick = {
+                        if (hasEdited && titleText.isNotBlank()) {
+                            onConfirm(titleText, tagList)
+                        } else {
+                            setHasEdited(true)
+                        }
+                    },
+                )
+                RoundedTextInput(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .focusRequester(focusRequester),
+                    autofocus = true,
+                    value = titleText,
+                    hint = stringResource(R.string.dialog_info_title_hint),
+                    isError = titleText.isBlank() || titleSizeError,
+                    errorMessage = if (titleSizeError) stringResource(R.string.dialog_info_title_error) else "제목을 100자 이내로 입력해주세요.",
+                    onValueChange = { inputTitle(it) },
+                )
+                RoundedTextInput(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    autofocus = true,
+                    value = tagText,
+                    hint = stringResource(R.string.dialog_info_tag_hint),
+                    isError = tagSizeError,
+                    errorMessage = if (tagSizeError) stringResource(R.string.dialog_info_title_error) else "태그를 50자 이내로 입력해주세요.",
+                    onValueChange = { inputTag(it) },
+                    trailingContent = {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .padding(end = 8.dp)
+                                    .background(
+                                        color = AppColor.Convex,
+                                        shape = RoundedCornerShape(4.dp),
+                                    ).padding(8.dp),
+                        ) {
+                            Text(
+                                modifier = Modifier.clickable { addToTagList(tagText) },
+                                text = stringResource(R.string.dialog_info_tag_add),
+                                style = Pretendard.SemiBold16,
+                                color = AppColor.OnConvex,
+                            )
+                        }
+                    },
+                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    for (tag in tagList) {
+                        TagChip(
+                            tag = tag,
+                            onDelete = { setTagList(tagList - tag) },
                         )
                     }
-                },
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                for (tag in tagList) {
-                    TagChip(
-                        tag = tag,
-                        onDelete = { setTagList(tagList - tag) },
-                    )
                 }
+                Spacer(modifier = Modifier.weight(1f))
             }
-            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
