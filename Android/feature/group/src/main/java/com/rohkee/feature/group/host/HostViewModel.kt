@@ -14,6 +14,7 @@ import com.rohkee.core.websocket.WebSocketClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -59,6 +60,7 @@ class HostViewModel @Inject constructor(
 
     fun onIntent(intent: HostIntent) {
         when (intent) {
+
             HostIntent.Control.AddDisplayGroup -> hostStateHolder.update { it.copy(hostDialogState = HostDialogState.SelectDisplay) }
 
             is HostIntent.Control.ChangeEffect ->
@@ -280,6 +282,12 @@ class HostViewModel @Inject constructor(
                     ),
                 )
             }
+
+            hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Loading) }
+            delay(1000)
+            if (hostStateHolder.value.hostDialogState is HostDialogState.Loading) {
+                hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
+            }
         }
     }
 
@@ -317,6 +325,7 @@ class HostViewModel @Inject constructor(
 
     private var lastStartedTime = 0L
     private var lastInterval = 0f
+
     private fun detection() {
         val state = hostStateHolder.value
         // reset

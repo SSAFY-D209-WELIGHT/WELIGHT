@@ -53,6 +53,7 @@ import com.rohkee.core.ui.component.group.GroupSizeChip
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
 import com.rohkee.core.ui.component.storage.RatioHorizontalPager
+import com.rohkee.core.ui.dialog.LoadingDialog
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
 import com.rohkee.feature.group.dialog.CheerDialog
@@ -106,12 +107,15 @@ fun HostContent(
         modifier = modifier,
     ) { innerPadding ->
         when (state) {
-            is HostState.Creation ->
+            is HostState.Creation -> {
+                if (state.hostDialogState is HostDialogState.Loading) LoadingDialog(message = "응워방 생성 중입니다")
+
                 CreationContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,
                     onIntent = onIntent,
                 )
+            }
 
             is HostState.WaitingRoom ->
                 WaitingRoomContent(
