@@ -60,9 +60,11 @@ class LoginViewModel @Inject constructor(
     fun handleSignInResult(
         task: com.google.android.gms.tasks.Task<GoogleSignInAccount>?,
         onSuccess: (GoogleSignInAccount) -> Unit,
+        onFail: () -> Unit,
     ) {
         if (task == null) {
             Log.e("LoginViewModel", "Sign-in task is null")
+            onFail()
             return
         }
 
