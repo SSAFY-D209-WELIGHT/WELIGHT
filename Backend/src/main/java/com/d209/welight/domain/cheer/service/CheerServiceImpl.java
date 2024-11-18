@@ -74,7 +74,6 @@ public class CheerServiceImpl implements CheerService {
 //            throw new InvalidCheerDataException("이미 존재하는 응원방 이름입니다.");
 //        }
 
-
         // 응원방 생성
         Cheerroom cheerroom = Cheerroom.builder()
                 .name(request.getCheerroomName())
@@ -89,13 +88,13 @@ public class CheerServiceImpl implements CheerService {
         Cheerroom savedCheerroom = cheerroomRepository.save(cheerroom);
 
         // cheerroom display
-        Display defaultDisplay = displayRepository.findByDisplayThumbnailUrl(DEFAULT_THUMBNAIL_URL)
-                .orElseThrow(() -> new DisplayNotFoundException("기본 디스플레이를 찾을 수 없습니다."));
-        CheerroomDisplay defaultCheerroomDisplay = CheerroomDisplay.builder()
-                .cheerroom(cheerroom)
-                .display(defaultDisplay)
-                .build();
-        cheerroomDisplayRepository.save(defaultCheerroomDisplay);
+//        Display defaultDisplay = displayRepository.findByDisplayThumbnailUrl(DEFAULT_THUMBNAIL_URL)
+//                .orElseThrow(() -> new DisplayNotFoundException("기본 디스플레이를 찾을 수 없습니다."));
+//        CheerroomDisplay defaultCheerroomDisplay = CheerroomDisplay.builder()
+//                .cheerroom(cheerroom)
+//                .display(defaultDisplay)
+//                .build();
+//        cheerroomDisplayRepository.save(defaultCheerroomDisplay);
 
 
         // 방장 참여 정보 생성
@@ -420,11 +419,11 @@ public class CheerServiceImpl implements CheerService {
         }
 
         // default.png 제거 (첫 디스플레이 선택 시에만)
-        if (cheerroom.getDisplays().size() == 1 &&
-                cheerroom.getDisplays().get(0).getDisplay().getDisplayThumbnailUrl().equals(DEFAULT_THUMBNAIL_URL)) {
-            cheerroomDisplayRepository.delete(cheerroom.getDisplays().get(0));
-            cheerroom.getDisplays().clear();
-        }
+//        if (cheerroom.getDisplays().size() == 1 &&
+//                cheerroom.getDisplays().get(0).getDisplay().getDisplayThumbnailUrl().equals(DEFAULT_THUMBNAIL_URL)) {
+//            cheerroomDisplayRepository.delete(cheerroom.getDisplays().get(0));
+//            cheerroom.getDisplays().clear();
+//        }
 
         // 새로운 디스플레이 추가
         Display display = displayRepository.findByDisplayUid(displayId)
