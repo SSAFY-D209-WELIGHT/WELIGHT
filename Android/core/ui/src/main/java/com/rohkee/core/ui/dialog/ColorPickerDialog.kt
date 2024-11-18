@@ -56,19 +56,20 @@ private enum class OrderType {
 @Composable
 fun ColorPickerDialog(
     color: CustomColor? = null,
+    gradientEnabled: Boolean = true,
     onConfirm: (CustomColor) -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
     val config = LocalConfiguration.current
     val widthDp = remember { (config.screenWidthDp * 0.7).dp }
 
-    val (openDropdown, setOpenDropdown) = remember { mutableStateOf(false) }
+    //val (openDropdown, setOpenDropdown) = remember { mutableStateOf(false) }
     val (selectedType, setSelectedType) =
         remember {
             mutableStateOf(
-                when (color) {
-                    is CustomColor.Gradient -> ColorSelectionType.GRADIENT
-                    else -> ColorSelectionType.SINGLE
+                when (gradientEnabled) {
+                    true -> ColorSelectionType.GRADIENT
+                    false -> ColorSelectionType.SINGLE
                 },
             )
         }
@@ -152,12 +153,14 @@ fun ColorPickerDialog(
                             style = Pretendard.SemiBold20,
                             color = if (selectedType == ColorSelectionType.SINGLE) AppColor.Active else AppColor.Inactive,
                         )
-                        Text(
-                            modifier = Modifier.clickable { setSelectedType(ColorSelectionType.GRADIENT) },
-                            text = ColorSelectionType.GRADIENT.text,
-                            style = Pretendard.SemiBold20,
-                            color = if (selectedType == ColorSelectionType.GRADIENT) AppColor.Active else AppColor.Inactive,
-                        )
+                        if (gradientEnabled) {
+                            Text(
+                                modifier = Modifier.clickable { setSelectedType(ColorSelectionType.GRADIENT) },
+                                text = ColorSelectionType.GRADIENT.text,
+                                style = Pretendard.SemiBold20,
+                                color = if (selectedType == ColorSelectionType.GRADIENT) AppColor.Active else AppColor.Inactive,
+                            )
+                        }
                     }
 //                    DropdownMenu(
 //                        modifier = Modifier.background(color = AppColor.OverSurface),
@@ -477,5 +480,6 @@ private fun GradientColorControlsPreview() {
 private fun ColorPickerDialogPreview() {
     ColorPickerDialog(
         color = CustomColor.Single(color = Color.Blue),
+        gradientEnabled = false,
     )
 }

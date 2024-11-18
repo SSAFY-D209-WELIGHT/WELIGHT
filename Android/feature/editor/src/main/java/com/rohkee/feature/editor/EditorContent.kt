@@ -89,6 +89,7 @@ private fun EditContent(
         is DialogState.ColorPicker ->
             ColorPickerDialog(
                 color = dialog.color,
+                gradientEnabled = dialog.enableGradient,
                 onConfirm = { onIntent(EditorIntent.Dialog.ColorPicked(it)) },
                 onDismiss = { onIntent(EditorIntent.Dialog.Close) },
             )

@@ -145,7 +145,13 @@ class EditorViewModel @Inject constructor(
                 editorStateHolder.updateText(font = intent.font)
 
             is EditorIntent.TextToolBar.SelectCustomColor ->
-                editorStateHolder.updateDialog(dialogState = DialogState.ColorPicker(color = editorStateHolder.value.editorTextState.color))
+                editorStateHolder.updateDialog(
+                    dialogState =
+                        DialogState.ColorPicker(
+                            color = editorStateHolder.value.editorTextState.color,
+                            enableGradient = false,
+                        ),
+                )
 
             // ImageToolBar
             EditorIntent.ImageToolBar.Close ->
@@ -163,7 +169,11 @@ class EditorViewModel @Inject constructor(
 
             is EditorIntent.ImageToolBar.SelectCustomColor ->
                 editorStateHolder.updateDialog(
-                    dialogState = DialogState.ColorPicker(color = editorStateHolder.value.editorImageState.color),
+                    dialogState =
+                        DialogState.ColorPicker(
+                            color = editorStateHolder.value.editorImageState.color,
+                            enableGradient = false,
+                        ),
                 )
 
             // BackgroundToolBar
@@ -181,7 +191,11 @@ class EditorViewModel @Inject constructor(
 
             is EditorIntent.BackgroundToolBar.SelectCustomColor ->
                 editorStateHolder.updateDialog(
-                    dialogState = DialogState.ColorPicker(color = editorStateHolder.value.editorBackgroundState.color),
+                    dialogState =
+                        DialogState.ColorPicker(
+                            color = editorStateHolder.value.editorBackgroundState.color,
+                            enableGradient = true,
+                        ),
                 )
 
             // Dialog
