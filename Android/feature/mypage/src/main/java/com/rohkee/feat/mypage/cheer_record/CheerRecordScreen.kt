@@ -17,6 +17,7 @@ fun CheerRecordScreen(
     CheerRecordContent(
         modifier = modifier,
         state = cheerRecordUIState,
+        onRefresh = viewModel::onRefresh
     )
 }
 
@@ -25,6 +26,7 @@ sealed interface CheerRecordUIState {
     data object Loading : CheerRecordUIState
 
     data class Loaded(
+        val isRefreshing: Boolean = false,
         val cheerRecords: PersistentList<CheerRecordCardState>,
     ) : CheerRecordUIState
 
