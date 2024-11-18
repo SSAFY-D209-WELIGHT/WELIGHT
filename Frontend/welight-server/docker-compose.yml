@@ -1,0 +1,34 @@
+services:
+  websocket-server:
+    build:
+      context: ./websocket-server
+      dockerfile: Dockerfile
+    container_name: websocket-server
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./websocket-server:/usr/src/app
+    environment:
+      NODE_ENV: production
+    networks:
+      - welight-network
+
+  vue-app:
+    build:
+      context: ./vue-app
+      dockerfile: Dockerfile
+    container_name: vue-app
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./vue-app:/usr/src/app
+    environment:
+      NODE_ENV: production
+    networks:
+      - welight-network
+
+networks:
+  welight-network:
+    external: true
