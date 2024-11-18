@@ -39,7 +39,7 @@ fun LoginScreen(
 
     LaunchedEffect(tapped) {
         if(tapped >= 3)
-            onShowSnackbar("version : 1.0.0")
+            onShowSnackbar(BuildConfig.VERSION)
     }
 
     // UI 설정
