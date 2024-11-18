@@ -10,7 +10,7 @@ class TempoDetector {
     private var dispatcher: AudioDispatcher? = null
     private var lastBeatTime = 0L
     private var beatIntervals = mutableListOf<Long>()
-    private val BEAT_HISTORY_SIZE = 4
+    private val BEAT_HISTORY_SIZE = 8
 
     // Configuration
     private val sampleRate = 22050
@@ -63,7 +63,7 @@ class TempoDetector {
     }
 
     private fun calculateTempo() {
-        if (beatIntervals.size >= 4) {
+        if (beatIntervals.size >= BEAT_HISTORY_SIZE) {
             val mean = beatIntervals.average()
             val standardDeviation =
                 beatIntervals.map { (it - mean) * (it - mean) }.average().let { Math.sqrt(it) }

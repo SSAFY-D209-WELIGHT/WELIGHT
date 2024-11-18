@@ -256,46 +256,7 @@ class HostViewModel @Inject constructor(
                 )
             }
 
-            if (state.doDetect && state.hasPermission) {
-                tempoDetector.startDetection(
-                    onTempoUpdate = { bpm ->
-                        Log.d(TAG, "onCheerStart: $bpm")
-                        if (bpm > 0) {
-                            val autoInterval = 60 / bpm.toFloat() * 1000
-
-                            webSocketClient.emit(
-                                SocketRequest.ControlDisplay(
-                                    roomId = state.roomId,
-                                    displays =
-                                        state.list.mapIndexed { index, groupDisplayData ->
-                                            Display.Control(
-                                                displayId = groupDisplayData.displayId,
-                                                offset =
-                                                    when (state.effect) {
-                                                        DisplayEffect.NONE -> 0.0f
-                                                        DisplayEffect.FLASH -> 0.0f
-                                                        DisplayEffect.CROSS -> if (index % 2 == 0) 0.0f else 1.0f
-                                                        DisplayEffect.WAVE -> index / state.list.size.toFloat()
-                                                    },
-                                                interval = autoInterval * 1000,
-                                            )
-                                        },
-                                ),
-                            )
-                            hostStateHolder.update {
-                                it.copy(
-                                    hostDialogState =
-                                        HostDialogState.StartCheer(
-                                            displayId = it.list.first().displayId,
-                                            offset = 0.0f,
-                                            interval = autoInterval * 1000,
-                                        ),
-                                )
-                            }
-                        }
-                    },
-                )
-            }
+            detection()
         }
     }
 
@@ -350,6 +311,61 @@ class HostViewModel @Inject constructor(
             it.copy(
                 list = newList,
                 hostDialogState = HostDialogState.Closed,
+            )
+        }
+    }
+
+    private var lastStartedTime = 0L
+    private var lastInterval = 0f
+    private fun detection() {
+        val state = hostStateHolder.value
+        // reset
+        lastStartedTime = System.currentTimeMillis()
+        lastInterval = 0f
+
+        if (state.doDetect && state.hasPermission) {
+            tempoDetector.startDetection(
+                onTempoUpdate = { bpm ->
+                    Log.d(TAG, "onCheerStart: $bpm ${lastStartedTime - System.currentTimeMillis()}")
+
+                    if (bpm > 0 && System.currentTimeMillis() - lastStartedTime > lastInterval * 2) {
+                        val autoInterval = 60 / bpm.toFloat() * 1000
+                        lastInterval = autoInterval
+                        lastStartedTime = System.currentTimeMillis()
+
+                        Log.d(TAG, "onCheerStart: $autoInterval")
+
+                        webSocketClient.emit(
+                            SocketRequest.ControlDisplay(
+                                roomId = state.roomId,
+                                displays =
+                                    state.list.mapIndexed { index, groupDisplayData ->
+                                        Display.Control(
+                                            displayId = groupDisplayData.displayId,
+                                            offset =
+                                                when (state.effect) {
+                                                    DisplayEffect.NONE -> 0.0f
+                                                    DisplayEffect.FLASH -> 0.0f
+                                                    DisplayEffect.CROSS -> if (index % 2 == 0) 0.0f else 1.0f
+                                                    DisplayEffect.WAVE -> index / state.list.size.toFloat()
+                                                },
+                                            interval = autoInterval,
+                                        )
+                                    },
+                            ),
+                        )
+                        hostStateHolder.update {
+                            it.copy(
+                                hostDialogState =
+                                    HostDialogState.StartCheer(
+                                        displayId = it.list.first().displayId,
+                                        offset = 0.0f,
+                                        interval = autoInterval,
+                                    ),
+                            )
+                        }
+                    }
+                },
             )
         }
     }
