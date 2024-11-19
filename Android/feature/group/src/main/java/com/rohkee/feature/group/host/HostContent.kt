@@ -63,6 +63,7 @@ import com.rohkee.core.ui.component.group.GroupSizeChip
 import com.rohkee.core.ui.component.storage.DisplayCard
 import com.rohkee.core.ui.component.storage.DisplayCardState
 import com.rohkee.core.ui.component.storage.RatioHorizontalPager
+import com.rohkee.core.ui.dialog.AskingDialog
 import com.rohkee.core.ui.dialog.LoadingDialog
 import com.rohkee.core.ui.theme.AppColor
 import com.rohkee.core.ui.theme.Pretendard
@@ -140,6 +141,15 @@ fun HostContent(
                     ),
                 )
             },
+        )
+    }
+
+    if (state is HostState.WaitingRoom && state.hostDialogState is HostDialogState.Exit) {
+        AskingDialog(
+            title = "응원방 나가기",
+            content = "응원이 종료됩니다.\n응원방에서 나가시겠습니까?",
+            onDismiss = { onIntent(HostIntent.ExitDialog.Cancel) },
+            onConfirm = { onIntent(HostIntent.ExitDialog.Exit) },
         )
     }
 

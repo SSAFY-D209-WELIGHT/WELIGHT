@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -30,19 +32,23 @@ fun CheerRecordContent(
         }
 
         is CheerRecordUIState.Loaded -> {
-            if(state.cheerRecords.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(text = "응원내역이 없습니다", style = Pretendard.Medium24, color = AppColor.OnBackgroundTransparent)
-                }
-            } else {
-                PullToRefreshBox(
-                    onRefresh = { onRefresh() },
-                    modifier = Modifier.fillMaxSize(),
-                    isRefreshing = state.isRefreshing,
-                ) {
+            PullToRefreshBox(
+                onRefresh = { onRefresh() },
+                modifier = Modifier.fillMaxSize(),
+                isRefreshing = state.isRefreshing,
+            ) {
+                if (state.cheerRecords.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "응원내역이 없습니다",
+                            style = Pretendard.Medium24,
+                            color = AppColor.OnBackgroundTransparent,
+                        )
+                    }
+                } else {
                     LazyColumn(
                         modifier =
                             Modifier
