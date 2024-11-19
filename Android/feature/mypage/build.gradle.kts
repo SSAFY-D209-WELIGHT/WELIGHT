@@ -17,5 +17,5 @@ dependencies {
 
     implementation(libs.androidx.paging.compose)
     // coil
-    implementation(libs.coil.compose.v200)
+    implementation(libs.coil.compose)
 }
