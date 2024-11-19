@@ -45,6 +45,11 @@ sealed interface HostIntent {
         data object StartCheer : Control
     }
 
+    sealed interface ExitDialog : HostIntent {
+        data object Cancel : ExitDialog
+        data object Exit : ExitDialog
+    }
+
     sealed interface SelectionDialog : HostIntent {
         data object Cancel : SelectionDialog
 

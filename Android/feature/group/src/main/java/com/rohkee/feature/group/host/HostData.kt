@@ -63,6 +63,8 @@ sealed interface HostDialogState {
 
     data object SelectDisplay : HostDialogState
 
+    data object Exit : HostDialogState
+
     data class StartCheer(
         val displayId: Long,
         val offset: Float,
