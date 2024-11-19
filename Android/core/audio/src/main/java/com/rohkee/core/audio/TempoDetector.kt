@@ -10,12 +10,12 @@ class TempoDetector {
     private var dispatcher: AudioDispatcher? = null
     private var lastBeatTime = 0L
     private var beatIntervals = mutableListOf<Long>()
-    private val BEAT_HISTORY_SIZE = 24
+    private val BEAT_HISTORY_SIZE = 4
 
     // Configuration
     private val sampleRate = 22050
     private val bufferSize = 1024
-    private val onsetThreshold = 0.4
+    private val onsetThreshold = 0.1
 
     // Callbacks
     private var onTempoUpdate: ((Int) -> Unit)? = null

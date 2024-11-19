@@ -2,10 +2,6 @@ package com.rohkee.core.ui.component.group
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -29,30 +25,29 @@ fun AnimatedBlocker(
     offset: Float,
 ) {
     if (interval > 0f) {
-        val infiniteTransition = rememberInfiniteTransition(label = "flicker animation")
-
-        val animatedValue by infiniteTransition.animateFloat(
-            initialValue = offset,
-            targetValue = if (offset < 1f) 1f else 0f,
-            animationSpec =
-                infiniteRepeatable(
-                    animation =
-                        tween(
-                            durationMillis = interval.toInt(),
-                            easing = LinearEasing,
-                        ),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-            label = "animate offset",
-        )
         // Create an Animatable for alpha value (from 0f to 1f)
         val alphaValue = remember { Animatable(offset) }
 
         var currentInterval by remember(interval) { mutableStateOf(interval.toInt()) }
 
         LaunchedEffect(currentInterval) {
+            alphaValue.animateTo(
+                targetValue = 0f,
+                animationSpec =
+                    tween(
+                        durationMillis = (currentInterval * offset).toInt() / 2,
+                        easing = LinearEasing,
+                    ),
+            )
+            alphaValue.animateTo(
+                targetValue = 1f,
+                animationSpec =
+                    tween(
+                        durationMillis = currentInterval / 2,
+                        easing = LinearEasing,
+                    ),
+            )
             while (true) {
-                // Animate from 1f to 0f (fade out)
                 alphaValue.animateTo(
                     targetValue = 0f,
                     animationSpec =
@@ -61,7 +56,6 @@ fun AnimatedBlocker(
                             easing = LinearEasing,
                         ),
                 )
-                // Animate from 0f to 1f (fade in)
                 alphaValue.animateTo(
                     targetValue = 1f,
                     animationSpec =

@@ -67,7 +67,7 @@ class HostViewModel @Inject constructor(
                     it.copy(effect = intent.effect)
                 }
 
-            HostIntent.Control.Exit -> emitEvent(HostEvent.ExitPage)
+            HostIntent.Control.Exit -> hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Exit) }
             HostIntent.Control.StartCheer -> startCheer()
 
             HostIntent.Creation.Cancel -> emitEvent(HostEvent.ExitPage)
@@ -95,6 +95,11 @@ class HostViewModel @Inject constructor(
             is HostIntent.Control.ToggleDetect -> hostStateHolder.update { it.copy(doDetect = intent.doDetect) }
             HostIntent.Permission.Granted -> hostStateHolder.update { it.copy(hasPermission = true) }
             HostIntent.Permission.Rejected -> hostStateHolder.update { it.copy(hasPermission = false) }
+            HostIntent.ExitDialog.Cancel -> hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
+            HostIntent.ExitDialog.Exit -> {
+                hostStateHolder.update { it.copy(hostDialogState = HostDialogState.Closed) }
+                emitEvent(HostEvent.ExitPage)
+            }
         }
     }
 
