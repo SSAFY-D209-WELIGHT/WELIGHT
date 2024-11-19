@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +48,7 @@ fun CardListItem(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(
-            modifier = Modifier.weight(3f),
+            modifier = Modifier,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -61,27 +63,24 @@ fun CardListItem(
                 color = AppColor.OnSurface,
             )
         }
-        Box(
+        Spacer(modifier = Modifier.weight(1f))
+        Column(
             modifier =
                 Modifier
-                    .weight(1f)
+                    .wrapContentWidth()
                     .background(
                         color = AppColor.Contrast,
                         shape = RoundedCornerShape(4.dp),
                     ).padding(vertical = 8.dp, horizontal = 16.dp)
                     .clickable { onJoinClick(state.id) },
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Column(
-                modifier = Modifier,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text("함께하기", style = Pretendard.SemiBold16, color = AppColor.OnContrast)
-                GroupSizeChip(
-                    modifier = Modifier.fillMaxWidth(),
-                    number = state.number,
-                )
-            }
+            Text("함께하기", style = Pretendard.SemiBold16, color = AppColor.OnContrast)
+            GroupSizeChip(
+                modifier = Modifier.wrapContentWidth(),
+                number = state.number,
+            )
         }
     }
 }
@@ -105,7 +104,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                     Modifier.fillMaxWidth().weight(3f).animateGradientBackground(
                         startColor = AppColor.LoadLight,
                         endColor = AppColor.LoadDark,
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(4.dp),
                     ),
             )
             Box(
@@ -117,7 +116,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                         .animateGradientBackground(
                             startColor = AppColor.LoadLight,
                             endColor = AppColor.LoadDark,
-                            shape = RoundedCornerShape(4.dp)
+                            shape = RoundedCornerShape(4.dp),
                         ),
             )
             Box(
@@ -129,7 +128,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                         .animateGradientBackground(
                             startColor = AppColor.LoadLight,
                             endColor = AppColor.LoadDark,
-                            shape = RoundedCornerShape(4.dp)
+                            shape = RoundedCornerShape(4.dp),
                         ),
             )
         }
@@ -141,7 +140,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                     .animateGradientBackground(
                         startColor = AppColor.LoadLight,
                         endColor = AppColor.LoadDark,
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(4.dp),
                     ),
         ) {
         }
