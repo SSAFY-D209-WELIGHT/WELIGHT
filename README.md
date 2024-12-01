@@ -41,7 +41,7 @@
 | <img src="https://github.com/user-attachments/assets/0ee182f8-2575-4c87-99c8-c09fd2a8ea3c" width="350"/> | <img src="https://github.com/user-attachments/assets/7a31439a-48ae-4c0a-bd0a-2b41b906f16c" width="350"/> | <img src="https://github.com/user-attachments/assets/480d3609-4b41-4718-84f8-0b88ba3da831" width="350"/> |
 
 ### **✨** 응원방 생성 및 참가
-| <div align="center">**응원방 생성 (호스트)**</div> | <div align="center">**응원방 참가 (참가자)**</div> | 
+| <div align="center">**응원방 생성**</div> | <div align="center">**응원방 참가**</div> | 
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/80d0126f-766c-4b7d-9122-5643db44505c" width="350"/> | <img src="https://github.com/user-attachments/assets/07e6eadd-6096-46a0-91fe-563598ae6186" width="350"/> |
 
